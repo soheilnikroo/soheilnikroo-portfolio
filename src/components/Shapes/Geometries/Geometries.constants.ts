@@ -14,7 +14,7 @@ export const GEOMETRIES = [
   {
     position: [-1.4, 2, -4],
     r: 0.6,
-    geometry: new THREE.DodecahedronGeometry(1.5), // Soccer ball
+    geometry: new THREE.CylinderGeometry(1.5, 1.5, 5, 10), // Soccer ball
   },
   {
     position: [-0.8, -0.75, 5],
@@ -24,7 +24,7 @@ export const GEOMETRIES = [
   {
     position: [1.6, 1.6, -4],
     r: 0.7,
-    geometry: new THREE.OctahedronGeometry(1.5), // Diamond
+    geometry: new THREE.TorusKnotGeometry(1.5, 0.5, 50, 10),
   },
 ];
 

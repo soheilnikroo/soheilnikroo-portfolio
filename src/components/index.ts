@@ -6,3 +6,5 @@ export { NavBar } from './NavBar';
 export { Avatar } from './Avatar';
 export { Heading } from './Heading';
 export { Footer } from './Footer';
+export { ContentList } from './ContentList';
+export { ContentBody } from './ContentBody';

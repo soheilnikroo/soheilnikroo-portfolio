@@ -1,0 +1,58 @@
+[
+	{
+		"__TYPE__": "SharedSliceContent",
+		"variation": "default",
+		"primary": {
+			"heading": {
+				"__TYPE__": "FieldContent",
+				"value": "camp",
+				"type": "Text"
+			}
+		},
+		"items": [
+			{
+				"__TYPE__": "GroupItemContent",
+				"value": [
+					[
+						"title",
+						{
+							"__TYPE__": "FieldContent",
+							"value": "bat",
+							"type": "Text"
+						}
+					],
+					[
+						"time_period",
+						{
+							"__TYPE__": "FieldContent",
+							"value": "duty",
+							"type": "Text"
+						}
+					],
+					[
+						"instiution",
+						{
+							"__TYPE__": "FieldContent",
+							"value": "ocean",
+							"type": "Text"
+						}
+					],
+					[
+						"description",
+						{
+							"__TYPE__": "StructuredTextContent",
+							"value": [
+								{
+									"type": "paragraph",
+									"content": {
+										"text": "Esse quis occaecat magna id adipisicing laboris ullamco quis nulla. Voluptate occaecat adipisicing reprehenderit excepteur adipisicing tempor qui cupidatat nostrud et laboris ut Lorem voluptate."
+									}
+								}
+							]
+						}
+					]
+				]
+			}
+		]
+	}
+]

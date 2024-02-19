@@ -1,19 +1,19 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { SliceZone } from '@prismicio/react';
 
 import { createClient } from '@/prismicio';
-import { components } from '@/slices';
+
+import { ContentBody } from '@/components';
 
 type Params = { uid: string };
 
 export default async function Page({ params }: { params: Params }) {
   const client = createClient();
   const page = await client
-    .getByUID('page', params.uid)
+    .getByUID('project', params.uid)
     .catch(() => notFound());
 
-  return <SliceZone slices={page.data.slices} components={components} />;
+  return <ContentBody page={page} />;
 }
 
 export async function generateMetadata({
@@ -23,18 +23,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const client = createClient();
   const page = await client
-    .getByUID('page', params.uid)
+    .getByUID('project', params.uid)
     .catch(() => notFound());
 
   return {
-    title: page.data.meta_title,
+    title: page.data.title,
     description: page.data.meta_description,
   };
 }
 
 export async function generateStaticParams() {
   const client = createClient();
-  const pages = await client.getAllByType('page');
+
+  const pages = await client.getAllByType('project', { lang: '*' });
 
   return pages.map((page) => {
     return { uid: page.uid };

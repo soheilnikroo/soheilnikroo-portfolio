@@ -1,6 +1,6 @@
-import * as prismic from "@prismicio/client";
-import * as prismicNext from "@prismicio/next";
-import config from "../slicemachine.config.json";
+import * as prismic from '@prismicio/client';
+import * as prismicNext from '@prismicio/next';
+import config from '../slicemachine.config.json';
 
 /**
  * The project's Prismic repository name.
@@ -13,23 +13,23 @@ export const repositoryName =
  *
  * {@link https://prismic.io/docs/route-resolver#route-resolver}
  */
-// TODO: Update the routes array to match your project's route structure.
-const routes: prismic.ClientConfig["routes"] = [
+const routes: prismic.ClientConfig['routes'] = [
   {
-    type: "homepage",
-    path: "/",
+    type: 'page',
+    path: '/:lang?',
+    uid: 'home',
   },
   {
-    type: "page",
-    path: "/:uid",
+    type: 'page',
+    path: '/:lang?/:uid',
   },
   {
-    type: "blog_post",
-    path: "/blog/:uid",
+    type: 'blog_post',
+    path: '/:lang?/blog/:uid',
   },
   {
-    type: "project",
-    path: "/project/:uid",
+    type: 'project',
+    path: '/:lang?/projects/:uid',
   },
 ];
 
@@ -43,8 +43,8 @@ export const createClient = (config: prismicNext.CreateClientConfig = {}) => {
   const client = prismic.createClient(repositoryName, {
     routes,
     fetchOptions:
-      process.env.NODE_ENV === "production"
-        ? { next: { tags: ["prismic"] }, cache: "force-cache" }
+      process.env.NODE_ENV === 'production'
+        ? { next: { tags: ['prismic'] }, cache: 'force-cache' }
         : { next: { revalidate: 5 } },
     ...config,
   });

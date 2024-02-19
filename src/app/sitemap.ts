@@ -3,10 +3,10 @@ import { createClient } from '@/prismicio';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const client = createClient();
-  const homepage = await client.getSingle('homepage');
+  const homepage = await client.getByUID('page', 'home');
   const pages = await client.getAllByType('page');
-  // const blogPosts = await client.getAllByType('blog_post');
-  // const projects = await client.getAllByType('project');
+  const blogPosts = await client.getAllByType('blog_post');
+  const projects = await client.getAllByType('project');
 
   const siteRoot = 'https://demo.com';
 
@@ -20,15 +20,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: page.last_publication_date,
   }));
 
-  // const blogPostsRoutes = blogPosts.map((post) => ({
-  //   url: siteRoot + '/blog/' + post.uid,
-  //   lastModified: post.last_publication_date,
-  // }));
+  const blogPostsRoutes = blogPosts.map((post) => ({
+    url: siteRoot + '/blog/' + post.uid,
+    lastModified: post.last_publication_date,
+  }));
 
-  // const projectsRoutes = projects.map((project) => ({
-  //   url: siteRoot + '/project/' + project.uid,
-  //   lastModified: project.last_publication_date,
-  // }));
+  const projectsRoutes = projects.map((project) => ({
+    url: siteRoot + '/project/' + project.uid,
+    lastModified: project.last_publication_date,
+  }));
 
   return [homepageRoute, ...pagesRoutes];
 }

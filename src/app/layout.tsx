@@ -1,12 +1,9 @@
 import type { Metadata } from 'next';
-import { Urbanist } from 'next/font/google';
 import './globals.css';
-import { Header, Footer } from '@/components';
 import clsx from 'clsx';
 import { createClient, repositoryName } from '@/prismicio';
 import { PrismicPreview } from '@prismicio/next';
-
-const urbanist = Urbanist({ subsets: ['latin'] });
+import { iranyekanFont } from './font';
 
 export async function generateMetadata(): Promise<Metadata> {
   const client = createClient();
@@ -27,13 +24,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="bg-slate-900 text-slate-100">
-      <body className={clsx(urbanist.className, 'relative min-h-screen')}>
-        <Header />
+    <html className={'bg-slate-900 text-slate-100'}>
+      <body className={clsx(iranyekanFont.className, 'relative min-h-screen')}>
         {children}
-        <div className="background-gradient absolute inset-0 -z-50 max-h-screen" />
+        <div className='background-gradient absolute inset-0 -z-50 max-h-screen' />
         <div className="pointer-events-none absolute inset-0 -z-40 h-full bg-[url('/noisetexture.jpg')] opacity-20 mix-blend-soft-light"></div>
-        <Footer />
         <PrismicPreview repositoryName={repositoryName} />
       </body>
     </html>

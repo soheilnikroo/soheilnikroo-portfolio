@@ -1,38 +1,26 @@
-# My Portfolio Website
+Great! Here's a simple template you can use for your README.md file:
 
-Welcome to my portfolio website built using Next.js!
+# Soheil Nikroo's Portfolio
 
-## Description
+## Introduction
 
-This project is a personal portfolio website showcasing my skills, projects, and experience. It is built with Next.js, a popular React framework, and designed to be responsive and easy to navigate.
+Welcome to my portfolio! I'm Soheil Nikroo, a frontend developer passionate about creating beautiful and user-friendly web applications.
 
-## Features
+## About Me
 
-- Home page introducing myself and my skills
-- Projects page displaying my past and current projects
-- Contact page with a contact form for getting in touch
+I'm a dedicated professional with expertise in HTML, CSS, JavaScript, and various frontend frameworks. I believe in the power of clean and efficient code to deliver exceptional user experiences.
 
-## Installation
+## Projects
 
-To run this project locally, follow these steps:
+This repository contains a showcase of my recent projects, including:
 
-1. Clone this repository
-2. Run `npm install` to install dependencies
-3. Run `npm run dev` to start the development server
-4. Open http://localhost:3000 in your browser
+- Project 1: Full Todo App
+- Project 2: Youtube Clone
 
-## Technologies Used
+## Contact
 
-- Next.js
-- React
-- CSS/SCSS
-- HTML
-- JavaScript
-
-## Contributing
-
-Feel free to contribute to this project by submitting pull requests or reporting issues.
+Feel free to reach out to me at [email address] or connect with me on [LinkedIn](https://www.linkedin.com/in/soheil-nikroo-b31b00196/) for collaboration or job opportunities.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE.md file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -1,4 +1,4 @@
-import { DateField } from '@prismicio/client';
+import type { DateField } from '@prismicio/client';
 
 export function formatDate(dateStr: DateField): string {
   if (!dateStr) return '';

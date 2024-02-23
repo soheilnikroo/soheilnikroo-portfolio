@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 function usePrefersReducedMotion() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
+  // eslint-disable-next-line consistent-return
   useEffect(() => {
     // Ensure window is defined (i.e., running in a browser)
     if (typeof window !== 'undefined') {

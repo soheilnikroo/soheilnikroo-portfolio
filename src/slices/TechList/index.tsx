@@ -1,12 +1,11 @@
 'use client';
 
-import { Content } from '@prismicio/client';
-import { SliceComponentProps } from '@prismicio/react';
 import React, { useLayoutEffect, useRef } from 'react';
-import { MdCircle } from 'react-icons/md';
+import type { Content } from '@prismicio/client';
+import type { SliceComponentProps } from '@prismicio/react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
+import { MdCircle } from 'react-icons/md';
 import { Bounded, Heading } from '@/components';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -23,7 +22,7 @@ const TechList = ({ slice }: TechListProps): JSX.Element => {
   const component = useRef(null);
 
   useLayoutEffect(() => {
-    let ctx = gsap.context(() => {
+    const ctx = gsap.context(() => {
       // create as many GSAP animations and/or ScrollTriggers here as you want...
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -37,20 +36,18 @@ const TechList = ({ slice }: TechListProps): JSX.Element => {
       tl.fromTo(
         '.tech-row',
         {
-          x: (index) => {
-            return index % 2 === 0
+          x: (index) =>
+            index % 2 === 0
               ? gsap.utils.random(600, 400)
-              : gsap.utils.random(-600, -400);
-          },
+              : gsap.utils.random(-600, -400),
         },
         {
-          x: (index) => {
-            return index % 2 === 0
+          x: (index) =>
+            index % 2 === 0
               ? gsap.utils.random(-600, -400)
-              : gsap.utils.random(600, 400);
-          },
+              : gsap.utils.random(600, 400),
           ease: 'power1.inOut',
-        }
+        },
       );
     }, component);
     return () => ctx.revert(); // cleanup!
@@ -58,36 +55,34 @@ const TechList = ({ slice }: TechListProps): JSX.Element => {
 
   return (
     <section
+      ref={component}
+      className='wrapper overflow-hidden'
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
-      className="wrapper overflow-hidden"
-      ref={component}
     >
-      <Bounded as="div">
-        <Heading size="xl" className="mb-8" as="h2">
+      <Bounded as='div'>
+        <Heading as='h2' className='mb-8' size='xl'>
           {slice.primary.heading}
         </Heading>
       </Bounded>
 
-      {slice.items.map(({ tech_color, tech_name }, index) => (
+      {slice.items.map(({ tech_color, tech_name }) => (
         <div
-          key={index}
-          className="tech-row mb-8 flex items-center justify-center gap-4 text-slate-700"
+          key={tech_name}
           aria-label={tech_name || ''}
+          className='tech-row mb-8 flex items-center justify-center gap-4 text-slate-700'
         >
           {Array.from({ length: 15 }, (_, index) => (
-            <React.Fragment key={index}>
+            <React.Fragment key={tech_color}>
               <span
-                className={
-                  'tech-item text-8xl font-extrabold uppercase tracking-tighter'
-                }
+                className='tech-item text-8xl font-extrabold uppercase tracking-tighter'
                 style={{
                   color: index === 7 && tech_color ? tech_color : 'inherit',
                 }}
               >
                 {tech_name}
               </span>
-              <span className="text-3xl">
+              <span className='text-3xl'>
                 <MdCircle />
               </span>
             </React.Fragment>

@@ -1,24 +1,24 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ImageField } from '@prismicio/client';
+import type { ImageField } from '@prismicio/client';
 import { PrismicNextImage } from '@prismicio/next';
 import clsx from 'clsx';
+import gsap from 'gsap';
 import { usePrefersReducedMotion } from '@/hooks';
 
 export default function Avatar({
   image,
-  className,
+  className = '',
 }: {
   image: ImageField;
-  className?: string;
+  className: string;
 }) {
   const component = useRef(null);
   const prefersReducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
-    let ctx = gsap.context(() => {
+    const ctx = gsap.context(() => {
       gsap.fromTo(
         '.avatar',
         {
@@ -30,7 +30,7 @@ export default function Avatar({
           opacity: 1,
           duration: prefersReducedMotion ? 0 : 1.3,
           ease: 'power3.inOut',
-        }
+        },
       );
 
       window.onmousemove = (e) => {
@@ -40,11 +40,11 @@ export default function Avatar({
         ).getBoundingClientRect();
         const componentCenterX = componentRect.left + componentRect.width / 2;
 
-        let componentPercent = {
+        const componentPercent = {
           x: (e.clientX - componentCenterX) / componentRect.width / 2,
         };
 
-        let distFromCenterX = 1 - Math.abs(componentPercent.x);
+        const distFromCenterX = 1 - Math.abs(componentPercent.x);
 
         gsap
           .timeline({
@@ -56,7 +56,7 @@ export default function Avatar({
               rotation: gsap.utils.clamp(-2, 2, 5 * componentPercent.x),
               duration: 0.5,
             },
-            0
+            0,
           )
           .to(
             '.highlight',
@@ -65,7 +65,7 @@ export default function Avatar({
               x: -10 + 20 * componentPercent.x,
               duration: 0.5,
             },
-            0
+            0,
           );
       };
     }, component);
@@ -75,15 +75,15 @@ export default function Avatar({
   return (
     <div ref={component} className={clsx('relative h-full w-full', className)}>
       <div
-        className="avatar aspect-square overflow-hidden rounded-3xl border-2 border-slate-700 opacity-0"
+        className='avatar aspect-square overflow-hidden rounded-3xl border-2 border-slate-700 opacity-0'
         style={{ perspective: '500px', perspectiveOrigin: '150% 150%' }}
       >
         <PrismicNextImage
+          className='avatar-image h-full w-full object-fill'
           field={image}
-          className="avatar-image h-full w-full object-fill"
           imgixParams={{ q: 90 }}
         />
-        <div className="highlight absolute inset-0 hidden w-full scale-110 bg-gradient-to-tr from-transparent via-white to-transparent opacity-0 md:block"></div>
+        <div className='highlight absolute inset-0 hidden w-full scale-110 bg-gradient-to-tr from-transparent via-white to-transparent opacity-0 md:block' />
       </div>
     </div>
   );

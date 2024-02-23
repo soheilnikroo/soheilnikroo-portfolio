@@ -1,7 +1,9 @@
-import { Content, isFilled } from '@prismicio/client';
-import { PrismicRichText, SliceComponentProps } from '@prismicio/react';
+import type { Content } from '@prismicio/client';
+import { isFilled } from '@prismicio/client';
+import type { SliceComponentProps } from '@prismicio/react';
+import { PrismicRichText } from '@prismicio/react';
+import { Bounded, ContentList, Heading } from '@/components';
 import { createClient } from '@/prismicio';
-import { Bounded, Heading, ContentList } from '@/components';
 
 /**
  * Props for `ContentIndex`.
@@ -25,19 +27,19 @@ const ContentIndex = async ({
       data-slice-type={slice.slice_type}
       data-slice-variation={slice.variation}
     >
-      <Heading size="xl" className="mb-8">
+      <Heading className='mb-8' size='xl'>
         {slice.primary.heading}
       </Heading>
       {isFilled.richText(slice.primary.description) && (
-        <div className="prose prose-xl prose-invert mb-10">
+        <div className='prose prose-xl prose-invert mb-10'>
           <PrismicRichText field={slice.primary.description} />
         </div>
       )}
       <ContentList
-        items={items}
         contentType={slice.primary.content_type}
-        viewMoreText={slice.primary.view_more_text}
         fallbackItemImage={slice.primary.fallback_item_image}
+        items={items}
+        viewMoreText={slice.primary.view_more_text}
       />
     </Bounded>
   );

@@ -1,23 +1,21 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { Float } from '@react-three/drei';
-import { useState, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 
-function Geometry({ r, position, geometry, soundEffects, materials }) {
+function Geometry({ r, position, geometry, materials }) {
   const meshRef = useRef();
   const [visible, setVisible] = useState(false);
-
-  const startingMaterial = getRandomMaterial();
 
   function getRandomMaterial() {
     return gsap.utils.random(materials);
   }
 
+  const startingMaterial = getRandomMaterial();
+
   function handleClick(e) {
     const mesh = e.object;
-
-    gsap.utils.random(soundEffects).play();
 
     gsap.to(mesh.rotation, {
       x: `+=${gsap.utils.random(0, 2)}`,
@@ -40,7 +38,7 @@ function Geometry({ r, position, geometry, soundEffects, materials }) {
   };
 
   useEffect(() => {
-    let ctx = gsap.context(() => {
+    const ctx = gsap.context(() => {
       setVisible(true);
       gsap.from(meshRef.current.scale, {
         x: 0,
@@ -55,16 +53,16 @@ function Geometry({ r, position, geometry, soundEffects, materials }) {
   }, []);
 
   return (
-    <group position={position} ref={meshRef}>
-      <Float speed={5 * r} rotationIntensity={6 * r} floatIntensity={5 * r}>
+    <group ref={meshRef} position={position}>
+      <Float floatIntensity={5 * r} rotationIntensity={6 * r} speed={5 * r}>
         <mesh
           geometry={geometry}
-          onClick={handleClick}
-          onPointerOver={handlePointerOver}
-          onPointerOut={handlePointerOut}
-          visible={visible}
           material={startingMaterial}
-        ></mesh>
+          visible={visible}
+          onClick={handleClick}
+          onPointerOut={handlePointerOut}
+          onPointerOver={handlePointerOver}
+        />
       </Float>
     </group>
   );

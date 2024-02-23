@@ -1,4 +1,4 @@
-import { Content } from '@prismicio/client';
+import type { Content } from '@prismicio/client';
 
 export type ContentListProps = {
   items: Content.BlogPostDocument[] | Content.ProjectDocument[];

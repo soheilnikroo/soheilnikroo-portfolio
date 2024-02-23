@@ -1,10 +1,7 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-
-import { createClient } from '@/prismicio';
-
 import { ContentBody } from '@/components';
-import { formatDate } from '@/utils';
+import { createClient } from '@/prismicio';
 
 type Params = { uid: string };
 
@@ -37,7 +34,5 @@ export async function generateStaticParams() {
   const client = createClient();
   const pages = await client.getAllByType('project');
 
-  return pages.map((page) => {
-    return { uid: page.uid };
-  });
+  return pages.map((page) => ({ uid: page.uid }));
 }

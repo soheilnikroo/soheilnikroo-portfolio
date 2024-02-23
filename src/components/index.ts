@@ -8,5 +8,3 @@ export { Heading } from './Heading';
 export { Footer } from './Footer';
 export { ContentList } from './ContentList';
 export { ContentBody } from './ContentBody';
-export { LanguageSwitcher } from './LanguageSwitcher';
-export { ToggleTheme } from './toggleTheme';

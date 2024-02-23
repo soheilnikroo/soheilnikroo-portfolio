@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { asImageSrc, isFilled } from '@prismicio/client';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -27,8 +27,8 @@ export default function ContentList({
 
   useEffect(() => {
     // Animate list-items in with a stagger
-    let ctx = gsap.context(() => {
-      itemsRef.current.forEach((item, index) => {
+    const ctx = gsap.context(() => {
+      itemsRef.current.forEach((item) => {
         gsap.fromTo(
           item,
           {
@@ -47,7 +47,7 @@ export default function ContentList({
               end: 'bottom center',
               toggleActions: 'play none none none',
             },
-          }
+          },
         );
       });
 
@@ -60,9 +60,9 @@ export default function ContentList({
     const handleMouseMove = (e: MouseEvent) => {
       const mousePos = { x: e.clientX, y: e.clientY + window.scrollY };
       // Calculate speed and direction
-      const speed = Math.sqrt(Math.pow(mousePos.x - lastMousePos.current.x, 2));
+      const speed = Math.sqrt((mousePos.x - lastMousePos.current.x) ** 2);
 
-      let ctx = gsap.context(() => {
+      const ctx = gsap.context(() => {
         // Animate the image holder
         if (currentItem !== null) {
           const maxY = window.scrollY + window.innerHeight - 350;
@@ -126,51 +126,50 @@ export default function ContentList({
   }, [contentImages]);
 
   return (
-    <>
-      <ul
-        ref={component}
-        className="grid border-b border-b-slate-100"
-        onMouseLeave={onMouseLeave}
-      >
-        {items.map((post, index) => (
-          <li
-            key={index}
-            ref={(el) => (itemsRef.current[index] = el)}
-            onMouseEnter={() => onMouseEnter(index)}
-            className="list-item opacity-0"
+    <ul
+      ref={component}
+      className='grid border-b border-b-slate-100'
+      onMouseLeave={onMouseLeave}
+    >
+      {items.map((post, index) => (
+        <li
+          key={post.id}
+          // eslint-disable-next-line no-return-assign
+          ref={(el) => (itemsRef.current[index] = el)}
+          className='list-item opacity-0'
+          onMouseEnter={() => onMouseEnter(index)}
+        >
+          <a
+            aria-label={post.data.title || ''}
+            className='flex flex-col justify-between border-t border-t-slate-100 py-10  text-slate-200 md:flex-row '
+            href={`${urlPrefix}/${post.uid}`}
           >
-            <a
-              href={`${urlPrefix}/${post.uid}`}
-              className="flex flex-col justify-between border-t border-t-slate-100 py-10  text-slate-200 md:flex-row "
-              aria-label={post.data.title || ''}
-            >
-              <div className="flex flex-col">
-                <span className="text-3xl font-bold">{post.data.title}</span>
-                <div className="flex gap-3 text-yellow-400">
-                  {post.tags.map((tag, index) => (
-                    <span key={index} className="text-lg font-bold">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+            <div className='flex flex-col'>
+              <span className='text-3xl font-bold'>{post.data.title}</span>
+              <div className='flex flex-wrap gap-3 text-yellow-400'>
+                {post.tags.map((tag) => (
+                  <span key={tag} className='text-lg font-bold'>
+                    {tag}
+                  </span>
+                ))}
               </div>
-              <span className="ml-auto flex items-center gap-2 text-xl font-medium md:ml-0">
-                {viewMoreText} <MdArrowOutward />
-              </span>
-            </a>
-          </li>
-        ))}
+            </div>
+            <span className='ml-auto flex items-center gap-2 text-xl font-medium md:ml-0'>
+              {viewMoreText} <MdArrowOutward />
+            </span>
+          </a>
+        </li>
+      ))}
 
-        {/* Hover element */}
-        <div
-          className="hover-reveal pointer-events-none absolute left-0 top-0 -z-10 h-[320px] w-[220px] rounded-lg bg-cover bg-center opacity-0 transition-[background] duration-300"
-          style={{
-            backgroundImage:
-              currentItem !== null ? `url(${contentImages[currentItem]})` : '',
-          }}
-          ref={revealRef}
-        ></div>
-      </ul>
-    </>
+      {/* Hover element */}
+      <div
+        ref={revealRef}
+        className='hover-reveal pointer-events-none absolute left-0 top-0 -z-10 h-[320px] w-[220px] rounded-lg bg-cover bg-center opacity-0 transition-[background] duration-300'
+        style={{
+          backgroundImage:
+            currentItem !== null ? `url(${contentImages[currentItem]})` : '',
+        }}
+      />
+    </ul>
   );
 }

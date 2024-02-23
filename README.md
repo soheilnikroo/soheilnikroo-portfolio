@@ -1,5 +1,3 @@
-Great! Here's a simple template you can use for your README.md file:
-
 # Soheil Nikroo's Portfolio
 
 ## Introduction

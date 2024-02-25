@@ -15,9 +15,42 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: settings.data.meta_title,
     description: settings.data.meta_description,
-    // openGraph: {
-    //   images: [settings.data.og_image?.url || ''],
-    // },
+    openGraph: {
+      images: [settings.data.og_image?.url || ''],
+    },
+    keywords: [
+      'Soheil Nikroo',
+      'front-end',
+      'developer',
+      'Next.js',
+      'portfolio',
+      'resume',
+    ],
+    icons: [
+      {
+        rel: 'icon',
+        type: 'image/x-icon',
+        sizes: 'any',
+        url: '/favicon.ico',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '16x16',
+        url: '/images/favicon-16x16.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '32x32',
+        url: '/images/favicon-32x32.png',
+      },
+      {
+        rel: 'apple-touch-icon',
+        sizes: '180x180',
+        url: '/images/apple-touch-icon.png',
+      },
+    ],
   };
 }
 

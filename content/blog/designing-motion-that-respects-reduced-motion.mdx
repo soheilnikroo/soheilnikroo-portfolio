@@ -1,0 +1,32 @@
+---
+title: "Designing Motion That Respects Reduced Motion"
+description: "How to build expressive, scroll-driven interfaces that gracefully calm down for people who ask them to."
+date: "2026-05-18"
+category: "Motion"
+tags: ["motion", "accessibility", "react"]
+---
+
+Motion can make an interface feel alive — or make someone feel sick. The web gives
+us a clear signal for the difference: `prefers-reduced-motion`. The trick is to
+treat it as a first-class design state, not an afterthought.
+
+## Start from a single source of truth
+
+Keep durations and easings as tokens, shared between CSS and your animation
+runtime. When motion lives in one place, calming it down is a single switch
+rather than a scavenger hunt.
+
+## Degrade, don't disable
+
+Reduced motion rarely means "no feedback." It means *less travel*. Swap a
+parallax slide for a gentle opacity fade. Keep the meaning, drop the movement.
+
+```tsx
+const reduced = useReducedMotion();
+const animate = reduced ? { opacity: 1 } : { opacity: 1, y: 0 };
+```
+
+## Make it the default, not the exception
+
+If your components read the preference by default, you never ship an
+inaccessible animation by accident. That's the whole game.

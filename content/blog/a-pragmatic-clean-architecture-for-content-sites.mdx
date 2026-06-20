@@ -1,0 +1,27 @@
+---
+title: "A Pragmatic Clean Architecture for Content Sites"
+description: "Clean architecture is great until it buries a blog in ceremony. Here's a lighter take that still pays off."
+date: "2026-04-02"
+category: "Architecture"
+tags: ["architecture", "typescript", "next.js"]
+---
+
+Clean architecture promises maintainability, but applied dogmatically to a
+content site it produces folders nobody wants to open. The goal is *boundaries
+that earn their keep*, not layers for their own sake.
+
+## Three boundaries that matter
+
+1. **Contracts** — Zod schemas describe your shapes once. Everything validates against them.
+2. **Data** — repositories read content and hand back validated objects. The UI never touches raw files.
+3. **Business** — small, framework-agnostic functions: reading time, search, submission.
+
+## Let the UI stay thin
+
+Components receive typed data and render. No parsing, no fetching gymnastics.
+When the data layer changes, the UI doesn't care.
+
+## Resist the urge to abstract early
+
+YAGNI is a feature. Add an interface when the second implementation actually
+shows up — not before.

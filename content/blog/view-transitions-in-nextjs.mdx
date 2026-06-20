@@ -1,0 +1,26 @@
+---
+title: "View Transitions in Next.js, Without the Magic"
+description: "A grounded look at the View Transitions API in the App Router: what it does, where it shines, and how to keep it accessible."
+date: "2026-03-10"
+category: "Next.js"
+tags: ["next.js", "view-transitions", "motion"]
+---
+
+The View Transitions API turns a jarring navigation into a continuous one. In
+the App Router you opt in with an experimental flag and React's
+`<ViewTransition>` component — but the interesting part is restraint.
+
+## Treat it as progressive enhancement
+
+Browsers without support simply navigate as before. Nothing breaks; the
+experience just lacks the flourish. Build for the baseline first.
+
+## Morph what's meaningful
+
+The best transitions move a *shared element* — a project card growing into its
+detail page. Tie the two with a transition name and let the browser interpolate.
+
+## Honor reduced motion
+
+A "scene cut" is still motion. When someone prefers reduced motion, collapse the
+transition to a quick cross-fade or none at all.

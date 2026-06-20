@@ -20,10 +20,25 @@ const profile: Profile = ProfileSchema.parse({
   availability: "Open to select freelance & collaboration",
   resumeUrl: "https://soheilnikroo.dev/resume.pdf",
   socials: [
-    { platform: "github", label: "GitHub", href: "https://github.com/soheilnikroo", handle: "@soheilnikroo" },
-    { platform: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/in/soheilnikroo", handle: "in/soheilnikroo" },
+    {
+      platform: "github",
+      label: "GitHub",
+      href: "https://github.com/soheilnikroo",
+      handle: "@soheilnikroo",
+    },
+    {
+      platform: "linkedin",
+      label: "LinkedIn",
+      href: "https://www.linkedin.com/in/soheilnikroo",
+      handle: "in/soheilnikroo",
+    },
     { platform: "x", label: "X", href: "https://x.com/soheilnikroo", handle: "@soheilnikroo" },
-    { platform: "email", label: "Email", href: "mailto:hello@soheilnikroo.dev", handle: "hello@soheilnikroo.dev" },
+    {
+      platform: "email",
+      label: "Email",
+      href: "mailto:hello@soheilnikroo.dev",
+      handle: "hello@soheilnikroo.dev",
+    },
   ],
 });
 

@@ -11,7 +11,8 @@ const projects: Project[] = [
   {
     slug: "vport-platform",
     title: "VPORT Platform",
-    summary: "A product platform unifying fragmented internal tools into one fast, cohesive workspace.",
+    summary:
+      "A product platform unifying fragmented internal tools into one fast, cohesive workspace.",
     year: 2025,
     role: "Lead Front-end Engineer",
     status: "live",
@@ -37,7 +38,8 @@ const projects: Project[] = [
   {
     slug: "aurora-design-system",
     title: "Aurora Design System",
-    summary: "A token-driven design system and component library powering multiple products from one source of truth.",
+    summary:
+      "A token-driven design system and component library powering multiple products from one source of truth.",
     year: 2024,
     role: "Design Systems Engineer",
     status: "live",
@@ -63,7 +65,8 @@ const projects: Project[] = [
   {
     slug: "pulse-analytics",
     title: "Pulse Analytics",
-    summary: "A real-time analytics dashboard turning noisy event streams into calm, legible insight.",
+    summary:
+      "A real-time analytics dashboard turning noisy event streams into calm, legible insight.",
     year: 2024,
     role: "Front-end Engineer",
     status: "live",
@@ -89,7 +92,8 @@ const projects: Project[] = [
   {
     slug: "fieldnotes-cms",
     title: "Fieldnotes CMS",
-    summary: "A lightweight, MDX-powered publishing experience for writers who want speed without a heavy CMS.",
+    summary:
+      "A lightweight, MDX-powered publishing experience for writers who want speed without a heavy CMS.",
     year: 2023,
     role: "Full-stack Engineer",
     status: "archived",

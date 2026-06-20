@@ -46,6 +46,26 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Semantic spacing -> generates p-section, gap-chapter, etc. (values in :root) */
+  --spacing-gutter: var(--gutter);
+  --spacing-prose: var(--prose);
+  --spacing-content: var(--content);
+  --spacing-section: var(--section);
+  --spacing-chapter: var(--chapter);
+
+  /* Motion easings -> generates ease-standard, ease-spring, etc. (values in :root) */
+  --ease-standard: var(--ease-standard-value);
+  --ease-emphasized: var(--ease-emphasized-value);
+  --ease-entrance: var(--ease-entrance-value);
+  --ease-exit: var(--ease-exit-value);
+  --ease-spring: var(--ease-spring-value);
+
+  /* Elevation -> generates shadow-soft, shadow-floating, etc. (values in :root) */
+  --shadow-soft: var(--elevation-soft);
+  --shadow-raised: var(--elevation-raised);
+  --shadow-overlay: var(--elevation-overlay);
+  --shadow-floating: var(--elevation-floating);
 }
 
 :root {
@@ -81,6 +101,46 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* ---- Spacing values (semantic) ---- */
+  --gutter: 1.5rem;
+  --prose: 42rem;
+  --content: 72rem;
+  --section: clamp(4rem, 10vw, 9rem);
+  --chapter: clamp(6rem, 14vw, 14rem);
+
+  /* ---- Z-index layers ---- */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-sticky: 100;
+  --z-nav: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-popover: 500;
+  --z-toast: 600;
+  --z-tooltip: 700;
+
+  /* ---- Motion durations (mirrored in lib/design/tokens.ts) ---- */
+  --duration-instant: 100ms;
+  --duration-fast: 200ms;
+  --duration-base: 320ms;
+  --duration-slow: 560ms;
+  --duration-slower: 840ms;
+  --duration-slowest: 1200ms;
+
+  /* ---- Motion easings (mirrored in lib/design/tokens.ts) ---- */
+  --ease-standard-value: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasized-value: cubic-bezier(0.2, 0, 0, 1);
+  --ease-entrance-value: cubic-bezier(0, 0, 0.2, 1);
+  --ease-exit-value: cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring-value: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ---- Elevation (theme-aware via --shadow-color) ---- */
+  --shadow-color: oklch(0.145 0 0 / 0.1);
+  --elevation-soft: 0 1px 2px -1px var(--shadow-color), 0 2px 8px -2px var(--shadow-color);
+  --elevation-raised: 0 4px 12px -2px var(--shadow-color), 0 10px 24px -8px var(--shadow-color);
+  --elevation-overlay: 0 12px 32px -8px var(--shadow-color), 0 24px 48px -16px var(--shadow-color);
+  --elevation-floating: 0 24px 64px -16px var(--shadow-color);
 }
 
 .dark {
@@ -115,6 +175,9 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Deeper shadow on dark surfaces */
+  --shadow-color: oklch(0 0 0 / 0.45);
 }
 
 @layer base {

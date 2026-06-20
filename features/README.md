@@ -16,12 +16,12 @@ features/<name>/
 
 ## Planned features
 
-- `hero`     — interactive, curiosity-driven intro
-- `about`    — scroll-driven narrative timeline
-- `skills`   — interactive relationship graph / constellation
+- `hero` — interactive, curiosity-driven intro
+- `about` — scroll-driven narrative timeline
+- `skills` — interactive relationship graph / constellation
 - `projects` — immersive "destinations" with View Transitions into detail
-- `blog`     — listing, reading, search/filter
-- `contact`  — accessible form (Zod + Server Action) + social links
-- `ambient`  — opt-in cinematic/lofi audio + background atmosphere (reduced-motion aware)
+- `blog` — listing, reading, search/filter
+- `contact` — accessible form (Zod + Server Action) + social links
+- `ambient` — opt-in cinematic/lofi audio + background atmosphere (reduced-motion aware)
 
 Created per step (7–12); `ambient` is wired in the motion step (5) and homepage steps.

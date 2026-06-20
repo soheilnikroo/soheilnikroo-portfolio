@@ -9,8 +9,7 @@ const profile: Profile = ProfileSchema.parse({
   name: "Soheil Nikroo",
   role: "Software Engineer",
   tagline: "I build immersive, accessible web experiences.",
-  summary:
-    "Engineer focused on thoughtful interfaces, motion, and front-end architecture.",
+  summary: "Engineer focused on thoughtful interfaces, motion, and front-end architecture.",
   location: "Remote",
   email: "hello@soheilnikroo.dev",
   socials: [

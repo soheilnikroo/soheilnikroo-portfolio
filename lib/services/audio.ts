@@ -1,32 +1,132 @@
 /**
  * Ambient audio service (opt-in, accessibility-first).
  *
- * Contract for the cinematic/lofi ambient layer. Audio NEVER autoplays: the UI
- * starts it only after an explicit user gesture, persists the on/off choice, and
- * stays silent when the user prefers reduced motion. The Web Audio implementation
- * is wired in the motion/ambient step; this module defines the stable contract
- * plus an SSR-safe no-op so server and pre-interaction renders are sound-free.
+ * Audio NEVER autoplays: the UI starts it only after an explicit user gesture,
+ * persists the on/off choice, and stays silent under reduced motion. Interaction
+ * cues are synthesized with the Web Audio API (no assets, no licensing). The
+ * optional lofi "bed" is an HTMLAudioElement pointing at a user-supplied file.
  */
 
-/** Short interaction cues layered over the ambient bed. */
 export type AmbientCue = "hover" | "select" | "reveal" | "transition";
 
+export interface AmbientAudioOptions {
+  /** Optional looping background track (e.g. "/audio/ambient.mp3"). */
+  bedSrc?: string;
+  /** Master volume 0..1. */
+  volume?: number;
+}
+
 export interface AmbientAudioController {
-  /** True when the runtime can actually produce sound (browser + Audio API). */
   readonly supported: boolean;
   readonly playing: boolean;
-  /** Start the ambient bed. Must be called from a user gesture. */
   play(): Promise<void>;
-  /** Pause the ambient bed. */
   pause(): void;
-  /** Toggle the ambient bed; resolves to the new playing state. */
   toggle(): Promise<boolean>;
-  /** 0..1 master volume for the ambient bed. */
   setVolume(volume: number): void;
-  /** Fire a one-shot interaction cue (no-op while muted/unsupported). */
   cue(cue: AmbientCue): void;
-  /** Release audio resources. */
   dispose(): void;
+}
+
+const clamp01 = (n: number): number => Math.min(1, Math.max(0, n));
+
+const CUE_FREQUENCY: Record<AmbientCue, number> = {
+  hover: 880,
+  select: 660,
+  reveal: 520,
+  transition: 392,
+};
+
+class BrowserAmbientAudio implements AmbientAudioController {
+  private context: AudioContext | null = null;
+  private bed: HTMLAudioElement | null = null;
+  private readonly bedSrc?: string;
+  private volume: number;
+  private active = false;
+
+  constructor(options?: AmbientAudioOptions) {
+    this.bedSrc = options?.bedSrc;
+    this.volume = clamp01(options?.volume ?? 0.5);
+  }
+
+  get supported(): boolean {
+    return true;
+  }
+
+  get playing(): boolean {
+    return this.active;
+  }
+
+  private ensureContext(): AudioContext | null {
+    if (this.context) return this.context;
+    const Ctor = window.AudioContext;
+    if (typeof Ctor !== "function") return null;
+    this.context = new Ctor();
+    return this.context;
+  }
+
+  async play(): Promise<void> {
+    const ctx = this.ensureContext();
+    if (ctx && ctx.state === "suspended") {
+      await ctx.resume();
+    }
+    if (this.bedSrc) {
+      if (!this.bed) {
+        this.bed = new Audio(this.bedSrc);
+        this.bed.loop = true;
+      }
+      this.bed.volume = this.volume;
+      try {
+        await this.bed.play();
+      } catch {
+        // Missing asset or blocked gesture — cues still work; fail silently.
+      }
+    }
+    this.active = true;
+  }
+
+  pause(): void {
+    this.bed?.pause();
+    this.active = false;
+  }
+
+  async toggle(): Promise<boolean> {
+    if (this.active) {
+      this.pause();
+      return false;
+    }
+    await this.play();
+    return true;
+  }
+
+  setVolume(volume: number): void {
+    this.volume = clamp01(volume);
+    if (this.bed) this.bed.volume = this.volume;
+  }
+
+  cue(cue: AmbientCue): void {
+    const ctx = this.ensureContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = CUE_FREQUENCY[cue];
+    const peak = 0.04 * this.volume;
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(peak, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.2);
+  }
+
+  dispose(): void {
+    this.bed?.pause();
+    this.bed = null;
+    void this.context?.close();
+    this.context = null;
+    this.active = false;
+  }
 }
 
 const noopController: AmbientAudioController = {
@@ -40,11 +140,10 @@ const noopController: AmbientAudioController = {
   dispose: () => {},
 };
 
-/**
- * Returns the SSR-safe no-op controller. The browser implementation is provided
- * by the ambient feature module once asset wiring lands.
- */
-export function createAmbientAudio(): AmbientAudioController {
-  if (typeof window === "undefined") return noopController;
-  return noopController;
+/** Create an ambient audio controller; returns an SSR-safe no-op on the server. */
+export function createAmbientAudio(options?: AmbientAudioOptions): AmbientAudioController {
+  if (typeof window === "undefined" || typeof window.AudioContext !== "function") {
+    return noopController;
+  }
+  return new BrowserAmbientAudio(options);
 }

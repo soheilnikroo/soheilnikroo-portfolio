@@ -2,7 +2,9 @@ import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
 
+import { MotionConfigProvider, ScrollProgressProvider } from "@/components/motion";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { AmbientBackground, AmbientProvider } from "@/features/ambient";
 
 import "./globals.css";
 
@@ -29,7 +31,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <MotionConfigProvider>
+            <ScrollProgressProvider>
+              <AmbientProvider>
+                <AmbientBackground />
+                {children}
+              </AmbientProvider>
+            </ScrollProgressProvider>
+          </MotionConfigProvider>
         </ThemeProvider>
       </body>
     </html>

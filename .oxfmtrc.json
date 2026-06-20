@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 100,
+  "singleQuote": false,
+  "ignorePatterns": [".next/**", "out/**", "build/**", "next-env.d.ts", "pnpm-lock.yaml"],
+  "sortImports": {
+    "internalPattern": ["@/"],
+    "newlinesBetween": true
+  },
+  "sortTailwindcss": {
+    "functions": ["cn", "clsx", "cva"],
+    "stylesheet": "app/globals.css"
+  }
+}

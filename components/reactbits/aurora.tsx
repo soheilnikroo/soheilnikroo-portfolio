@@ -125,12 +125,7 @@ export function Aurora({
   speed = 1.0,
   className,
 }: AuroraProps) {
-  const propsRef = React.useRef<AuroraProps>({
-    colorStops,
-    amplitude,
-    blend,
-    speed,
-  });
+  const propsRef = React.useRef<AuroraProps>({ colorStops, amplitude, blend, speed });
   propsRef.current = { colorStops, amplitude, blend, speed };
   const ctnDom = React.useRef<HTMLDivElement>(null);
 
@@ -138,11 +133,7 @@ export function Aurora({
     const ctn = ctnDom.current;
     if (!ctn) return;
 
-    const renderer = new Renderer({
-      alpha: true,
-      premultipliedAlpha: true,
-      antialias: true,
-    });
+    const renderer = new Renderer({ alpha: true, premultipliedAlpha: true, antialias: true });
     const gl = renderer.gl;
     gl.clearColor(0, 0, 0, 0);
     gl.enable(gl.BLEND);

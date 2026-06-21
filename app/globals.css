@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -462,4 +463,30 @@
     animation: none;
     opacity: 0.15;
   }
+}
+
+/* ---- Blog code blocks (rehype-pretty-code / Shiki) ---- */
+.prose pre {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: 1rem 0;
+}
+.prose pre [data-line] {
+  padding: 0 1.1rem;
+}
+.prose :not(pre) > code {
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  padding: 0.15em 0.4em;
+  font-size: 0.85em;
+}
+.prose [data-rehype-pretty-code-figure] [data-rehype-pretty-code-title] {
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  background: var(--muted);
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
 }

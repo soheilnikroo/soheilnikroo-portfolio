@@ -26,7 +26,7 @@ export function Reveal({
   delay = 0,
   y = 24,
   amount = 0.3,
-  once = true,
+  once = false,
 }: RevealProps) {
   const ref = React.useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once, amount });

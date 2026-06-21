@@ -2,8 +2,11 @@ import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
 
+import { SiteFooter, SiteHeader } from "@/components/layout";
 import { MotionConfigProvider, ScrollProgressProvider } from "@/components/motion";
+import { ClickSpark } from "@/components/reactbits/click-spark";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { CustomCursor } from "@/components/visual/custom-cursor";
 import { AmbientBackground, AmbientProvider } from "@/features/ambient";
 
 import "./globals.css";
@@ -24,7 +27,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="min-h-full" suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -35,7 +38,20 @@ export default function RootLayout({
             <ScrollProgressProvider>
               <AmbientProvider>
                 <AmbientBackground />
-                {children}
+                <CustomCursor />
+                <a
+                  href="#main"
+                  className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[var(--z-toast)] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:ring-3 focus:ring-ring/50"
+                >
+                  Skip to content
+                </a>
+                <ClickSpark sparkColor="#e6c463" className="flex min-h-svh flex-col">
+                  <SiteHeader />
+                  <main id="main" className="flex-1">
+                    {children}
+                  </main>
+                  <SiteFooter />
+                </ClickSpark>
               </AmbientProvider>
             </ScrollProgressProvider>
           </MotionConfigProvider>

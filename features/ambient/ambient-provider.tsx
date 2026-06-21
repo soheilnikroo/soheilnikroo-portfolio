@@ -4,16 +4,13 @@ import * as React from "react";
 
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { createAmbientAudio } from "@/lib/services";
-import type { AmbientCue } from "@/lib/services";
+import type { AmbientAudioController, AmbientCue } from "@/lib/services";
 
 const STORAGE_KEY = "portfolio:ambient-sound";
 
 type AmbientContextValue = {
-  /** User's sound preference (independent of whether it's currently audible). */
   soundEnabled: boolean;
-  /** Whether sound can actually play right now (enabled AND motion allowed). */
   soundActive: boolean;
-  /** Audio is unsupported (SSR/older browsers) — toggle should be disabled. */
   unsupported: boolean;
   reducedMotion: boolean;
   toggleSound: () => void;
@@ -38,26 +35,24 @@ export function AmbientProvider({
 }) {
   const reducedMotion = useReducedMotion();
   const [soundEnabled, setSoundEnabled] = React.useState(false);
-  const controllerRef = React.useRef<ReturnType<typeof createAmbientAudio> | null>(null);
+  // `controller` starts null on both server and first client render → no hydration mismatch.
+  const [controller, setController] = React.useState<AmbientAudioController | null>(null);
 
-  // Lazily create the controller on the client only.
-  if (controllerRef.current === null && typeof window !== "undefined") {
-    controllerRef.current = createAmbientAudio({ bedSrc });
-  }
-  const controller = controllerRef.current;
-  const unsupported = !controller?.supported;
-  const soundActive = soundEnabled && !reducedMotion && !unsupported;
-
-  // Restore persisted preference once mounted.
   React.useEffect(() => {
+    const instance = createAmbientAudio(bedSrc ? { bedSrc } : undefined);
+    setController(instance);
     try {
       setSoundEnabled(window.localStorage.getItem(STORAGE_KEY) === "on");
     } catch {
-      // Storage unavailable (privacy mode) — keep default off.
+      // storage unavailable — keep default off
     }
-  }, []);
+    return () => instance.dispose();
+  }, [bedSrc]);
 
-  // Reflect the effective state onto the controller.
+  const supported = controller?.supported ?? false;
+  const unsupported = !supported;
+  const soundActive = soundEnabled && !reducedMotion && supported;
+
   React.useEffect(() => {
     if (!controller) return;
     if (soundActive) {
@@ -66,13 +61,6 @@ export function AmbientProvider({
       controller.pause();
     }
   }, [controller, soundActive]);
-
-  // Dispose on unmount.
-  React.useEffect(() => {
-    return () => {
-      controllerRef.current?.dispose();
-    };
-  }, []);
 
   const toggleSound = React.useCallback(() => {
     setSoundEnabled((prev) => {

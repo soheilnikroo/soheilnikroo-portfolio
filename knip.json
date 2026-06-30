@@ -1,16 +1,16 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["app/**/*.{ts,tsx}", "next.config.ts"],
+  "entry": ["app/**/*.{ts,tsx}", "scripts/**/*.{mjs,mts}"],
   "project": ["**/*.{ts,tsx,mjs,mts}"],
-  "ignore": ["tooling/**", "content/**"],
+  "ignore": ["tooling/**"],
+  "ignoreFiles": ["lib/supabase/client.ts", "lib/supabase/server.ts", "lib/supabase/admin.ts"],
+  "ignoreBinaries": ["ffmpeg"],
   "ignoreDependencies": [
-    "@tailwindcss/postcss",
     "@tailwindcss/typography",
     "tailwindcss",
     "tw-animate-css",
     "shadcn",
-    "@commitlint/cli",
-    "@commitlint/config-conventional"
+    "@commitlint/cli"
   ],
   "rules": {
     "exports": "off",

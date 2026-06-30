@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { pixelFont } from "@/lib/world/pixel-font";
-import { CHAPTER_GOALS, INTRO_PROSE } from "@/lib/world/world-content";
 import { CHAPTER_ACCENTS, WORLD_SHELL } from "@/lib/world/world-theme";
 
 import type { WorldExperienceProps } from "./world-experience";
@@ -15,14 +14,15 @@ export type WorldNarrativeProps = WorldExperienceProps & {
 function ChapterPanel({
   id,
   chapterId,
+  goal,
   children,
 }: {
   id: string;
   chapterId: keyof typeof CHAPTER_ACCENTS;
+  goal: string;
   children: ReactNode;
 }) {
   const accent = CHAPTER_ACCENTS[chapterId];
-  const goal = CHAPTER_GOALS[chapterId];
   return (
     <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-24">
       <div
@@ -47,6 +47,8 @@ function ChapterPanel({
 export function WorldNarrative({
   profileName,
   role,
+  introProse,
+  chapterGoals,
   projects,
   skills,
   posts,
@@ -98,18 +100,18 @@ export function WorldNarrative({
           </div>
           <h1 className="mt-4 text-2xl font-bold text-white sm:text-3xl">{profileName}</h1>
           <p className="mt-1 text-sm text-indigo-200/90">{role}</p>
-          <p className="mt-4 text-sm leading-relaxed text-white/75">{INTRO_PROSE}</p>
+          <p className="mt-4 text-sm leading-relaxed text-white/75">{introProse}</p>
         </header>
 
         <div className="space-y-6">
-          <ChapterPanel id="read-intro" chapterId="intro">
+          <ChapterPanel id="read-intro" chapterId="intro" goal={chapterGoals.intro ?? "About me"}>
             <p className={CHAPTER_ACCENTS.intro.body}>
               Same story as the opening chapter — Tehran, the turtle, the long climb into
               engineering.
             </p>
           </ChapterPanel>
 
-          <ChapterPanel id="read-work" chapterId="work">
+          <ChapterPanel id="read-work" chapterId="work" goal={chapterGoals.work ?? "Work"}>
             <ul className="space-y-4">
               {projects.map((p) => (
                 <li key={p.title}>
@@ -128,12 +130,16 @@ export function WorldNarrative({
             </ul>
           </ChapterPanel>
 
-          <ChapterPanel id="read-skills" chapterId="skills">
+          <ChapterPanel id="read-skills" chapterId="skills" goal={chapterGoals.skills ?? "Skills"}>
             <p className={CHAPTER_ACCENTS.skills.body}>{skills.map((s) => s.label).join(" · ")}</p>
           </ChapterPanel>
 
           {posts.length > 0 ? (
-            <ChapterPanel id="read-writing" chapterId="writing">
+            <ChapterPanel
+              id="read-writing"
+              chapterId="writing"
+              goal={chapterGoals.writing ?? "Writing"}
+            >
               <ul className="space-y-2">
                 {posts.map((post) => (
                   <li key={post.slug}>
@@ -152,7 +158,11 @@ export function WorldNarrative({
             </ChapterPanel>
           ) : null}
 
-          <ChapterPanel id="read-contact" chapterId="contact">
+          <ChapterPanel
+            id="read-contact"
+            chapterId="contact"
+            goal={chapterGoals.contact ?? "Contact"}
+          >
             <p className={CHAPTER_ACCENTS.contact.body}>
               Life is a lot like a game — it all depends on how you play it.
             </p>

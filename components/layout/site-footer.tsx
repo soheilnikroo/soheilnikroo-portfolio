@@ -4,7 +4,7 @@ import { getProfile } from "@/lib/data";
 
 import { Container } from "./container";
 
-export async function SiteFooter() {
+export async function SiteFooter({ tagline }: { tagline: string }) {
   const profile = await getProfile();
   const year = new Date().getFullYear();
 
@@ -29,7 +29,7 @@ export async function SiteFooter() {
         </nav>
 
         <p className="text-xs text-white/40">
-          © {year} {profile.name} · insert coin
+          © {year} {profile.name} · {tagline}
         </p>
       </Container>
     </footer>

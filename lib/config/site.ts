@@ -1,8 +1,18 @@
+import { fallbackSiteSettings, getSiteUrl } from "@/lib/data/site-settings";
+
+/** Static fallback for legacy imports. Prefer `getSiteConfig()` in Server Components. */
 export const site = {
-  name: "Soheil Nikroo",
-  title: "Soheil Nikroo — Software Engineer",
-  description:
-    "Software engineer focused on immersive, accessible web experiences — motion, performance, and front-end architecture.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://soheilnikroo.dev",
-  locale: "en_US",
+  name: fallbackSiteSettings.name,
+  title: fallbackSiteSettings.title,
+  description: fallbackSiteSettings.description,
+  url: getSiteUrl(),
+  locale: fallbackSiteSettings.locale,
 } as const;
+
+export {
+  fallbackSiteSettings,
+  getSiteConfig,
+  getSiteSettings,
+  getSiteUrl,
+  saveSiteSettings,
+} from "@/lib/data/site-settings";

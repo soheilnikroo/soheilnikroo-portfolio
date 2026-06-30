@@ -5,22 +5,15 @@ import { usePathname } from "next/navigation";
 
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { SoundToggle } from "@/features/ambient";
+import type { NavLink } from "@/lib/schemas";
 
 import { Container } from "./container";
-
-const NAV_LINKS = [
-  { href: "/", label: "Play" },
-  { href: "/read", label: "Read" },
-  { href: "/work", label: "Projects" },
-  { href: "/blog", label: "Writing" },
-] as const;
 
 const PIXEL_ICON_BTN =
   "inline-flex size-10 items-center justify-center rounded-[3px] border-2 border-white/60 bg-[#0d0b16] text-white/85 shadow-[2px_2px_0_rgba(0,0,0,0.5)] transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none disabled:opacity-40";
 
-export function SiteHeader() {
+export function SiteHeader({ nav, brand }: { nav: readonly NavLink[]; brand: string }) {
   const pathname = usePathname();
-  // The immersive game owns the whole screen and has its own in-world HUD.
   if (pathname === "/") return null;
 
   return (
@@ -30,11 +23,11 @@ export function SiteHeader() {
           href="/"
           className="text-sm font-bold tracking-wide text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
         >
-          ▶ SOHEIL&nbsp;NIKROO
+          {brand}
         </Link>
 
         <nav aria-label="Primary" className="hidden items-center gap-1 sm:flex">
-          {NAV_LINKS.map((link) => {
+          {nav.map((link) => {
             const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
             return (
               <Link

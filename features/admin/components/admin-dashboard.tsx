@@ -33,12 +33,6 @@ export function AdminDashboard({
     }
   }
 
-  async function onLogout() {
-    await fetch("/api/admin/logout", { method: "POST" });
-    router.push("/admin/login");
-    router.refresh();
-  }
-
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -48,14 +42,9 @@ export function AdminDashboard({
             {posts.length} post{posts.length === 1 ? "" : "s"} · changes go live immediately
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button asChild>
-            <Link href="/admin/new">New post</Link>
-          </Button>
-          <Button variant="outline" onClick={onLogout}>
-            Log out
-          </Button>
-        </div>
+        <Button asChild>
+          <Link href="/admin/new">New post</Link>
+        </Button>
       </div>
 
       {dbError ? (

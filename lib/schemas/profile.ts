@@ -10,7 +10,11 @@ export const ProfileSchema = z.object({
   location: z.string().min(1),
   email: z.email(),
   availability: z.string().optional(),
-  resumeUrl: z.url().optional(),
+  resumeUrl: z
+    .string()
+    .min(1)
+    .refine((v) => v.startsWith("/") || /^https?:\/\//.test(v), "must be a URL or site path")
+    .optional(),
   socials: z.array(SocialLinkSchema).default([]),
 });
 

@@ -3,23 +3,26 @@ import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
 import { PixelPage } from "@/components/layout/pixel-page";
-import { site } from "@/lib/config/site";
 import { getAllPostMeta, getProjects } from "@/lib/data";
+import { getSiteConfig } from "@/lib/data/site-settings";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Projects",
-  description:
-    "Selected projects — platforms, design systems, and tools, each with the story and screenshots behind it.",
-  alternates: { canonical: "/work" },
-  openGraph: {
-    type: "website",
-    title: "Projects — Soheil Nikroo",
-    description: "Selected work with detail and screenshots.",
-    url: `${site.url}/work`,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSiteConfig();
+  const copy = site.pages.work;
+  return {
+    title: copy.title,
+    description: copy.description,
+    alternates: { canonical: "/work" },
+    openGraph: {
+      type: "website",
+      title: `${copy.title} — ${site.name}`,
+      description: copy.description,
+      url: `${site.url}/work`,
+    },
+  };
+}
 
 const STATUS_LABEL: Record<string, string> = {
   live: "LIVE",
@@ -29,14 +32,19 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default async function WorkPage() {
-  const [projects, posts] = await Promise.all([getProjects(), getAllPostMeta()]);
+  const [projects, posts, site] = await Promise.all([
+    getProjects(),
+    getAllPostMeta(),
+    getSiteConfig(),
+  ]);
+  const copy = site.pages.work;
 
   const breadcrumbLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: site.url },
-      { "@type": "ListItem", position: 2, name: "Projects", item: `${site.url}/work` },
+      { "@type": "ListItem", position: 2, name: copy.title, item: `${site.url}/work` },
     ],
   };
 
@@ -48,18 +56,17 @@ export default async function WorkPage() {
       />
       <Container className="py-section">
         <Link href="/" className="text-sm text-white/60 transition-colors hover:text-white">
-          ← Back to the world
+          {copy.backLink}
         </Link>
 
         <header className="mt-6 max-w-2xl">
-          <p className="text-xs tracking-[0.3em] text-amber-300/80 uppercase">▶ Select a level</p>
+          {copy.eyebrow ? (
+            <p className="text-xs tracking-[0.3em] text-amber-300/80 uppercase">{copy.eyebrow}</p>
+          ) : null}
           <h1 className="mt-3 text-4xl font-black [text-shadow:3px_3px_0_#000] sm:text-5xl">
-            Projects
+            {copy.title}
           </h1>
-          <p className="mt-3 text-white/65">
-            Platforms, design systems, and tools — each with the problem it solved, how it was
-            built, and screenshots.
-          </p>
+          {copy.subtitle ? <p className="mt-3 text-white/65">{copy.subtitle}</p> : null}
         </header>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
@@ -105,7 +112,7 @@ export default async function WorkPage() {
                 ))}
               </div>
               <span className="mt-4 inline-block text-sm text-amber-200 transition-transform group-hover:translate-x-0.5">
-                Enter →
+                {copy.enterLabel}
               </span>
             </Link>
           ))}
@@ -114,7 +121,7 @@ export default async function WorkPage() {
         {posts.length > 0 ? (
           <section className="mt-14">
             <h2 className="text-xs tracking-[0.3em] text-emerald-200/80 uppercase">
-              Latest writing
+              {copy.latestWriting}
             </h2>
             <ul className="mt-4 grid gap-3 sm:grid-cols-3">
               {posts.slice(0, 3).map((post) => (
@@ -135,7 +142,7 @@ export default async function WorkPage() {
               href="/blog"
               className="mt-4 inline-block text-sm text-emerald-200 hover:underline"
             >
-              All writing →
+              {copy.allWriting}
             </Link>
           </section>
         ) : null}

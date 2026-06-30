@@ -17,7 +17,13 @@ export function getSql(): Sql {
   if (!url) {
     throw new Error("DATABASE_URL is not set. Copy .env.example to .env and fill it in.");
   }
-  const client = postgres(url, { max: 10, idle_timeout: 20, connect_timeout: 8, prepare: false });
+  const client = postgres(url, {
+    max: 10,
+    idle_timeout: 20,
+    connect_timeout: 8,
+    prepare: false,
+    ssl: url.includes("supabase.com") || url.includes("supabase.co") ? "require" : undefined,
+  });
   globalThis.__portfolioSql = client;
   return client;
 }

@@ -10,16 +10,17 @@ import {
 } from "@/lib/audio/html-audio";
 import { AUDIO } from "@/lib/audio/paths";
 
-import { CHAPTER_META } from "./world-content";
+/** Fixed chapter ids — audio beds are keyed by id, not display title. */
+const CHAPTER_IDS = ["intro", "work", "skills", "writing", "contact"] as const;
 
 export interface ChapterAudioPreset {
   readonly id: string;
   readonly bedSrc: string;
 }
 
-export const CHAPTER_AUDIO: readonly ChapterAudioPreset[] = CHAPTER_META.map((c) => ({
-  id: c.id,
-  bedSrc: AUDIO.music[c.id as keyof typeof AUDIO.music],
+export const CHAPTER_AUDIO: readonly ChapterAudioPreset[] = CHAPTER_IDS.map((id) => ({
+  id,
+  bedSrc: AUDIO.music[id],
 }));
 
 export interface ChapterMusicState {

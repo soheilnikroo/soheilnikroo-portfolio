@@ -7,6 +7,7 @@ import * as React from "react";
 import { useAmbient } from "@/features/ambient";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import type { Canvas2DSurface, GameViewportRect, ScrollTimeline, Stage } from "@/lib/engine";
+import type { StoryBeat } from "@/lib/schemas/world-narrative";
 import { setSfxVolume, sfx, unlockAudio } from "@/lib/world/audio";
 import {
   setChapterAudioMuted,
@@ -18,14 +19,10 @@ import { pixelFont } from "@/lib/world/pixel-font";
 import { segmentBeat } from "@/lib/world/segment-beat";
 import { mysteryBoxBounds, virtualToPercent, workBridgeLayout } from "@/lib/world/work-bridge";
 import {
-  CHAPTER_GOALS,
-  CHAPTER_META,
-  beatsForChapter,
   characterManifest,
   chapterGroundTiles,
   propPaths,
   sceneManifest,
-  trackHeightVh,
 } from "@/lib/world/world-content";
 import type { StoryMilestone, StoryProfile } from "@/lib/world/world-content";
 import { hitResumeChest, vaultLayout } from "@/lib/world/writing-vault";
@@ -79,6 +76,11 @@ export interface WorldExperienceProps {
   readonly email: string;
   readonly socials: readonly WorldSocial[];
   readonly resumeUrl?: string;
+  readonly introProse: string;
+  readonly chapterMeta: readonly { id: string; title: string; weight: number }[];
+  readonly chapterGoals: Readonly<Record<string, string>>;
+  readonly storyBeats: Readonly<Record<string, readonly StoryBeat[]>>;
+  readonly trackHeightVh: number;
 }
 
 export function WorldExperience(props: WorldExperienceProps) {
@@ -95,6 +97,10 @@ export function WorldExperience(props: WorldExperienceProps) {
     email,
     socials,
     resumeUrl,
+    chapterMeta,
+    chapterGoals,
+    storyBeats,
+    trackHeightVh: scrollTrackHeightVh,
   } = props;
   const reduced = useReducedMotion();
   const { soundEnabled, toggleSound, volume, setBedSuppressed } = useAmbient();
@@ -390,7 +396,7 @@ export function WorldExperience(props: WorldExperienceProps) {
       revealOverlay(active.index, active.local);
 
       // Narration: pick the last beat whose threshold we've passed in this chapter.
-      const lines = beatsForChapter(active.id, storyProfile, milestones);
+      const lines = storyBeats[active.id] ?? [];
       let bi = -1;
       for (let i = 0; i < lines.length; i += 1) {
         if (active.local >= (lines[i]?.at ?? 1)) bi = i;
@@ -501,7 +507,7 @@ export function WorldExperience(props: WorldExperienceProps) {
       const narrative = document.getElementById("world-narrative");
       if (narrative) narrative.hidden = false;
     };
-  }, [enabled, projects.length, posts.length, skills, storyProfile, milestones, posts]);
+  }, [enabled, projects.length, posts.length, skills, storyProfile, milestones, posts, storyBeats]);
 
   React.useEffect(() => {
     if (!enabled) return;
@@ -546,9 +552,9 @@ export function WorldExperience(props: WorldExperienceProps) {
 
   if (!enabled) return null;
 
-  const activeTitle = CHAPTER_META[activeIndex]?.title ?? "";
-  const activeId = CHAPTER_META[activeIndex]?.id ?? "intro";
-  const chapterGoal = CHAPTER_GOALS[activeId] ?? "";
+  const activeTitle = chapterMeta[activeIndex]?.title ?? "";
+  const activeId = chapterMeta[activeIndex]?.id ?? "intro";
+  const chapterGoal = chapterGoals[activeId] ?? "";
   const introBeat =
     activeIndex === 0 ? segmentBeat(chapterLocal, milestones.length, 0.18, 0.88) : null;
   const introMilestone = introBeat ? milestones[introBeat.idx] : null;
@@ -708,7 +714,7 @@ export function WorldExperience(props: WorldExperienceProps) {
   };
 
   return (
-    <div ref={trackRef} style={{ height: `${trackHeightVh()}vh` }} className="relative">
+    <div ref={trackRef} style={{ height: `${scrollTrackHeightVh}vh` }} className="relative">
       <section
         ref={stageRef}
         aria-label="Interactive pixel-art journey — scroll or tap to play"

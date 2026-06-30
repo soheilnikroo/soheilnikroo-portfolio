@@ -10,51 +10,45 @@ import { ThemeProvider } from "@/components/theme/theme-provider";
 import { WorldThemeSync } from "@/components/theme/world-theme-sync";
 import { CustomCursor } from "@/components/visual/custom-cursor";
 import { AmbientBackground, AmbientProvider } from "@/features/ambient";
-import { site } from "@/lib/config/site";
+import { getSiteSettings, getSiteUrl } from "@/lib/data/site-settings";
 import { pixelFont } from "@/lib/world/pixel-font";
 
 import "./globals.css";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
-  title: { default: site.title, template: `%s — ${site.name}` },
-  description: site.description,
-  applicationName: site.name,
-  authors: [{ name: site.name, url: site.url }],
-  creator: site.name,
-  openGraph: {
-    type: "website",
-    siteName: site.name,
-    title: site.title,
-    description: site.description,
-    url: site.url,
-    locale: site.locale,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: site.title,
-    description: site.description,
-    creator: "@soheilnikroo",
-  },
-  keywords: [
-    "Soheil Nikroo",
-    "front-end engineer",
-    "frontend developer",
-    "interactive portfolio",
-    "pixel art portfolio",
-    "Next.js",
-    "TypeScript",
-    "React",
-    "web animation",
-    "Tehran",
-  ],
-  category: "technology",
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
-  formatDetection: { telephone: false, address: false, email: false },
-  appleWebApp: { capable: true, title: site.name, statusBarStyle: "black-translucent" },
-  icons: { icon: "/web-app-manifest-192x192.png", apple: "/web-app-manifest-192x192.png" },
-  alternates: { types: { "application/rss+xml": `${site.url}/rss.xml` } },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  const url = getSiteUrl();
+
+  return {
+    metadataBase: new URL(url),
+    title: { default: settings.title, template: `%s — ${settings.name}` },
+    description: settings.description,
+    applicationName: settings.name,
+    authors: [{ name: settings.name, url }],
+    creator: settings.name,
+    openGraph: {
+      type: "website",
+      siteName: settings.name,
+      title: settings.title,
+      description: settings.description,
+      url,
+      locale: settings.locale,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: settings.title,
+      description: settings.description,
+      creator: settings.twitterHandle,
+    },
+    keywords: settings.keywords,
+    category: "technology",
+    robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+    formatDetection: { telephone: false, address: false, email: false },
+    appleWebApp: { capable: true, title: settings.name, statusBarStyle: "black-translucent" },
+    icons: { icon: "/web-app-manifest-192x192.png", apple: "/web-app-manifest-192x192.png" },
+    alternates: { types: { "application/rss+xml": `${url}/rss.xml` } },
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -67,11 +61,13 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = await getSiteSettings();
+
   return (
     <html
       lang="en"
@@ -90,14 +86,14 @@ export default function RootLayout({
                   href="#main"
                   className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[var(--z-toast)] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:ring-3 focus:ring-ring/50"
                 >
-                  Skip to content
+                  {settings.skipToContent}
                 </a>
                 <ClickSpark sparkColor="#818cf8" className="flex min-h-svh flex-col">
-                  <SiteHeader />
+                  <SiteHeader nav={settings.nav} brand={settings.headerBrand} />
                   <main id="main" className="flex-1">
                     <RouteTransition>{children}</RouteTransition>
                   </main>
-                  <SiteFooter />
+                  <SiteFooter tagline={settings.footerTagline} />
                 </ClickSpark>
               </AmbientProvider>
             </ScrollProgressProvider>

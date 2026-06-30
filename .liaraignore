@@ -1,0 +1,3 @@
+# Use npm on Liara (see package-lock.json). Local dev stays on pnpm.
+pnpm-lock.yaml
+pnpm-workspace.yaml

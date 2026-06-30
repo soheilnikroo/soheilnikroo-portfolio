@@ -1,7 +1,8 @@
+import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { ProfileSchema } from "@/lib/schemas";
 import type { Profile } from "@/lib/schemas";
 
-const profile: Profile = ProfileSchema.parse({
+const fallbackProfile: Profile = ProfileSchema.parse({
   name: "Soheil Nikroo",
   role: "Senior Frontend Engineer · Snapp",
   tagline:
@@ -14,7 +15,7 @@ const profile: Profile = ProfileSchema.parse({
   location: "Tehran, Iran",
   email: "soheiln1234@gmail.com",
   availability: "Open to select freelance & collaboration",
-  resumeUrl: "https://soheilnikroo.dev/resume.pdf",
+  resumeUrl: "/resume.pdf",
   socials: [
     {
       platform: "github",
@@ -25,8 +26,8 @@ const profile: Profile = ProfileSchema.parse({
     {
       platform: "linkedin",
       label: "LinkedIn",
-      href: "https://www.linkedin.com/in/soheilnikroo",
-      handle: "in/soheilnikroo",
+      href: "https://www.linkedin.com/in/soheil-nikroo-b31b00196/",
+      handle: "in/soheil-nikroo-b31b00196",
     },
     { platform: "x", label: "X", href: "https://x.com/soheilnikroo", handle: "@soheilnikroo" },
     {
@@ -38,6 +39,27 @@ const profile: Profile = ProfileSchema.parse({
   ],
 });
 
-export function getProfile(): Promise<Profile> {
-  return Promise.resolve(profile);
+function warnDb(error: unknown): void {
+  console.warn(
+    "[profile] database unavailable — using bundled fallback. Set DATABASE_URL and run `pnpm db:seed`.",
+    error instanceof Error ? error.message : error,
+  );
 }
+
+export async function getProfile(): Promise<Profile> {
+  try {
+    const row = await getSiteContentRow("profile");
+    if (!row) return fallbackProfile;
+    return ProfileSchema.parse(row.data);
+  } catch (error) {
+    warnDb(error);
+    return fallbackProfile;
+  }
+}
+
+export async function saveProfile(data: Profile): Promise<void> {
+  const parsed = ProfileSchema.parse(data);
+  await upsertSiteContentRow("profile", parsed);
+}
+
+export { fallbackProfile };

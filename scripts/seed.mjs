@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-// Import existing content/blog/*.mdx posts into Postgres.
+// Seed blog posts, projects, profile, skills, and milestones into Postgres (Supabase).
 // Run: pnpm db:seed   (reads DATABASE_URL from .env)
 import { promises as fs } from "node:fs";
 import path from "node:path";
@@ -13,10 +13,21 @@ if (!url) {
   process.exit(1);
 }
 
-const sql = postgres(url, { max: 1, prepare: false });
-const dir = path.join(process.cwd(), "content", "blog");
+const sql = postgres(url, {
+  max: 1,
+  prepare: false,
+  ssl: url.includes("supabase.com") || url.includes("supabase.co") ? "require" : undefined,
+});
+const root = process.cwd();
+const blogDir = path.join(root, "content", "blog");
+const seedDir = path.join(root, "content", "seed");
 
-async function main() {
+async function readJson(name) {
+  const raw = await fs.readFile(path.join(seedDir, name), "utf8");
+  return JSON.parse(raw);
+}
+
+async function ensureSchema() {
   await sql`
     CREATE TABLE IF NOT EXISTS posts (
       id text PRIMARY KEY, slug text UNIQUE NOT NULL, title text NOT NULL,
@@ -25,17 +36,32 @@ async function main() {
       date timestamptz NOT NULL DEFAULT now(), created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now()
     )`;
+  await sql`CREATE INDEX IF NOT EXISTS posts_published_date_idx ON posts (published, date DESC)`;
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS projects (
+      id text PRIMARY KEY, slug text UNIQUE NOT NULL, data jsonb NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now()
+    )`;
+  await sql`CREATE INDEX IF NOT EXISTS projects_slug_idx ON projects (slug)`;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS site_content (
+      key text PRIMARY KEY, data jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now()
+    )`;
+}
+
+async function seedBlogPosts() {
   let files = [];
   try {
-    files = (await fs.readdir(dir)).filter((f) => f.endsWith(".mdx"));
+    files = (await fs.readdir(blogDir)).filter((f) => f.endsWith(".mdx"));
   } catch {
-    console.log("No content/blog directory — nothing to seed.");
+    console.log("No content/blog directory — skipping blog seed.");
     return;
   }
 
   for (const file of files) {
-    const raw = await fs.readFile(path.join(dir, file), "utf8");
+    const raw = await fs.readFile(path.join(blogDir, file), "utf8");
     const { data, content } = matter(raw);
     const slug = file.replace(/\.mdx$/u, "");
     await sql`
@@ -50,8 +76,45 @@ async function main() {
         tags = EXCLUDED.tags, body = EXCLUDED.body, cover = EXCLUDED.cover,
         published = EXCLUDED.published, date = EXCLUDED.date, updated_at = now()
     `;
-    console.log("seeded", slug);
+    console.log("seeded post", slug);
   }
+}
+
+async function seedProjects() {
+  const projects = await readJson("projects.json");
+  for (const project of projects) {
+    await sql`
+      INSERT INTO projects (id, slug, data)
+      VALUES (${randomUUID()}, ${project.slug}, ${sql.json(project)})
+      ON CONFLICT (slug) DO UPDATE SET data = EXCLUDED.data, updated_at = now()
+    `;
+    console.log("seeded project", project.slug);
+  }
+}
+
+async function seedSiteContent() {
+  const entries = [
+    ["profile", await readJson("profile.json")],
+    ["skills", await readJson("skills.json")],
+    ["milestones", await readJson("milestones.json")],
+    ["site", await readJson("site.json")],
+    ["world", await readJson("world.json")],
+  ];
+  for (const [key, data] of entries) {
+    await sql`
+      INSERT INTO site_content (key, data)
+      VALUES (${key}, ${sql.json(data)})
+      ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data, updated_at = now()
+    `;
+    console.log("seeded site content", key);
+  }
+}
+
+async function main() {
+  await ensureSchema();
+  await seedBlogPosts();
+  await seedProjects();
+  await seedSiteContent();
 }
 
 main()

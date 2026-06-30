@@ -216,95 +216,8 @@ export const PALETTES: Record<string, WorldPalette> = {
   },
 };
 
-/** Chapter ids + relative scroll lengths. Mirrored by `createChapters` and used to
- *  size the scroll track on the server (so it is correct before hydration). */
-export const CHAPTER_META = [
-  { id: "intro", title: "Where it began", weight: 3.2 },
-  { id: "work", title: "Building the bridge", weight: 3.8 },
-  { id: "skills", title: "The gauntlet", weight: 3.6 },
-  { id: "writing", title: "The vault", weight: 2 },
-  { id: "contact", title: "Rooftop at dusk", weight: 2 },
-] as const;
-
-// Long, platformer-campaign pacing: each weight unit is a generous stretch of scroll.
-export const VH_PER_WEIGHT = 210;
-
-export function trackHeightVh(): number {
-  const total = CHAPTER_META.reduce((sum, c) => sum + c.weight, 0);
-  return Math.round(total * VH_PER_WEIGHT);
-}
-
-export const INTRO_PROSE =
-  "I grew up in Tehran. In high school — Python 2, a turtle on the screen — I was behind my classmates but I didn't quit. Private institute, C#, then the web: React, Quera, long nights. Internship at ILIA Corporation, frontend at Jaan, and since 2022 Frontend Engineer at Snapp building PWAs at scale. Computer Science at Islamic Azad University (expected 2025). These days I'm also learning Swift & SwiftUI and dipping into Rust. This site tells that story like a game — because that's how learning has always felt to me.";
-
-/**
- * Narration track. Each chapter has several short lines keyed to a local-progress
- * threshold; the active line advances as you scroll through the scene and rewinds
- * exactly when you scroll back. This is what gives the journey narrative weight
- * without adding a second scroll behaviour.
- */
-export interface StoryBeat {
-  readonly at: number;
-  readonly text: string;
-}
-
-export const STORY_BEATS: Record<string, readonly StoryBeat[]> = {
-  intro: [
-    { at: 0.02, text: "A new journey begins." },
-    { at: 0.08, text: "Tehran, just before sunrise." },
-    { at: 0.14, text: "I take my first steps." },
-    { at: 0.24, text: "I still remember that turtle — my first line on the screen." },
-    { at: 0.32, text: "I wasn't the fastest. I just didn't stop." },
-    { at: 0.38, text: "The road breaks ahead. Sometimes you have to leap." },
-    { at: 0.46, text: "I jump — and land on the other side." },
-    { at: 0.52, text: "Step after step. Institute. C#. Then the web." },
-    { at: 0.62, text: "React, Quera, long nights — catching up my own way." },
-    { at: 0.72, text: "ILIA. Jaan. Then Snapp — each step a little bigger." },
-    { at: 0.78, text: "Islamic Azad University — CS degree, still in progress." },
-    { at: 0.82, text: "These days: React, Next.js, PWAs — and Swift on the side." },
-    { at: 0.9, text: "I pause here — but the story keeps going." },
-  ],
-  work: [
-    { at: 0, text: "Snapp. Jaan. ILIA. Every role was a bridge." },
-    { at: 0.12, text: "Millions of users. PWAs. Mobile-first — that's the work I care about." },
-    { at: 0.28, text: "Haul it up. Lock it in." },
-    { at: 0.48, text: "Each ? box is a job — tap to see what I built there." },
-    { at: 0.68, text: "Tap a ? box — I'll tell you what we built." },
-    { at: 0.88, text: "The crossing holds. On to what's next." },
-  ],
-  skills: [
-    { at: 0, text: "TypeScript + React + Next.js — that's production home base." },
-    { at: 0.15, text: "Architecture & design patterns — how code survives scale." },
-    { at: 0.3, text: "PWAs, performance, mobile-first — real users, real devices." },
-    { at: 0.45, text: "UI kit, Redux Toolkit, SWR — systems, not one-off screens." },
-    { at: 0.58, text: "Testing, CI/CD, quality — ship with confidence." },
-    { at: 0.72, text: "Tap a skill for the full stats." },
-    { at: 0.88, text: "Side quests: Swift/SwiftUI, Rust — always learning." },
-  ],
-  writing: [
-    { at: 0, text: "When I figured something out, I wrote it down." },
-    { at: 0.08, text: "The first chest is my résumé — tap it when you're ready." },
-    { at: 0.22, text: "Scroll right — each chest after that is an article." },
-    { at: 0.55, text: "Open a chest, read it — it's yours too." },
-    { at: 0.75, text: "Knowledge only counts if you pass it on." },
-  ],
-  contact: [
-    { at: 0, text: "The climb ends on a rooftop over the city." },
-    { at: 0.22, text: "Tehran at night. Quiet. Full of light." },
-    { at: 0.42, text: "If any of this felt familiar — let's talk." },
-    { at: 0.62, text: "Email, GitHub, LinkedIn — one tap away." },
-    { at: 0.82, text: "Life is a lot like a game. It depends how you play it." },
-  ],
-};
-
-/** Short quest hint shown in the HUD — tells players what this chapter is about. */
-export const CHAPTER_GOALS: Record<string, string> = {
-  intro: "About me · origin story",
-  work: "Work · tap ? boxes to reveal jobs",
-  skills: "Skills · tap to inspect stats",
-  writing: "Résumé chest · tap it, then scroll for posts",
-  contact: "Contact · say hello",
-};
+/** @deprecated Narrative copy lives in the database — passed via `WorldExperienceProps`. */
+export type { StoryBeat } from "@/lib/schemas/world-narrative";
 
 export interface StoryProfile {
   readonly name: string;
@@ -318,21 +231,4 @@ export interface StoryMilestone {
   readonly period: string;
   readonly title: string;
   readonly description: string;
-}
-
-/** Merge profile-specific lines into the intro narration at runtime. */
-export function personalizeIntroBeats(
-  _profile: StoryProfile,
-  _milestones: readonly StoryMilestone[],
-): readonly StoryBeat[] {
-  return STORY_BEATS.intro ?? [];
-}
-
-export function beatsForChapter(
-  chapterId: string,
-  profile: StoryProfile,
-  milestones: readonly StoryMilestone[],
-): readonly StoryBeat[] {
-  if (chapterId === "intro") return personalizeIntroBeats(profile, milestones);
-  return STORY_BEATS[chapterId] ?? [];
 }

@@ -22,4 +22,23 @@ export async function runMigrations(sql: Sql): Promise<void> {
     )
   `;
   await sql`CREATE INDEX IF NOT EXISTS posts_published_date_idx ON posts (published, date DESC)`;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS projects (
+      id          text PRIMARY KEY,
+      slug        text UNIQUE NOT NULL,
+      data        jsonb NOT NULL,
+      created_at  timestamptz NOT NULL DEFAULT now(),
+      updated_at  timestamptz NOT NULL DEFAULT now()
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS projects_slug_idx ON projects (slug)`;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS site_content (
+      key         text PRIMARY KEY,
+      data        jsonb NOT NULL,
+      updated_at  timestamptz NOT NULL DEFAULT now()
+    )
+  `;
 }

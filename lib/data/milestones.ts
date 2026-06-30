@@ -1,11 +1,8 @@
-export type Milestone = {
-  id: string;
-  period: string;
-  title: string;
-  description: string;
-};
+import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
+import { MilestonesSchema } from "@/lib/schemas";
+import type { Milestone } from "@/lib/schemas";
 
-export const milestones: Milestone[] = [
+const fallbackMilestones: Milestone[] = [
   {
     id: "spark",
     period: "The spark",
@@ -35,3 +32,33 @@ export const milestones: Milestone[] = [
       "Since 2022, Frontend Engineer at Snapp — TypeScript, React, Next.js, PWAs, UI kit, Redux Toolkit, and SWR on a product used by millions. I care about performance, design patterns, cross-browser quality, and mobile-first delivery. Side quests: learning Swift & SwiftUI; exploring Rust.",
   },
 ];
+
+function warnDb(error: unknown): void {
+  console.warn(
+    "[milestones] database unavailable — using bundled fallback. Set DATABASE_URL and run `pnpm db:seed`.",
+    error instanceof Error ? error.message : error,
+  );
+}
+
+export async function getMilestones(): Promise<Milestone[]> {
+  try {
+    const row = await getSiteContentRow("milestones");
+    if (!row) return fallbackMilestones;
+    return MilestonesSchema.parse(row.data);
+  } catch (error) {
+    warnDb(error);
+    return fallbackMilestones;
+  }
+}
+
+export async function saveMilestones(data: Milestone[]): Promise<void> {
+  const parsed = MilestonesSchema.parse(data);
+  await upsertSiteContentRow("milestones", parsed);
+}
+
+/** @deprecated Use getMilestones() — kept for seed script compatibility. */
+export const milestones = fallbackMilestones;
+
+export type { Milestone };
+
+export { fallbackMilestones };

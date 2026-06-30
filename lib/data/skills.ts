@@ -1,8 +1,8 @@
+import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { SkillGraphSchema } from "@/lib/schemas";
 import type { SkillGraph } from "@/lib/schemas";
 
-/** Senior-first spotlight order: production depth → quality → growth edge. */
-const graph: SkillGraph = SkillGraphSchema.parse({
+const fallbackGraph: SkillGraph = SkillGraphSchema.parse({
   nodes: [
     {
       id: "typescript",
@@ -133,6 +133,27 @@ const graph: SkillGraph = SkillGraphSchema.parse({
   ],
 });
 
-export function getSkillGraph(): Promise<SkillGraph> {
-  return Promise.resolve(graph);
+function warnDb(error: unknown): void {
+  console.warn(
+    "[skills] database unavailable — using bundled fallback. Set DATABASE_URL and run `pnpm db:seed`.",
+    error instanceof Error ? error.message : error,
+  );
 }
+
+export async function getSkillGraph(): Promise<SkillGraph> {
+  try {
+    const row = await getSiteContentRow("skills");
+    if (!row) return fallbackGraph;
+    return SkillGraphSchema.parse(row.data);
+  } catch (error) {
+    warnDb(error);
+    return fallbackGraph;
+  }
+}
+
+export async function saveSkillGraph(data: SkillGraph): Promise<void> {
+  const parsed = SkillGraphSchema.parse(data);
+  await upsertSiteContentRow("skills", parsed);
+}
+
+export { fallbackGraph };

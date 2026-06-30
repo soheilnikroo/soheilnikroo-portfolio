@@ -1,14 +1,17 @@
 import type { WorldExperienceProps } from "@/features/world/components/world-experience";
 import { getAllPostMeta, getProfile, getProjects, getSkillGraph } from "@/lib/data";
-import { milestones } from "@/lib/data/milestones";
+import { getMilestones } from "@/lib/data/milestones";
+import { getWorldNarrative, trackHeightVh } from "@/lib/data/world-narrative";
 
 /** Shared props for the game island and the readable `/read` page. */
 export async function getWorldPageProps(): Promise<WorldExperienceProps> {
-  const [profile, projects, graph, posts] = await Promise.all([
+  const [profile, projects, graph, posts, milestoneList, world] = await Promise.all([
     getProfile(),
     getProjects(),
     getSkillGraph(),
     getAllPostMeta(),
+    getMilestones(),
+    getWorldNarrative(),
   ]);
 
   return {
@@ -17,7 +20,7 @@ export async function getWorldPageProps(): Promise<WorldExperienceProps> {
     tagline: profile.tagline,
     summary: profile.summary,
     location: profile.location,
-    milestones: milestones.map((m) => ({
+    milestones: milestoneList.map((m) => ({
       period: m.period,
       title: m.title,
       description: m.description,
@@ -47,5 +50,10 @@ export async function getWorldPageProps(): Promise<WorldExperienceProps> {
     socials: profile.socials
       .filter((s) => s.platform !== "email")
       .map((s) => ({ label: s.label, href: s.href })),
+    introProse: world.introProse,
+    chapterMeta: world.chapters,
+    chapterGoals: world.chapterGoals,
+    storyBeats: world.storyBeats,
+    trackHeightVh: trackHeightVh(world.chapters),
   };
 }

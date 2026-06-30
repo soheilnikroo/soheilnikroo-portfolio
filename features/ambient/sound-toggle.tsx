@@ -2,30 +2,26 @@
 
 import { Volume2, VolumeX } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-
 import { useAmbient } from "./ambient-provider";
 
 /** Accessible opt-in control for the ambient audio bed + interaction cues. */
 export function SoundToggle({ className }: { className?: string }) {
-  const { soundEnabled, soundActive, reducedMotion, unsupported, toggleSound, cue } = useAmbient();
+  const { soundEnabled, reducedMotion, unsupported, toggleSound, cue } = useAmbient();
 
-  const disabledByMotion = reducedMotion && !soundActive;
+  const disabledByMotion = reducedMotion;
   const label = unsupported
     ? "Ambient sound is not supported in this browser"
     : reducedMotion
       ? "Ambient sound is off while Reduce Motion is enabled"
       : soundEnabled
-        ? "Turn ambient sound off"
-        : "Turn ambient sound on";
+        ? "Turn sound off"
+        : "Turn sound on";
 
   return (
-    <Button
+    <button
       type="button"
-      variant="ghost"
-      size="icon"
       className={className}
-      aria-pressed={soundActive}
+      aria-pressed={soundEnabled}
       aria-label={label}
       title={label}
       disabled={unsupported || disabledByMotion}
@@ -34,7 +30,11 @@ export function SoundToggle({ className }: { className?: string }) {
         cue("select");
       }}
     >
-      {soundActive ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
-    </Button>
+      {soundEnabled ? (
+        <Volume2 className="size-4" aria-hidden="true" />
+      ) : (
+        <VolumeX className="size-4" aria-hidden="true" />
+      )}
+    </button>
   );
 }

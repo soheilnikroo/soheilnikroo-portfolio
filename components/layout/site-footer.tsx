@@ -9,27 +9,27 @@ export async function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-section border-t border-border/60 py-10">
+    <footer className="mt-section border-t-2 border-white/15 bg-[#0d0b16] py-10 [font-family:var(--font-pixel),ui-monospace,monospace] text-white">
       <Container className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
         <div>
-          <p className="font-heading text-sm font-semibold">{profile.name}</p>
-          <p className="text-sm text-muted-foreground">{profile.role}</p>
+          <p className="text-sm font-bold">★ {profile.name}</p>
+          <p className="text-sm text-white/55">{profile.role}</p>
         </div>
 
-        <nav aria-label="Social" className="flex flex-wrap gap-4">
+        <nav aria-label="Social" className="flex flex-wrap gap-3">
           {profile.socials.map((social) => (
             <Link
               key={social.platform}
               href={social.href}
-              className="rounded-md text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+              className="rounded-[3px] border-2 border-white/20 px-2.5 py-1 text-sm text-white/70 transition-colors hover:border-white/40 hover:text-white"
             >
               {social.label}
             </Link>
           ))}
         </nav>
 
-        <p className="text-xs text-muted-foreground">
-          © {year} {profile.name}. All rights reserved.
+        <p className="text-xs text-white/40">
+          © {year} {profile.name} · insert coin
         </p>
       </Container>
     </footer>

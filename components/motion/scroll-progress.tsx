@@ -15,8 +15,3 @@ export function ScrollProgressProvider({ children }: { children: React.ReactNode
     </ScrollProgressContext.Provider>
   );
 }
-
-/** Read the global scroll-progress MotionValue (null outside the provider). */
-export function useScrollProgress(): MotionValue<number> | null {
-  return React.useContext(ScrollProgressContext);
-}

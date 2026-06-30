@@ -1,0 +1,348 @@
+[
+  {
+    "type": "map_object",
+    "label": "scenes/tehran-skyline-far",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/scenes/tehran-skyline-far.png",
+    "jobId": "f830f39b-9fd9-4a14-9450-f1b64861bb1a",
+    "status": "completed",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "scenes/tehran-shopfronts",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/scenes/tehran-shopfronts.png",
+    "jobId": "1e3ee327-4b56-471e-8ea0-329ea60d8133",
+    "status": "completed",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "scenes/tehran-ground-tiles",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/scenes/tehran-ground-tiles.png",
+    "jobId": "cb85e932-859d-4209-9224-a099e0aeafa3",
+    "status": "completed",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "scenes/chenar-trees",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/scenes/chenar-trees.png",
+    "jobId": "aae6cf9b-8f3c-43a8-b5ae-403850f1ba4c",
+    "status": "completed",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "scenes/azadi-tower",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/scenes/azadi-tower.png",
+    "args": {
+      "description": "Azadi Tower Tehran white arched monument, pixel art side view",
+      "width": 64,
+      "height": 96,
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail",
+      "view": "side"
+    },
+    "jobId": "081f8561-ecda-4642-a2d0-50d16a33ebb1",
+    "status": "completed",
+    "queuedAt": "2026-06-30T01:58:09.579Z",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "scenes/persian-domes",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/scenes/persian-domes.png",
+    "args": {
+      "description": "Persian mosque domes and minarets silhouette Tehran skyline, pixel art side view",
+      "width": 96,
+      "height": 80,
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail",
+      "view": "side"
+    },
+    "jobId": "842df035-5b4e-45a1-b872-5a5ebf1977f2",
+    "status": "completed",
+    "queuedAt": "2026-06-30T01:58:14.203Z",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "objects/work/construction-crane",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/objects/work/construction-crane.png",
+    "args": {
+      "description": "construction crane on building site, pixel art side view game prop Tehran",
+      "width": 80,
+      "height": 96,
+      "view": "side",
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail"
+    },
+    "jobId": "ffadc9c2-88dc-42a1-9c8b-4638d587c45e",
+    "status": "completed",
+    "queuedAt": "2026-06-30T01:58:19.266Z",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "objects/work/bridge-girder",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/objects/work/bridge-girder.png",
+    "args": {
+      "description": "steel bridge girder segment side view pixel art game platform",
+      "width": 64,
+      "height": 32,
+      "view": "side",
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail"
+    },
+    "jobId": "6e5b5647-dcaa-4b56-8b5d-05f5a4846cf0",
+    "status": "completed",
+    "queuedAt": "2026-06-30T01:58:23.561Z",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "objects/intro/crt-monitor",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/objects/intro/crt-monitor.png",
+    "args": {
+      "description": "glowing CRT computer monitor on a desk, side view, warm orange screen glow, pixel art, small Tehran bedroom",
+      "width": 48,
+      "height": 48,
+      "view": "side",
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail"
+    },
+    "jobId": "f3be5271-6eff-48ba-980a-56b8f766ec7f",
+    "status": "completed",
+    "queuedAt": "2026-06-30T01:58:37.139Z",
+    "done": true
+  },
+  {
+    "type": "sidescroller_tileset",
+    "label": "tilesets/intro/ground",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/tilesets/intro/ground.png",
+    "args": {
+      "lower_description": "dark wooden floor planks",
+      "transition_description": "dust and faint morning light",
+      "tile_size": {
+        "width": 16,
+        "height": 16
+      },
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail"
+    },
+    "jobId": "0d48502f-7f87-4ab2-bde6-0665bfc299d3",
+    "status": "completed",
+    "queuedAt": "2026-06-30T01:58:50.293Z",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "objects/work/wooden-crate",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/objects/work/wooden-crate.png",
+    "args": {
+      "description": "heavy wooden shipping crate with rope handles, side view, pixel art game prop",
+      "width": 48,
+      "height": 48,
+      "view": "side",
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail"
+    },
+    "jobId": "91c97ba6-5c64-4d26-856d-b902f3da2fac",
+    "status": "completed",
+    "queuedAt": "2026-06-30T01:58:54.610Z",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "objects/work/work-building",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/objects/work/work-building.png",
+    "args": {
+      "description": "Tehran office building facade with lit windows, side view, warm morning light, pixel art",
+      "width": 96,
+      "height": 96,
+      "view": "side",
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail"
+    },
+    "jobId": "6902a1c9-5bfc-4a69-b966-32bd296de636",
+    "status": "completed",
+    "queuedAt": "2026-06-30T01:58:59.134Z",
+    "done": true
+  },
+  {
+    "type": "sidescroller_tileset",
+    "label": "tilesets/work/ground",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/tilesets/work/ground.png",
+    "args": {
+      "lower_description": "cobblestone street",
+      "transition_description": "morning mist and dust",
+      "tile_size": {
+        "width": 16,
+        "height": 16
+      },
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail"
+    },
+    "jobId": "84b1bfa9-f15d-4f75-af1e-979d4d5bd2c8",
+    "status": "completed",
+    "queuedAt": "2026-06-30T01:59:03.352Z",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "objects/skills/skill-slime",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/objects/skills/skill-slime.png",
+    "args": {
+      "description": "cute green pixel art slime monster, side view, game enemy, purple arena background tint",
+      "width": 32,
+      "height": 32,
+      "view": "side",
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail"
+    },
+    "jobId": "4c64e575-c6e1-4392-9b33-ed631d16f43a",
+    "status": "completed",
+    "queuedAt": "2026-06-30T01:59:07.563Z",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "objects/writing/treasure-chest",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/objects/writing/treasure-chest.png",
+    "args": {
+      "description": "wooden treasure chest with golden lock, side view, slightly open with light beam, pixel art",
+      "width": 48,
+      "height": 40,
+      "view": "side",
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail"
+    },
+    "jobId": "7098a257-2416-4482-8d02-aa2389d5ff11",
+    "status": "completed",
+    "queuedAt": "2026-06-30T01:59:30.737Z",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "objects/writing/bookshelf",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/objects/writing/bookshelf.png",
+    "args": {
+      "description": "pixel art bookshelf with colorful book spines, side view, warm library light",
+      "width": 64,
+      "height": 64,
+      "view": "side",
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail"
+    },
+    "jobId": "21e16390-537d-4115-bbd9-6e85cd8c23d5",
+    "status": "completed",
+    "queuedAt": "2026-06-30T01:59:34.935Z",
+    "done": true
+  },
+  {
+    "type": "sidescroller_tileset",
+    "label": "tilesets/writing/ground",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/tilesets/writing/ground.png",
+    "args": {
+      "lower_description": "emerald stone vault floor",
+      "transition_description": "moss and ancient dust",
+      "tile_size": {
+        "width": 16,
+        "height": 16
+      },
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail"
+    },
+    "jobId": "39e07700-969c-4eaf-8c58-d6b6b50fcab7",
+    "status": "completed",
+    "queuedAt": "2026-06-30T01:59:39.135Z",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "objects/contact/rooftop-cafe",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/objects/contact/rooftop-cafe.png",
+    "args": {
+      "description": "small rooftop café table with two chairs and string lights, Tehran skyline silhouette, night pixel art side view",
+      "width": 80,
+      "height": 64,
+      "view": "side",
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail"
+    },
+    "jobId": "6056f8a7-6fcf-4c68-a3ef-b07f344bc2ed",
+    "status": "completed",
+    "queuedAt": "2026-06-30T01:59:43.582Z",
+    "done": true
+  },
+  {
+    "type": "sidescroller_tileset",
+    "label": "tilesets/contact/ground",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/tilesets/contact/ground.png",
+    "args": {
+      "lower_description": "rooftop concrete tiles",
+      "transition_description": "night haze and distant city lights",
+      "tile_size": {
+        "width": 16,
+        "height": 16
+      },
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail"
+    },
+    "jobId": "3a64e6dc-a210-464f-bd7a-49c675d75173",
+    "status": "completed",
+    "queuedAt": "2026-06-30T01:59:56.820Z",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "objects/skills/skill-slime",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/objects/skills/skill-slime.png",
+    "args": {
+      "description": "cute green pixel art slime monster, side view, game enemy, firoozeh turquoise glow, Persian palette",
+      "width": 32,
+      "height": 32,
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail",
+      "view": "side"
+    },
+    "jobId": "ae0a0e75-f56d-479f-b90d-778400159969",
+    "status": "completed",
+    "queuedAt": "2026-06-30T02:00:01.011Z",
+    "done": true
+  },
+  {
+    "type": "map_object",
+    "label": "objects/skills/metro-sign",
+    "dest": "/Users/soheilnikroo/Applications/soheilnikroo/public/world/objects/skills/metro-sign.png",
+    "args": {
+      "description": "Tehran metro station sign with Persian and English text, red and gold, side view pixel art",
+      "width": 64,
+      "height": 48,
+      "outline": "single color outline",
+      "shading": "basic shading",
+      "detail": "medium detail",
+      "view": "side"
+    },
+    "jobId": "f613b466-5f83-4820-ba1b-e9bfb2208fd9",
+    "status": "completed",
+    "queuedAt": "2026-06-30T02:00:05.252Z",
+    "done": true
+  }
+]

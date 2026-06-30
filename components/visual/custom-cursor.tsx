@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useMotionValue, useSpring } from "motion/react";
+import { usePathname } from "next/navigation";
 import * as React from "react";
 
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
@@ -9,11 +10,11 @@ const INTERACTIVE = "a,button,[role='button'],input,textarea,select,label,[data-
 
 /**
  * Custom cursor: a precise dot plus a spring-lagged ring that grows over
- * interactive elements. Uses mix-blend-difference so it stays visible on any
- * background. Only on fine pointers; hidden under reduced motion (native cursor).
+ * interactive elements. Disabled on `/` (the game uses the native cursor).
  */
 export function CustomCursor() {
   const reduced = useReducedMotion();
+  const isExperience = usePathname() === "/";
   const [enabled, setEnabled] = React.useState(false);
   const [visible, setVisible] = React.useState(false);
   const [hovering, setHovering] = React.useState(false);
@@ -24,8 +25,24 @@ export function CustomCursor() {
   const ringY = useSpring(y, { stiffness: 280, damping: 28, mass: 0.5 });
 
   React.useEffect(() => {
-    if (reduced) return;
-    if (!window.matchMedia("(pointer: fine)").matches) return;
+    const disable = (): void => {
+      setEnabled(false);
+      setVisible(false);
+      setHovering(false);
+      x.set(-100);
+      y.set(-100);
+      document.documentElement.classList.remove("cursor-none");
+    };
+
+    if (reduced || isExperience) {
+      disable();
+      return;
+    }
+    if (!window.matchMedia("(pointer: fine)").matches) {
+      disable();
+      return;
+    }
+
     setEnabled(true);
     document.documentElement.classList.add("cursor-none");
 
@@ -33,8 +50,8 @@ export function CustomCursor() {
       x.set(event.clientX);
       y.set(event.clientY);
       setVisible(true);
-      const target = event.target as HTMLElement | null;
-      setHovering(Boolean(target?.closest(INTERACTIVE)));
+      const target = event.target;
+      setHovering(target instanceof Element && Boolean(target.closest(INTERACTIVE)));
     };
     const onLeave = () => setVisible(false);
 
@@ -43,9 +60,9 @@ export function CustomCursor() {
     return () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerout", onLeave);
-      document.documentElement.classList.remove("cursor-none");
+      disable();
     };
-  }, [reduced, x, y]);
+  }, [reduced, isExperience, x, y]);
 
   if (!enabled) return null;
 

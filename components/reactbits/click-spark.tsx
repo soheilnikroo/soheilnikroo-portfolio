@@ -2,6 +2,7 @@
 
 // Adapted from React Bits (https://reactbits.dev) — "ClickSpark". Listens globally
 // (no onClick on a non-interactive element), respects reduced motion, theme-tinted.
+import { usePathname } from "next/navigation";
 import * as React from "react";
 
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
@@ -33,9 +34,11 @@ export function ClickSpark({
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const sparks = React.useRef<Spark[]>([]);
   const reduced = useReducedMotion();
+  // Skip the always-on canvas + rAF on the immersive experience route.
+  const isExperience = usePathname() === "/";
 
   React.useEffect(() => {
-    if (reduced) return;
+    if (reduced || isExperience) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -97,15 +100,17 @@ export function ClickSpark({
       ro?.disconnect();
       window.removeEventListener("click", onClick);
     };
-  }, [reduced, sparkColor, sparkSize, sparkRadius, sparkCount, duration, extraScale]);
+  }, [reduced, isExperience, sparkColor, sparkSize, sparkRadius, sparkCount, duration, extraScale]);
 
   return (
     <div className={cn("relative w-full", className)}>
-      <canvas
-        ref={canvasRef}
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-[var(--z-toast)]"
-      />
+      {isExperience ? null : (
+        <canvas
+          ref={canvasRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-[var(--z-toast)]"
+        />
+      )}
       {children}
     </div>
   );

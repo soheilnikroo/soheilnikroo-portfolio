@@ -76,7 +76,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.585 0.222 277);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -87,7 +87,7 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: oklch(0.585 0.222 277);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -151,8 +151,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: oklch(0.713 0.146 277);
+  --primary-foreground: oklch(0.16 0.02 277);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -162,7 +162,7 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: oklch(0.713 0.146 277);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -223,6 +223,25 @@
   .ambient-gradient {
     will-change: auto;
   }
+}
+
+/* Playable + readable world routes share one locked pixel palette. */
+html[data-pixel-world] body {
+  background-color: #05040b;
+  color: #f8f8fc;
+}
+
+html[data-pixel-world] .ambient-gradient {
+  opacity: 0.28;
+}
+
+html.transitioning-theme *,
+html.transitioning-theme *::before,
+html.transitioning-theme *::after {
+  transition:
+    background-color 0.35s var(--ease-standard-value),
+    color 0.35s var(--ease-standard-value),
+    border-color 0.35s var(--ease-standard-value) !important;
 }
 
 /* ---- Hero pointer-reactive aurora (decorative) ---- */
@@ -365,18 +384,18 @@
   60%,
   100% {
     transform: scale(1);
-    filter: drop-shadow(0 0 16px rgba(230, 196, 99, 0.35));
+    filter: drop-shadow(0 0 16px rgba(129, 140, 248, 0.35));
   }
   12% {
     transform: scale(1.11);
-    filter: drop-shadow(0 0 42px rgba(251, 233, 166, 0.7));
+    filter: drop-shadow(0 0 42px rgba(199, 210, 254, 0.7));
   }
   24% {
     transform: scale(1);
   }
   36% {
     transform: scale(1.06);
-    filter: drop-shadow(0 0 30px rgba(230, 196, 99, 0.55));
+    filter: drop-shadow(0 0 30px rgba(129, 140, 248, 0.55));
   }
   48% {
     transform: scale(1);
@@ -408,7 +427,7 @@
   }
 }
 .sn-glow {
-  background: radial-gradient(circle, rgba(230, 196, 99, 0.5), transparent 62%);
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.5), transparent 62%);
   animation: sn-glow 1.7s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -439,7 +458,7 @@
 /* ---- About: outlined index numeral ---- */
 .num-outline {
   color: transparent;
-  -webkit-text-stroke: 2px color-mix(in oklch, #e6c463 60%, transparent);
+  -webkit-text-stroke: 2px color-mix(in oklch, #818cf8 60%, transparent);
 }
 
 /* ---- Contact: radar beacon rings ---- */
@@ -455,7 +474,7 @@
 }
 .radar-ring {
   animation: radar-ring 3.4s ease-out infinite;
-  border: 1px solid rgba(230, 196, 99, 0.4);
+  border: 1px solid rgba(129, 140, 248, 0.4);
   border-radius: 9999px;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -489,4 +508,101 @@
   padding: 0.5rem 1rem;
   font-size: 0.8rem;
   color: var(--muted-foreground);
+}
+
+/* ---- React Bits: StarBorder ---- */
+@keyframes star-movement-bottom {
+  0% {
+    transform: translate(0%, 0%);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-100%, 0%);
+    opacity: 0;
+  }
+}
+@keyframes star-movement-top {
+  0% {
+    transform: translate(0%, 0%);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(100%, 0%);
+    opacity: 0;
+  }
+}
+.animate-star-movement-bottom {
+  animation: star-movement-bottom 6s linear infinite alternate;
+}
+.animate-star-movement-top {
+  animation: star-movement-top 6s linear infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-star-movement-bottom,
+  .animate-star-movement-top {
+    animation: none;
+  }
+}
+
+/* ---- Contact: breathing focal glow ---- */
+@keyframes contact-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+}
+.contact-glow {
+  animation: contact-glow 6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .contact-glow {
+    animation: none;
+  }
+}
+
+@keyframes chest-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 12px) scale(0.7);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(-50%, -4px) scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[chest-pop_0\.55s_ease-out\] {
+    animation: none;
+  }
+}
+
+@keyframes metaSecretIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.88) translateY(16px);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.03) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[metaSecretIn_0\.55s_ease-out_both\] {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }

@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# playwright
+/test-results
+/playwright-report
+/.playwright
+
+# local secrets
+.env
+
+# pixellab generation state
+/tooling/pixellab/.generation-jobs.json
+/art-bible/pixellab-exports/

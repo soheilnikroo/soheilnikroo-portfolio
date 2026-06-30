@@ -1,119 +1,75 @@
 import { ProjectSchema } from "@/lib/schemas";
 import type { Project } from "@/lib/schemas";
 
-/**
- * Project content. Each project is an immersive "destination" telling the
- * problem → challenge → process → solution → outcome story. Realistic
- * placeholders — edit freely. Covers are intentionally omitted (gradient
- * fallback in the UI); drop images under /public and set `cover` to enable.
- */
-const projects: Project[] = [
+const projects = [
   {
-    slug: "vport-platform",
-    title: "VPORT Platform",
+    slug: "snapp",
+    title: "Snapp",
     summary:
-      "A product platform unifying fragmented internal tools into one fast, cohesive workspace.",
+      "High-scale React/Next.js/TypeScript product — PWAs, UI kit, Redux Toolkit, SWR, and mobile-first delivery for millions of users in Tehran.",
     year: 2025,
-    role: "Lead Front-end Engineer",
+    role: "Frontend Engineer",
     status: "live",
-    tags: ["Product", "Platform", "Design System"],
-    tech: ["Next.js", "TypeScript", "Tailwind", "PostgreSQL", "tRPC"],
-    links: { live: "https://www.thevport.com" },
-    accent: "#6366f1",
+    tags: ["Scale", "PWA", "React"],
+    tech: ["React", "Next.js", "TypeScript", "Redux Toolkit", "SWR", "PWA"],
+    links: { live: "https://snapp.ir" },
+    accent: "#22c55e",
     featured: true,
     order: 1,
     narrative: {
       problem:
-        "Teams juggled five disconnected tools to ship a single workflow, losing context at every hand-off.",
+        "A consumer super-app serving millions needed fast, reliable frontends across devices and network conditions.",
       challenge:
-        "Unify them without a big-bang rewrite, while keeping each team productive throughout the migration.",
+        "Ship features at scale without sacrificing performance, accessibility, or maintainability across teams.",
       process:
-        "Mapped the shared domain, extracted a design-system core, then migrated surface-by-surface behind feature flags.",
+        "Built on a shared UI kit, Redux Toolkit for state, SWR for data — with CI/CD, ESLint, and mobile-first patterns.",
       solution:
-        "A single workspace with a shared component library, consistent navigation, and a typed data layer.",
+        "Production PWAs and responsive web apps with strong TypeScript boundaries and cross-browser quality.",
       outcome:
-        "Cut task-switching time substantially and gave the team one place to build — and one system to maintain.",
+        "Millions of users rely on the experience daily — performance and reliability are non-negotiable.",
     },
   },
   {
-    slug: "aurora-design-system",
-    title: "Aurora Design System",
+    slug: "jaan",
+    title: "Jaan",
     summary:
-      "A token-driven design system and component library powering multiple products from one source of truth.",
-    year: 2024,
-    role: "Design Systems Engineer",
-    status: "live",
-    tags: ["Design System", "Accessibility", "Tokens"],
-    tech: ["React", "TypeScript", "Tailwind", "Radix", "Storybook"],
-    links: { repo: "https://github.com/soheilnikroo" },
-    accent: "#22d3ee",
+      "First production frontend role — React, Agile delivery, and shipping real features to real users.",
+    year: 2022,
+    role: "Frontend Developer",
+    status: "archived",
+    tags: ["React", "Agile", "Production"],
+    tech: ["React", "JavaScript", "SCSS", "Jest"],
+    links: {},
+    accent: "#6366f1",
     featured: true,
     order: 2,
     narrative: {
-      problem:
-        "Every product reinvented buttons, inputs, and color — inconsistent UX and duplicated effort everywhere.",
-      challenge:
-        "Build a system flexible enough for three products yet strict enough to stay coherent and accessible.",
-      process:
-        "Defined semantic tokens, built accessible primitives on Radix, and documented usage with live examples.",
-      solution:
-        "A themeable, WCAG-audited library consumed by every product, with tokens as the single source of truth.",
-      outcome:
-        "New screens ship faster, dark mode came essentially for free, and accessibility regressions dropped sharply.",
+      problem: "A growing product needed a dedicated frontend engineer to ship UI reliably.",
+      challenge: "Learn production patterns fast while delivering under Agile sprints.",
+      process: "React components, code review, JIRA workflows, and iterative releases.",
+      solution: "Shipped production features with attention to UX and cross-browser basics.",
+      outcome: "Built the foundation for everything that came after at Snapp.",
     },
   },
   {
-    slug: "pulse-analytics",
-    title: "Pulse Analytics",
-    summary:
-      "A real-time analytics dashboard turning noisy event streams into calm, legible insight.",
-    year: 2024,
-    role: "Front-end Engineer",
-    status: "live",
-    tags: ["Data Viz", "Performance", "Real-time"],
-    tech: ["Next.js", "TypeScript", "D3", "WebSockets"],
+    slug: "ilia",
+    title: "ILIA Corporation",
+    summary: "First industry internship — learning how teams work, communicate, and deliver.",
+    year: 2020,
+    role: "Intern",
+    status: "archived",
+    tags: ["Internship", "Teams"],
+    tech: ["JIRA", "Communication"],
     links: {},
     accent: "#f59e0b",
     featured: false,
     order: 3,
     narrative: {
-      problem:
-        "Stakeholders drowned in dashboards that were dense, slow, and hard to trust during live incidents.",
-      challenge:
-        "Render high-frequency data smoothly while keeping the interface readable and accessible.",
-      process:
-        "Profiled render hotspots, virtualized heavy lists, and designed charts around progressive disclosure.",
-      solution:
-        "A streaming dashboard with smooth 60fps updates, keyboard-navigable charts, and sensible defaults.",
-      outcome:
-        "Faster time-to-insight during incidents and a dashboard people actually keep open all day.",
-    },
-  },
-  {
-    slug: "fieldnotes-cms",
-    title: "Fieldnotes CMS",
-    summary:
-      "A lightweight, MDX-powered publishing experience for writers who want speed without a heavy CMS.",
-    year: 2023,
-    role: "Full-stack Engineer",
-    status: "archived",
-    tags: ["Content", "MDX", "DX"],
-    tech: ["Next.js", "MDX", "TypeScript", "Zod"],
-    links: { repo: "https://github.com/soheilnikroo" },
-    accent: "#ec4899",
-    featured: false,
-    order: 4,
-    narrative: {
-      problem:
-        "Writers wanted rich, componentized posts but hated wrestling with a bloated traditional CMS.",
-      challenge:
-        "Offer component-in-prose authoring with strong validation, while keeping the stack tiny.",
-      process:
-        "Built an MDX pipeline with typed frontmatter, schema validation, and instant local previews.",
-      solution:
-        "A file-based publishing flow where posts are MDX, validated by Zod, and rendered as fast static pages.",
-      outcome:
-        "Writers shipped posts in minutes, and broken frontmatter failed loudly at build instead of in production.",
+      problem: "I needed real workplace experience alongside university.",
+      challenge: "Translate classroom knowledge into professional collaboration.",
+      process: "Task management, written communication, and team workflows.",
+      solution: "Showed up, learned, and contributed where I could.",
+      outcome: "The first step from student to engineer.",
     },
   },
 ];

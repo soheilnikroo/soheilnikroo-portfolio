@@ -1,7 +1,19 @@
-# Ambient audio
+# Audio assets
 
-Drop a licensed looping lofi track here as `ambient.mp3` (and/or `.ogg`) to enable
-the background bed. Until then, only the synthesized interaction cues play.
+Royalty-free OGG + MP3 pairs used by the portfolio game and site ambient layer.
+Re-encode with `pnpm assets:optimize` after swapping source files (requires ffmpeg).
 
-Wire the file by passing `bedSrc="/audio/ambient.mp3"` to `<AmbientProvider>` in
-`app/layout.tsx`. Audio is opt-in and never autoplays.
+## Layout
+
+```
+public/audio/
+├── ambient/site-bed.ogg   # Global bed (non-game pages)
+├── music/                 # Per-chapter scroll loops
+├── sfx/                   # UI + gameplay one-shots
+└── LICENSES.md
+```
+
+Wired in `app/layout.tsx` via `<AmbientProvider bedSrc="/audio/ambient/site-bed.ogg">`.
+Chapter music is in `lib/world/chapter-audio.ts`. SFX in `lib/world/audio.ts`.
+
+Audio is **opt-in** and never autoplays until a user gesture.

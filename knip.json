@@ -1,0 +1,20 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["app/**/*.{ts,tsx}", "next.config.ts"],
+  "project": ["**/*.{ts,tsx,mjs,mts}"],
+  "ignore": ["tooling/**", "content/**"],
+  "ignoreDependencies": [
+    "@tailwindcss/postcss",
+    "@tailwindcss/typography",
+    "tailwindcss",
+    "tw-animate-css",
+    "shadcn",
+    "@commitlint/cli",
+    "@commitlint/config-conventional"
+  ],
+  "rules": {
+    "exports": "off",
+    "types": "off",
+    "enumMembers": "off"
+  }
+}

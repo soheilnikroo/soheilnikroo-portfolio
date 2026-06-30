@@ -3,6 +3,12 @@
     "shadcn": {
       "command": "npx",
       "args": ["shadcn@latest", "mcp"]
+    },
+    "pixellab": {
+      "url": "https://api.pixellab.ai/mcp",
+      "headers": {
+        "Authorization": "Bearer 7c9a0dde-b9e8-413b-ba27-c8d13d7f8dd1"
+      }
     }
   }
 }

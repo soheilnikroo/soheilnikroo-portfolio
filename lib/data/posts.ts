@@ -1,92 +1,139 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
-
-import matter from "gray-matter";
 import readingTime from "reading-time";
 
-import { PostFrontmatterSchema, PostMetaSchema } from "@/lib/schemas";
-import type { PostMeta } from "@/lib/schemas";
-
-const BLOG_DIR = path.join(process.cwd(), "content", "blog");
+import {
+  createPostRow,
+  deletePostRow,
+  getPostRowById,
+  getPostRowBySlug,
+  listPostRows,
+  updatePostRow,
+} from "@/lib/db/posts-store";
+import type { PostInput, PostRow } from "@/lib/db/posts-store";
+import { PostMetaSchema } from "@/lib/schemas";
+import type { PostInputValues, PostMeta } from "@/lib/schemas";
 
 export type PostSource = {
   meta: PostMeta;
-  /** Raw MDX body (frontmatter stripped). Rendered by the blog system in Step 12. */
+  /** Raw markdown/MDX body, rendered by the blog at request time. */
   content: string;
 };
 
-function slugFromFile(file: string): string {
-  return file.replace(/\.mdx$/u, "");
+function toIsoDate(value: Date): string {
+  return new Date(value).toISOString().slice(0, 10);
 }
 
-async function listPostFiles(): Promise<string[]> {
+export function rowToMeta(row: PostRow): PostMeta {
+  const stats = readingTime(row.body);
+  return PostMetaSchema.parse({
+    title: row.title,
+    description: row.description,
+    date: toIsoDate(row.date),
+    category: row.category,
+    tags: row.tags,
+    cover: row.cover ?? undefined,
+    draft: !row.published,
+    slug: row.slug,
+    readingMinutes: Math.max(1, Math.round(stats.minutes)),
+  });
+}
+
+function warnDb(error: unknown): void {
+  console.warn(
+    "[blog] database unavailable — returning empty content. Set DATABASE_URL and run `pnpm db:seed`.",
+    error instanceof Error ? error.message : error,
+  );
+}
+
+export async function getAllPostMeta(includeDrafts = false): Promise<PostMeta[]> {
   try {
-    const entries = await fs.readdir(BLOG_DIR);
-    return entries.filter((file) => file.endsWith(".mdx"));
-  } catch {
+    const rows = await listPostRows(includeDrafts);
+    return rows.map(rowToMeta);
+  } catch (error) {
+    warnDb(error);
     return [];
   }
 }
 
-async function readPostFile(file: string): Promise<PostSource> {
-  const slug = slugFromFile(file);
-  const raw = await fs.readFile(path.join(BLOG_DIR, file), "utf8");
-  const parsed = matter(raw);
-
-  const front = PostFrontmatterSchema.safeParse(parsed.data);
-  if (!front.success) {
-    throw new Error(
-      `Invalid frontmatter in content/blog/${file}: ${front.error.issues
-        .map((issue) => `${issue.path.join(".")} ${issue.message}`)
-        .join("; ")}`,
-    );
-  }
-
-  const stats = readingTime(parsed.content);
-  const meta = PostMetaSchema.parse({
-    ...front.data,
-    slug,
-    readingMinutes: Math.max(1, Math.round(stats.minutes)),
-  });
-
-  return { meta, content: parsed.content };
-}
-
-async function readAllPosts(): Promise<PostSource[]> {
-  const files = await listPostFiles();
-  return Promise.all(files.map(readPostFile));
-}
-
-function byNewest(a: PostMeta, b: PostMeta): number {
-  return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
-}
-
-export async function getAllPostMeta(includeDrafts = false): Promise<PostMeta[]> {
-  const posts = await readAllPosts();
-  const metas = posts.map((post) => post.meta);
-  const visible = includeDrafts ? metas : metas.filter((meta) => !meta.draft);
-  return visible.sort(byNewest);
-}
-
 export async function getPostMetaBySlug(
   slug: string,
-  includeDrafts = true,
+  includeDrafts = false,
 ): Promise<PostMeta | null> {
-  const metas = await getAllPostMeta(includeDrafts);
-  return metas.find((meta) => meta.slug === slug) ?? null;
+  try {
+    const row = await getPostRowBySlug(slug);
+    if (!row) return null;
+    if (!includeDrafts && !row.published) return null;
+    return rowToMeta(row);
+  } catch (error) {
+    warnDb(error);
+    return null;
+  }
 }
 
-export async function getPostSource(slug: string): Promise<PostSource | null> {
-  const posts = await readAllPosts();
-  return posts.find((post) => post.meta.slug === slug) ?? null;
+export async function getPostSource(
+  slug: string,
+  includeDrafts = false,
+): Promise<PostSource | null> {
+  try {
+    const row = await getPostRowBySlug(slug);
+    if (!row) return null;
+    if (!includeDrafts && !row.published) return null;
+    return { meta: rowToMeta(row), content: row.body };
+  } catch (error) {
+    warnDb(error);
+    return null;
+  }
 }
 
 export async function getAllCategories(): Promise<string[]> {
-  const metas = await getAllPostMeta();
-  return [...new Set(metas.map((meta) => meta.category))].sort();
+  try {
+    const rows = await listPostRows(false);
+    return [...new Set(rows.map((r) => r.category))].sort();
+  } catch (error) {
+    warnDb(error);
+    return [];
+  }
 }
 
 export async function getAllTags(): Promise<string[]> {
-  const metas = await getAllPostMeta();
-  return [...new Set(metas.flatMap((meta) => meta.tags))].sort();
+  try {
+    const rows = await listPostRows(false);
+    return [...new Set(rows.flatMap((r) => r.tags))].sort();
+  } catch (error) {
+    warnDb(error);
+    return [];
+  }
+}
+
+function toDbInput(input: PostInputValues): PostInput {
+  return {
+    slug: input.slug,
+    title: input.title,
+    description: input.description,
+    category: input.category,
+    tags: input.tags,
+    body: input.body,
+    cover: input.cover ?? null,
+    published: input.published,
+    date: new Date(input.date),
+  };
+}
+
+export async function listAllPostRows(includeDrafts = false): Promise<PostRow[]> {
+  return listPostRows(includeDrafts);
+}
+
+export async function getPostById(id: string): Promise<PostRow | null> {
+  return getPostRowById(id);
+}
+
+export async function createPost(input: PostInputValues): Promise<PostRow> {
+  return createPostRow(toDbInput(input));
+}
+
+export async function updatePost(id: string, input: PostInputValues): Promise<PostRow | null> {
+  return updatePostRow(id, toDbInput(input));
+}
+
+export async function deletePost(id: string): Promise<boolean> {
+  return deletePostRow(id);
 }

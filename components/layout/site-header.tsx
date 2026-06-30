@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { SoundToggle } from "@/features/ambient";
@@ -6,38 +9,53 @@ import { SoundToggle } from "@/features/ambient";
 import { Container } from "./container";
 
 const NAV_LINKS = [
-  { href: "/#work", label: "Work" },
-  { href: "/#about", label: "About" },
+  { href: "/", label: "Play" },
+  { href: "/read", label: "Read" },
+  { href: "/work", label: "Projects" },
   { href: "/blog", label: "Writing" },
-  { href: "/#contact", label: "Contact" },
 ] as const;
 
+const PIXEL_ICON_BTN =
+  "inline-flex size-10 items-center justify-center rounded-[3px] border-2 border-white/60 bg-[#0d0b16] text-white/85 shadow-[2px_2px_0_rgba(0,0,0,0.5)] transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none disabled:opacity-40";
+
 export function SiteHeader() {
+  const pathname = usePathname();
+  // The immersive game owns the whole screen and has its own in-world HUD.
+  if (pathname === "/") return null;
+
   return (
-    <header className="sticky top-0 z-[var(--z-nav)] border-b border-border/60 bg-background/70 backdrop-blur-md">
+    <header className="sticky top-0 z-[var(--z-nav)] border-b-2 border-white/15 bg-[#0d0b16]/95 [font-family:var(--font-pixel),ui-monospace,monospace] text-white">
       <Container className="flex h-14 items-center justify-between gap-4">
         <Link
           href="/"
-          className="rounded-md font-heading text-sm font-semibold tracking-tight focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+          className="text-sm font-bold tracking-wide text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
         >
-          Soheil&nbsp;Nikroo
+          ▶ SOHEIL&nbsp;NIKROO
         </Link>
 
         <nav aria-label="Primary" className="hidden items-center gap-1 sm:flex">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {NAV_LINKS.map((link) => {
+            const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                className={`rounded-[3px] border-2 px-3 py-1.5 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none ${
+                  active
+                    ? "border-amber-400/60 bg-amber-900/30 text-amber-100"
+                    : "border-transparent text-white/70 hover:border-white/30 hover:text-white"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className="flex items-center gap-1">
-          <SoundToggle />
-          <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <SoundToggle className={PIXEL_ICON_BTN} />
+          {pathname !== "/read" ? <ThemeToggle className={PIXEL_ICON_BTN} /> : null}
         </div>
       </Container>
     </header>

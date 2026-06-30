@@ -34,6 +34,8 @@ export const ProjectSchema = z.object({
   tech: z.array(z.string().min(1)).default([]),
   links: ProjectLinksSchema.default({}),
   cover: z.string().optional(),
+  /** Screenshot image paths served from /public. Empty → the UI shows placeholders. */
+  screenshots: z.array(z.string()).default([]),
   accent: z.string().optional(),
   narrative: ProjectNarrativeSchema,
   featured: z.boolean().default(false),

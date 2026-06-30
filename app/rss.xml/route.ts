@@ -1,7 +1,7 @@
 import { site } from "@/lib/config/site";
 import { getAllPostMeta } from "@/lib/data";
 
-export const dynamic = "force-static";
+export const revalidate = 60;
 
 function esc(value: string): string {
   return value
@@ -12,7 +12,7 @@ function esc(value: string): string {
 }
 
 export async function GET() {
-  const posts = await getAllPostMeta();
+  const posts = await getAllPostMeta().catch(() => []);
   const items = posts
     .map((p) => {
       const url = `${site.url}/blog/${p.slug}`;

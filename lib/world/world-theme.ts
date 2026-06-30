@@ -1,0 +1,63 @@
+/** Shared pixel-RPG chapter accents — game dialogue boxes + read page sections. */
+export const CHAPTER_ACCENTS = {
+  intro: {
+    id: "intro",
+    label: "Where it began",
+    border: "border-indigo-400",
+    kicker: "text-indigo-300",
+    panel: "bg-[#0a0818]/96",
+    glow: "shadow-[4px_4px_0_#000,0_0_24px_rgba(129,140,248,0.22)]",
+    link: "text-indigo-200 hover:text-indigo-100",
+    muted: "text-indigo-300/55",
+    body: "text-indigo-100/80",
+  },
+  work: {
+    id: "work",
+    label: "Building the bridge",
+    border: "border-cyan-400",
+    kicker: "text-cyan-300",
+    panel: "bg-[#081018]/96",
+    glow: "shadow-[4px_4px_0_#000,0_0_24px_rgba(34,211,238,0.18)]",
+    link: "text-cyan-200 hover:text-cyan-100",
+    muted: "text-cyan-300/55",
+    body: "text-cyan-100/80",
+  },
+  skills: {
+    id: "skills",
+    label: "The gauntlet",
+    border: "border-emerald-400",
+    kicker: "text-emerald-300",
+    panel: "bg-[#061410]/96",
+    glow: "shadow-[4px_4px_0_#000,0_0_24px_rgba(52,211,153,0.2)]",
+    link: "text-emerald-200 hover:text-emerald-100",
+    muted: "text-emerald-300/55",
+    body: "text-emerald-100/80",
+  },
+  writing: {
+    id: "writing",
+    label: "The vault",
+    border: "border-amber-400",
+    kicker: "text-amber-300",
+    panel: "bg-[#14100c]/96",
+    glow: "shadow-[4px_4px_0_#000,0_0_24px_rgba(251,191,36,0.18)]",
+    link: "text-amber-200 hover:text-amber-100",
+    muted: "text-amber-300/55",
+    body: "text-amber-100/80",
+  },
+  contact: {
+    id: "contact",
+    label: "Rooftop at dusk",
+    border: "border-indigo-400",
+    kicker: "text-indigo-300",
+    panel: "bg-[#0a0818]/96",
+    glow: "shadow-[4px_4px_0_#000,0_0_24px_rgba(129,140,248,0.22)]",
+    link: "text-indigo-200 hover:text-indigo-100",
+    muted: "text-indigo-300/55",
+    body: "text-indigo-100/80",
+  },
+} as const;
+
+export type ChapterAccentId = keyof typeof CHAPTER_ACCENTS;
+
+export const WORLD_SHELL =
+  "bg-[#05040b] text-white [font-family:var(--font-pixel),ui-monospace,monospace]" as const;

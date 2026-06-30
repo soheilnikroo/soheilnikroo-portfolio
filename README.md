@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Soheil Nikroo — Portfolio
 
-## Getting Started
+Interactive pixel-art portfolio built with Next.js 16, React 19, and a custom canvas engine. The homepage is a scroll-scrubbed world experience; `/read` provides an accessible text fallback. Blog posts are stored in Postgres and edited through `/admin`.
 
-First, run the development server:
+## Scripts
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+| Command        | Description                                   |
+| -------------- | --------------------------------------------- |
+| `pnpm dev`     | Start the development server                  |
+| `pnpm build`   | Production build                              |
+| `pnpm check`   | typecheck + lint + format:check + test + knip |
+| `pnpm test`    | Vitest unit tests                             |
+| `pnpm e2e`     | Playwright end-to-end tests                   |
+| `pnpm db:seed` | Seed blog posts from `content/blog/*.mdx`     |
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Architecture
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+See [ARCHITECTURE.md](./ARCHITECTURE.md). Layers:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **UI** — `app/`, `components/`, `features/*/components`
+- **Business** — `lib/world/`, `lib/services/`, `features/*/use-cases`
+- **Data** — `lib/data/` (repositories), `lib/db/` (Postgres)
+- **Contracts** — `lib/schemas/` (Zod)
 
-## Learn More
+## Environment
 
-To learn more about Next.js, take a look at the following resources:
+Copy `.env.example` to `.env` and set:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `DATABASE_URL` — Postgres connection string
+- `ADMIN_PASSWORD` — admin login password
+- `SESSION_SECRET` — HMAC cookie secret (32+ chars)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [ADMIN.md](./ADMIN.md) for the CMS workflow.

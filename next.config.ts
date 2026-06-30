@@ -2,11 +2,34 @@ import createMDX from "@next/mdx";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Allow MDX/Markdown files to be treated as pages and routes.
   pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
+  images: {
+    formats: ["image/avif", "image/webp"],
+  },
   experimental: {
-    // Enable React's <ViewTransition> integration for route navigations.
     viewTransition: true,
+  },
+  async headers() {
+    return [
+      {
+        source: "/world/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/audio/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ];
   },
 };
 

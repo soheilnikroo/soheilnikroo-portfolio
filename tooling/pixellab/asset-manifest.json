@@ -1,0 +1,289 @@
+{
+  "project": "soheilnikroo-portfolio",
+  "characterId": "d5d32418-5372-435e-b80b-997b80bb8350",
+  "style": {
+    "palette": "Persian architecture: firoozeh turquoise #1c9aaa, terracotta brick #b74d35, mesi copper #b87333, berenji gold #d4af37, dusty Tehran smog horizon, Alborz mountains, chenar plane trees",
+    "outline": "single color outline",
+    "shading": "basic shading",
+    "detail": "medium detail",
+    "tileSize": { "width": 16, "height": 16 }
+  },
+  "character": {
+    "reuseExisting": false,
+    "existingName": null,
+    "futureSideView": {
+      "description": "young Iranian frontend developer, messy dark hair, blue square-rimmed glasses, plain t-shirt and chinos, relaxed confident posture, warm brown pixel palette, crisp black outlines",
+      "name": "Soheil — portfolio hero",
+      "view": "side",
+      "size": 48,
+      "n_directions": 4,
+      "proportions": "{\"type\": \"preset\", \"name\": \"stylized\"}"
+    },
+    "animations": [
+      { "template": "walking", "name": "walk" },
+      { "template": "breathing-idle", "name": "idle" },
+      { "template": "pull-heavy-object", "name": "pull" },
+      { "template": "running-4-frames", "name": "run" },
+      { "template": "front-flip", "name": "jump" }
+    ]
+  },
+  "chapters": [
+    {
+      "id": "intro",
+      "title": "Just before dawn",
+      "route": "/",
+      "timeOfDay": "dawn",
+      "paletteKey": "dawn",
+      "sceneObjects": [
+        {
+          "id": "crt-monitor",
+          "description": "glowing CRT computer monitor on a desk, side view, warm orange screen glow, pixel art, small Tehran bedroom",
+          "width": 48,
+          "height": 48,
+          "view": "side"
+        },
+        {
+          "id": "bedroom-window",
+          "description": "small bedroom window showing pre-dawn purple-orange Tehran sky, side view pixel art",
+          "width": 64,
+          "height": 48,
+          "view": "side"
+        }
+      ],
+      "sidescrollerTileset": {
+        "lower_description": "dark wooden floor planks",
+        "transition_description": "dust and faint morning light"
+      }
+    },
+    {
+      "id": "work",
+      "title": "Pulling the weight",
+      "route": "/work",
+      "timeOfDay": "morning",
+      "paletteKey": "depot",
+      "sceneObjects": [
+        {
+          "id": "wooden-crate",
+          "description": "heavy wooden shipping crate with rope handles, side view, pixel art game prop",
+          "width": 48,
+          "height": 48,
+          "view": "side"
+        },
+        {
+          "id": "work-building",
+          "description": "Tehran office building facade with lit windows, side view, warm morning light, pixel art",
+          "width": 96,
+          "height": 96,
+          "view": "side"
+        }
+      ],
+      "sidescrollerTileset": {
+        "lower_description": "cobblestone street",
+        "transition_description": "morning mist and dust"
+      }
+    },
+    {
+      "id": "skills",
+      "title": "The gauntlet",
+      "route": "/skills",
+      "timeOfDay": "midday",
+      "paletteKey": "arena",
+      "sceneObjects": [
+        {
+          "id": "skill-slime",
+          "description": "cute green pixel art slime monster, side view, game enemy, purple arena background tint",
+          "width": 32,
+          "height": 32,
+          "view": "side"
+        },
+        {
+          "id": "metro-sign",
+          "description": "Tehran metro station sign with Persian and English text, side view pixel art",
+          "width": 64,
+          "height": 48,
+          "view": "side"
+        }
+      ],
+      "sidescrollerTileset": {
+        "lower_description": "dark stone arena floor",
+        "transition_description": "purple magical glow cracks"
+      }
+    },
+    {
+      "id": "writing",
+      "title": "The vault",
+      "route": "/blog",
+      "timeOfDay": "evening",
+      "paletteKey": "vault",
+      "sceneObjects": [
+        {
+          "id": "treasure-chest",
+          "description": "wooden treasure chest with golden lock, side view, slightly open with light beam, pixel art",
+          "width": 48,
+          "height": 40,
+          "view": "side"
+        },
+        {
+          "id": "bookshelf",
+          "description": "pixel art bookshelf with colorful book spines, side view, warm library light",
+          "width": 64,
+          "height": 64,
+          "view": "side"
+        }
+      ],
+      "sidescrollerTileset": {
+        "lower_description": "emerald stone vault floor",
+        "transition_description": "moss and ancient dust"
+      }
+    },
+    {
+      "id": "contact",
+      "title": "Rooftop at dusk",
+      "route": "/contact",
+      "timeOfDay": "night",
+      "paletteKey": "rooftop",
+      "sceneObjects": [
+        {
+          "id": "rooftop-cafe",
+          "description": "small rooftop café table with two chairs and string lights, Tehran skyline silhouette, night pixel art side view",
+          "width": 80,
+          "height": 64,
+          "view": "side"
+        },
+        {
+          "id": "milad-tower",
+          "description": "Milad Tower silhouette glowing at night, distant background layer, pixel art side view",
+          "width": 48,
+          "height": 128,
+          "view": "side"
+        }
+      ],
+      "sidescrollerTileset": {
+        "lower_description": "rooftop concrete tiles",
+        "transition_description": "night haze and distant city lights"
+      }
+    }
+  ],
+  "backgroundLayers": [
+    {
+      "id": "alborz-mountains",
+      "description": "Alborz mountain range with snow-capped Mount Damavand peak, distant horizon, warm dawn haze, seamless horizontal tile, side view pixel art Tehran Iran",
+      "width": 512,
+      "height": 128,
+      "depth": 0.08,
+      "tiled": true,
+      "anchor": "ground"
+    },
+    {
+      "id": "tehran-skyline-far",
+      "description": "distant Tehran city skyline silhouette, flat rooftops water tanks satellite dishes, hazy atmospheric perspective, seamless horizontal tile, pixel art side view",
+      "width": 512,
+      "height": 96,
+      "depth": 0.22,
+      "tiled": true,
+      "anchor": "ground"
+    },
+    {
+      "id": "tehran-buildings-mid",
+      "description": "Tehran midground buildings Persian brick facades lit windows shop awnings balconies, seamless horizontal tile, warm pixel art side view",
+      "width": 512,
+      "height": 160,
+      "depth": 0.45,
+      "tiled": true,
+      "anchor": "ground"
+    },
+    {
+      "id": "tehran-shopfronts",
+      "description": "Tehran street level shopfronts metro entrance Persian signage cobblestone sidewalk, seamless horizontal tile, pixel art side view",
+      "width": 512,
+      "height": 128,
+      "depth": 0.72,
+      "tiled": true,
+      "anchor": "ground"
+    },
+    {
+      "id": "tehran-ground-tiles",
+      "description": "seamless cobblestone street and sidewalk ground tiles, Tehran side view pixel art 16px grid",
+      "width": 256,
+      "height": 32,
+      "depth": 1.0,
+      "tiled": true,
+      "anchor": "ground"
+    },
+    {
+      "id": "chenar-trees",
+      "description": "dark chenar plane tree silhouettes foreground depth, seamless horizontal tile, Tehran street pixel art",
+      "width": 256,
+      "height": 128,
+      "depth": 1.35,
+      "tiled": true,
+      "anchor": "ground"
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "milad-tower",
+      "description": "Milad Tower Tehran iconic tall tower with observation pod, pixel art side view silhouette",
+      "width": 48,
+      "height": 128,
+      "worldX": 320,
+      "depth": 0.06
+    },
+    {
+      "id": "azadi-tower",
+      "description": "Azadi Tower Tehran white arched monument, pixel art side view",
+      "width": 64,
+      "height": 96,
+      "worldX": 180,
+      "depth": 0.42
+    },
+    {
+      "id": "persian-domes",
+      "description": "Persian mosque domes and minarets silhouette Tehran skyline, pixel art side view",
+      "width": 96,
+      "height": 80,
+      "worldX": 260,
+      "depth": 0.5
+    }
+  ],
+  "chapterProps": [
+    {
+      "chapterId": "intro",
+      "id": "childhood-house",
+      "description": "small Tehran neighbourhood house flat roof satellite dish warm dawn light, pixel art side view game prop",
+      "width": 64,
+      "height": 56,
+      "view": "side"
+    },
+    {
+      "chapterId": "work",
+      "id": "construction-crane",
+      "description": "construction crane on building site, pixel art side view game prop Tehran",
+      "width": 80,
+      "height": 96,
+      "view": "side"
+    },
+    {
+      "chapterId": "work",
+      "id": "bridge-girder",
+      "description": "steel bridge girder segment side view pixel art game platform",
+      "width": 64,
+      "height": 24,
+      "view": "side"
+    },
+    {
+      "chapterId": "intro",
+      "id": "road-pit",
+      "description": "broken road pit hole in cobblestone street side view pixel art",
+      "width": 48,
+      "height": 32,
+      "view": "side"
+    }
+  ],
+  "outputPaths": {
+    "character": "public/world/character",
+    "scenes": "public/world/scenes",
+    "objects": "public/world/objects",
+    "tilesets": "public/world/tilesets"
+  }
+}

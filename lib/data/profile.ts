@@ -1,22 +1,18 @@
 import { ProfileSchema } from "@/lib/schemas";
 import type { Profile } from "@/lib/schemas";
 
-/**
- * Profile content (validated against ProfileSchema). All values are realistic
- * placeholders — edit freely. `email` is a placeholder address; swap it for your
- * preferred contact address.
- */
 const profile: Profile = ProfileSchema.parse({
   name: "Soheil Nikroo",
-  role: "Software Engineer · Front-end & Product",
-  tagline: "I build immersive, accessible web experiences that feel effortless.",
+  role: "Senior Frontend Engineer · Snapp",
+  tagline:
+    "TypeScript, React, Next.js at scale — PWAs, UI systems, performance, and mobile-first craft.",
   summary:
-    "I'm a software engineer who lives at the intersection of design and engineering. " +
-    "I care about motion, performance, and the small details that make an interface feel " +
-    "alive — and about the architecture underneath that keeps it maintainable. Lately I've " +
-    "been building product experiences at VPORT and exploring scroll-driven storytelling on the web.",
-  location: "Remote · GMT+3:30",
-  email: "hello@soheilnikroo.dev",
+    "Frontend engineer at Snapp since 2022, building high-traffic consumer web apps with " +
+    "TypeScript, React, and Next.js. I focus on design patterns, UI kit work, PWAs, and " +
+    "mobile-first delivery at scale — plus cross-browser quality, testing, and Agile ownership. " +
+    "Always learning: Swift & SwiftUI, and a bit of Rust.",
+  location: "Tehran, Iran",
+  email: "soheiln1234@gmail.com",
   availability: "Open to select freelance & collaboration",
   resumeUrl: "https://soheilnikroo.dev/resume.pdf",
   socials: [
@@ -36,8 +32,8 @@ const profile: Profile = ProfileSchema.parse({
     {
       platform: "email",
       label: "Email",
-      href: "mailto:hello@soheilnikroo.dev",
-      handle: "hello@soheilnikroo.dev",
+      href: "mailto:soheiln1234@gmail.com",
+      handle: "soheiln1234@gmail.com",
     },
   ],
 });

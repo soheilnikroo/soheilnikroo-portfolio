@@ -1,0 +1,97 @@
+import { randomUUID } from "node:crypto";
+
+import { ensureSchema, getSql } from "./sql";
+
+export type PostRow = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  category: string;
+  tags: string[];
+  body: string;
+  cover: string | null;
+  published: boolean;
+  date: Date;
+  created_at: Date;
+  updated_at: Date;
+};
+
+export type PostInput = {
+  slug: string;
+  title: string;
+  description: string;
+  category: string;
+  tags: string[];
+  body: string;
+  cover?: string | null;
+  published: boolean;
+  date: Date;
+};
+
+export async function listPostRows(includeDrafts = false): Promise<PostRow[]> {
+  await ensureSchema();
+  const sql = getSql();
+  const rows = includeDrafts
+    ? await sql<PostRow[]>`SELECT * FROM posts ORDER BY date DESC`
+    : await sql<PostRow[]>`SELECT * FROM posts WHERE published = true ORDER BY date DESC`;
+  return [...rows];
+}
+
+export async function getPostRowBySlug(slug: string): Promise<PostRow | null> {
+  await ensureSchema();
+  const sql = getSql();
+  const rows = await sql<PostRow[]>`SELECT * FROM posts WHERE slug = ${slug} LIMIT 1`;
+  return rows[0] ?? null;
+}
+
+export async function getPostRowById(id: string): Promise<PostRow | null> {
+  await ensureSchema();
+  const sql = getSql();
+  const rows = await sql<PostRow[]>`SELECT * FROM posts WHERE id = ${id} LIMIT 1`;
+  return rows[0] ?? null;
+}
+
+export async function createPostRow(input: PostInput): Promise<PostRow> {
+  await ensureSchema();
+  const sql = getSql();
+  const id = randomUUID();
+  const rows = await sql<PostRow[]>`
+    INSERT INTO posts (id, slug, title, description, category, tags, body, cover, published, date)
+    VALUES (
+      ${id}, ${input.slug}, ${input.title}, ${input.description}, ${input.category},
+      ${sql.array(input.tags)}, ${input.body}, ${input.cover ?? null}, ${input.published}, ${input.date}
+    )
+    RETURNING *
+  `;
+  if (!rows[0]) throw new Error("Failed to create post");
+  return rows[0];
+}
+
+export async function updatePostRow(id: string, input: PostInput): Promise<PostRow | null> {
+  await ensureSchema();
+  const sql = getSql();
+  const rows = await sql<PostRow[]>`
+    UPDATE posts SET
+      slug = ${input.slug},
+      title = ${input.title},
+      description = ${input.description},
+      category = ${input.category},
+      tags = ${sql.array(input.tags)},
+      body = ${input.body},
+      cover = ${input.cover ?? null},
+      published = ${input.published},
+      date = ${input.date},
+      updated_at = now()
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return rows[0] ?? null;
+}
+
+export async function deletePostRow(id: string): Promise<boolean> {
+  await ensureSchema();
+  const sql = getSql();
+  const rows = await sql<PostRow[]>`DELETE FROM posts WHERE id = ${id} RETURNING id`;
+  return rows.length > 0;
+}

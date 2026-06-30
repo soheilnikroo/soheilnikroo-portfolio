@@ -24,3 +24,21 @@ export const PostMetaSchema = PostFrontmatterSchema.extend({
 });
 
 export type PostMeta = z.infer<typeof PostMetaSchema>;
+
+/** Payload accepted by the admin panel when creating/updating a post. */
+export const PostInputSchema = z.object({
+  slug: z
+    .string()
+    .min(1)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "slug must be kebab-case"),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  category: z.string().min(1),
+  tags: z.array(z.string().min(1)).default([]),
+  body: z.string().min(1),
+  cover: z.string().optional().nullable(),
+  published: z.boolean().default(false),
+  date: z.iso.date(),
+});
+
+export type PostInputValues = z.infer<typeof PostInputSchema>;

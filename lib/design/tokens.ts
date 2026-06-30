@@ -89,5 +89,3 @@ export const tokens = {
   cssVar,
   easing,
 } as const;
-
-export default tokens;

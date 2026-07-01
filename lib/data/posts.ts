@@ -13,6 +13,7 @@ import {
   updatePostRow,
 } from "@/lib/db/posts-store";
 import type { PostInput, PostRow } from "@/lib/db/posts-store";
+import { shouldUseContentStore } from "@/lib/db/request-context";
 import { PUBLIC_READ } from "@/lib/db/resilience";
 import { PostMetaSchema } from "@/lib/schemas";
 import type { PostInputValues, PostMeta } from "@/lib/schemas";
@@ -53,6 +54,7 @@ function rowsToMeta(rows: PostRow[]): PostMeta[] {
   });
 }
 async function readPublicPostMetaFromDb(): Promise<PostMeta[]> {
+  if (!shouldUseContentStore()) return [];
   const rows = await listPostRows(false, PUBLIC_READ);
   return rowsToMeta(rows);
 }
@@ -81,6 +83,10 @@ export async function getPostMetaBySlug(
   slug: string,
   includeDrafts = false,
 ): Promise<PostMeta | null> {
+  if (!shouldUseContentStore()) {
+    const fallback = await loadPostSourceFromDisk(slug, includeDrafts);
+    return fallback?.meta ?? null;
+  }
   try {
     const row = await getPostRowBySlug(slug);
     if (row) {
@@ -98,6 +104,7 @@ export async function getPostSource(
   slug: string,
   includeDrafts = false,
 ): Promise<PostSource | null> {
+  if (!shouldUseContentStore()) return loadPostSourceFromDisk(slug, includeDrafts);
   try {
     const row = await getPostRowBySlug(slug);
     if (row) {

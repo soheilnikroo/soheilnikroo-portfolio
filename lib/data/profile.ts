@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 
 import { isAdmin } from "@/lib/auth/session";
 import { logContentStoreError } from "@/lib/db/log-content-store";
+import { shouldUseContentStore } from "@/lib/db/request-context";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { ProfileSchema } from "@/lib/schemas";
 import type { Profile } from "@/lib/schemas";
@@ -50,6 +51,7 @@ const fallbackProfile: Profile = ProfileSchema.parse({
   ],
 });
 async function readProfile(): Promise<Profile> {
+  if (!shouldUseContentStore()) return fallbackProfile;
   try {
     const row = await getSiteContentRow("profile");
     if (!row) return fallbackProfile;

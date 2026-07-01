@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 
 import { isAdmin } from "@/lib/auth/session";
 import { logContentStoreError } from "@/lib/db/log-content-store";
+import { shouldUseContentStore } from "@/lib/db/request-context";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { SiteSettingsSchema } from "@/lib/schemas";
 import type { SiteSettings } from "@/lib/schemas";
@@ -72,6 +73,7 @@ export const fallbackSiteSettings: SiteSettings = SiteSettingsSchema.parse({
   },
 });
 async function readSiteSettings(): Promise<SiteSettings> {
+  if (!shouldUseContentStore()) return fallbackSiteSettings;
   try {
     const row = await getSiteContentRow("site");
     if (!row) return fallbackSiteSettings;

@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 
 import { isAdmin } from "@/lib/auth/session";
 import { logContentStoreError } from "@/lib/db/log-content-store";
+import { shouldUseContentStore } from "@/lib/db/request-context";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { SkillGraphSchema } from "@/lib/schemas";
 import type { SkillGraph } from "@/lib/schemas";
@@ -139,6 +140,7 @@ const fallbackGraph: SkillGraph = SkillGraphSchema.parse({
   ],
 });
 async function readSkillGraph(): Promise<SkillGraph> {
+  if (!shouldUseContentStore()) return fallbackGraph;
   try {
     const row = await getSiteContentRow("skills");
     if (!row) return fallbackGraph;

@@ -10,6 +10,7 @@ import {
   updateProjectRow,
 } from "@/lib/db/projects-store";
 import type { ProjectRow } from "@/lib/db/projects-store";
+import { shouldUseContentStore } from "@/lib/db/request-context";
 import { PUBLIC_READ } from "@/lib/db/resilience";
 import { ProjectSchema } from "@/lib/schemas";
 import type { Project } from "@/lib/schemas";
@@ -100,6 +101,7 @@ function rowToProject(row: ProjectRow): Project {
 }
 
 async function readProjectsFromDb(): Promise<Project[]> {
+  if (!shouldUseContentStore()) return [];
   const rows = await listProjectRows(PUBLIC_READ);
   if (rows.length === 0) return [];
   return rows.map(rowToProject).sort(byDisplayOrder);
@@ -122,6 +124,9 @@ export async function getFeaturedProjects(): Promise<Project[]> {
   return (await getProjects()).filter((p) => p.featured);
 }
 export async function getProjectBySlug(slug: string): Promise<Project | null> {
+  if (!shouldUseContentStore()) {
+    return fallbackProjects.find((p) => p.slug === slug) ?? null;
+  }
   try {
     const row = await getProjectRowBySlug(slug);
     if (row) return rowToProject(row);

@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 
 import { isAdmin } from "@/lib/auth/session";
 import { logContentStoreError } from "@/lib/db/log-content-store";
+import { shouldUseContentStore } from "@/lib/db/request-context";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { MilestonesSchema } from "@/lib/schemas";
 import type { Milestone } from "@/lib/schemas";
@@ -39,6 +40,7 @@ const fallbackMilestones: Milestone[] = [
   },
 ];
 async function readMilestones(): Promise<Milestone[]> {
+  if (!shouldUseContentStore()) return fallbackMilestones;
   try {
     const row = await getSiteContentRow("milestones");
     if (!row) return fallbackMilestones;

@@ -29,6 +29,11 @@ export function isContentStoreEnabled(): boolean {
   return Boolean(process.env.DATABASE_URL);
 }
 
+/** Runtime only — build uses bundled fallbacks (no Postgres in CI or at compile time). */
+export function shouldUseContentStore(): boolean {
+  return isContentStoreEnabled() && !isNextProductionBuild();
+}
+
 /** Public reads fail fast to fallbacks; authenticated admin reads wait for live CMS data. */
 export async function resolveDbConnectOptions(
   options?: DbConnectOptions,

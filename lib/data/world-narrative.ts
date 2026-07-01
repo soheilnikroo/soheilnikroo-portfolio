@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 
 import { isAdmin } from "@/lib/auth/session";
 import { logContentStoreError } from "@/lib/db/log-content-store";
+import { shouldUseContentStore } from "@/lib/db/request-context";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { WorldNarrativeSchema } from "@/lib/schemas";
 import type { StoryBeat, WorldNarrative } from "@/lib/schemas";
@@ -75,6 +76,7 @@ export const fallbackWorldNarrative: WorldNarrative = WorldNarrativeSchema.parse
   },
 });
 async function readWorldNarrative(): Promise<WorldNarrative> {
+  if (!shouldUseContentStore()) return fallbackWorldNarrative;
   try {
     const row = await getSiteContentRow("world");
     if (!row) return fallbackWorldNarrative;

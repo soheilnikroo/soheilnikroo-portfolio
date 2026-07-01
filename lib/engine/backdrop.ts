@@ -563,59 +563,60 @@ function drawImageCity(
 
   const tile = (id: string) => scene.layers.get(id);
 
-  // Landing: one high-quality PixelLab panorama (no tile repeat → no duplicate sun).
   const hero = tile("intro-hero-dawn");
   const heroOn = hero && intro > 0.06;
-  if (heroOn) {
-    drawCoverLayer(surface, hero, gy, Math.min(1, intro));
-  }
+  // Crossfade parallax in only after the hero panorama fades — keeps the landing clean.
+  const stackAlpha = heroOn ? Math.max(0, 1 - intro) : 1;
 
-  // Full PixelLab parallax stack — same art family as the landing hero.
   const mountains = tile("alborz-mountains");
-  if (mountains) {
-    const a = heroOn ? Math.max(0, 1 - intro) * 0.35 : 1;
-    if (a > 0.03) drawTiledLayer(surface, mountains, panX, 0.08, gy, a);
+  if (mountains && stackAlpha > 0.04) {
+    drawTiledLayer(surface, mountains, panX, 0.08, gy, stackAlpha);
   }
 
   const milad = scene.landmarks.get("milad-tower");
-  if (milad && (!heroOn || intro < 0.5)) {
-    drawPlacedSprite(surface, milad, 320, gy, panX, 0.06, heroOn ? 1 - intro * 0.6 : 1);
+  if (milad && stackAlpha > 0.35) {
+    drawPlacedSprite(surface, milad, 320, gy, panX, 0.06, stackAlpha);
   }
 
   const skyline = tile("tehran-skyline-far");
-  if (skyline) {
-    const a = heroOn ? Math.max(0, 1 - intro * 0.85) : 1;
-    if (a > 0.03) drawTiledLayer(surface, skyline, panX, 0.22, gy, a);
+  if (skyline && stackAlpha > 0.04) {
+    drawTiledLayer(surface, skyline, panX, 0.22, gy, stackAlpha);
   }
 
   const azadi = scene.landmarks.get("azadi-tower");
-  if (azadi && (!heroOn || intro < 0.45)) {
-    drawPlacedSprite(surface, azadi, 180, gy, panX, 0.42, heroOn ? 1 - intro * 0.7 : 1);
+  if (azadi && stackAlpha > 0.4) {
+    drawPlacedSprite(surface, azadi, 180, gy, panX, 0.42, stackAlpha);
   }
 
   const domes = scene.landmarks.get("persian-domes");
-  if (domes && (!heroOn || intro < 0.45)) {
-    drawPlacedSprite(surface, domes, 260, gy, panX, 0.5, heroOn ? 1 - intro * 0.7 : 1);
+  if (domes && stackAlpha > 0.4) {
+    drawPlacedSprite(surface, domes, 260, gy, panX, 0.5, stackAlpha);
   }
 
   const mid = tile("tehran-buildings-mid");
-  if (mid && g > 0.02 && (!heroOn || intro < 0.2)) {
-    drawTiledLayer(surface, mid, panX, 0.45, gy, heroOn ? g * (1 - intro) : g);
+  if (mid && g > 0.02 && stackAlpha > 0.08) {
+    drawTiledLayer(surface, mid, panX, 0.45, gy, stackAlpha * g);
   }
 
   const shops = tile("tehran-shopfronts");
-  const shopAlpha = Math.max(0, (g - 0.15) / 0.85);
-  if (shops && shopAlpha > 0.02 && (!heroOn || intro < 0.15)) {
+  const shopAlpha = Math.max(0, (g - 0.15) / 0.85) * stackAlpha;
+  if (shops && shopAlpha > 0.04) {
     drawTiledLayer(surface, shops, panX, 0.72, gy, shopAlpha);
   }
 
-  const ground = tile("tehran-ground-tiles");
-  if (ground) drawTiledLayer(surface, ground, panX, 1.0, gy);
+  const ground = assets.groundSprite ?? tile("tehran-ground-tiles");
+  if (ground && stackAlpha > 0.06) {
+    drawTiledLayer(surface, ground, panX, 1.0, gy, stackAlpha);
+  }
 
   const chenar = tile("chenar-trees");
-  if (chenar) {
-    const a = heroOn ? Math.max(0, 1 - intro * 1.1) : 1;
-    if (a > 0.04) drawTiledLayer(surface, chenar, panX, 1.35, gy, a);
+  if (chenar && stackAlpha > 0.06) {
+    drawTiledLayer(surface, chenar, panX, 1.35, gy, stackAlpha);
+  }
+
+  // Hero draws last so parallax/landmarks never bleed over the landing panorama.
+  if (heroOn) {
+    drawCoverLayer(surface, hero, gy, Math.min(1, intro));
   }
 
   if (!hero && !mountains && !skyline) drawProceduralCity(surface, panX, palette, growth);

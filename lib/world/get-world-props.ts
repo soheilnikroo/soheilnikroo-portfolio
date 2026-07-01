@@ -48,7 +48,7 @@ export async function getWorldPageProps(): Promise<WorldExperienceProps> {
     email: profile.email,
     resumeUrl: profile.resumeUrl,
     socials: profile.socials
-      .filter((s) => s.platform !== "email")
+      .filter((s) => s.platform !== "email" && s.platform !== "x")
       .map((s) => ({ label: s.label, href: s.href })),
     introProse: world.introProse,
     chapterMeta: world.chapters,

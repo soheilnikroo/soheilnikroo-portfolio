@@ -3,6 +3,7 @@
   "characterId": "d5d32418-5372-435e-b80b-997b80bb8350",
   "style": {
     "palette": "Persian architecture: firoozeh turquoise #1c9aaa, terracotta brick #b74d35, mesi copper #b87333, berenji gold #d4af37, dusty Tehran smog horizon, Alborz mountains, chenar plane trees",
+    "stylePrefix": "Cohesive 16px sidescroller pixel art, Tehran Iran portfolio game, firoozeh turquoise terracotta brick berenji gold palette, flat-roof buildings with water tanks and satellite dishes, single black outline, medium detail, side view:",
     "outline": "single color outline",
     "shading": "basic shading",
     "detail": "medium detail",
@@ -51,8 +52,8 @@
         }
       ],
       "sidescrollerTileset": {
-        "lower_description": "dark wooden floor planks",
-        "transition_description": "dust and faint morning light"
+        "lower_description": "dark wooden bedroom floor planks with faint dawn light",
+        "transition_description": "dust motes and warm morning glow"
       }
     },
     {
@@ -78,8 +79,8 @@
         }
       ],
       "sidescrollerTileset": {
-        "lower_description": "cobblestone street",
-        "transition_description": "morning mist and dust"
+        "lower_description": "Tehran cobblestone construction site street",
+        "transition_description": "morning smog mist and brick dust"
       }
     },
     {
@@ -105,8 +106,8 @@
         }
       ],
       "sidescrollerTileset": {
-        "lower_description": "dark stone arena floor",
-        "transition_description": "purple magical glow cracks"
+        "lower_description": "Tehran metro platform floor tiles with yellow safety line",
+        "transition_description": "red metro stripe and fluorescent glow"
       }
     },
     {
@@ -166,8 +167,17 @@
   ],
   "backgroundLayers": [
     {
+      "id": "intro-hero-dawn",
+      "description": "wide dawn panorama NOT tiled: Mount Damavand snow peak, Milad Tower silhouette, flat-roof Tehran neighbourhood, firoozeh mosque dome, dusty smog horizon, warm orange-purple sky, single scene",
+      "width": 512,
+      "height": 176,
+      "depth": 0.12,
+      "tiled": false,
+      "anchor": "ground"
+    },
+    {
       "id": "alborz-mountains",
-      "description": "Alborz mountain range with snow-capped Mount Damavand peak, distant horizon, warm dawn haze, seamless horizontal tile, side view pixel art Tehran Iran",
+      "description": "seamless horizontal tile strip: Alborz mountain range with snow-capped Mount Damavand, dusty Tehran smog band at base, warm dawn haze, side view pixel art",
       "width": 512,
       "height": 128,
       "depth": 0.08,
@@ -176,7 +186,7 @@
     },
     {
       "id": "tehran-skyline-far",
-      "description": "distant Tehran city skyline silhouette, flat rooftops water tanks satellite dishes, hazy atmospheric perspective, seamless horizontal tile, pixel art side view",
+      "description": "seamless horizontal tile strip: distant Tehran flat-roof skyline, water tanks ab-khan, satellite dishes, low parapets, hazy atmospheric perspective, pixel art side view",
       "width": 512,
       "height": 96,
       "depth": 0.22,
@@ -185,7 +195,7 @@
     },
     {
       "id": "tehran-buildings-mid",
-      "description": "Tehran midground buildings Persian brick facades lit windows shop awnings balconies, seamless horizontal tile, warm pixel art side view",
+      "description": "seamless horizontal tile strip: Tehran mid-rise Persian brick facades, firoozeh turquoise tile frieze bands, mashrabiya windows, terracotta shop awnings, warm lit windows, pixel art side view",
       "width": 512,
       "height": 160,
       "depth": 0.45,
@@ -194,7 +204,7 @@
     },
     {
       "id": "tehran-shopfronts",
-      "description": "Tehran street level shopfronts metro entrance Persian signage cobblestone sidewalk, seamless horizontal tile, pixel art side view",
+      "description": "seamless horizontal tile strip: Tehran street-level bazaar shopfronts, Persian tile above doors, red metro entrance signs, cobblestone sidewalk, taxi yellow curb stripe, pixel art side view",
       "width": 512,
       "height": 128,
       "depth": 0.72,
@@ -203,7 +213,7 @@
     },
     {
       "id": "tehran-ground-tiles",
-      "description": "seamless cobblestone street and sidewalk ground tiles, Tehran side view pixel art 16px grid",
+      "description": "seamless horizontal tile strip: cobblestone street and sidewalk ground tiles, taxi yellow curb line, Tehran side view pixel art 16px grid",
       "width": 256,
       "height": 32,
       "depth": 1.0,
@@ -212,7 +222,7 @@
     },
     {
       "id": "chenar-trees",
-      "description": "dark chenar plane tree silhouettes foreground depth, seamless horizontal tile, Tehran street pixel art",
+      "description": "seamless horizontal tile strip: Valiasr boulevard chenar plane tree silhouettes foreground depth, tall columnar canopies, Tehran street pixel art",
       "width": 256,
       "height": 128,
       "depth": 1.35,

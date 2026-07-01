@@ -495,6 +495,116 @@ function bakeMetroSign(w, h) {
   return buf;
 }
 
+/** Composite a smaller RGBA strip onto a destination buffer. */
+function blitRgba(dest, destW, destH, src, srcW, srcH, dx, dy, alpha = 1) {
+  for (let y = 0; y < srcH; y += 1) {
+    const ty = dy + y;
+    if (ty < 0 || ty >= destH) continue;
+    for (let x = 0; x < srcW; x += 1) {
+      const tx = dx + x;
+      if (tx < 0 || tx >= destW) continue;
+      const si = (y * srcW + x) * 4;
+      const sa = src[si + 3];
+      if (sa === 0) continue;
+      const a = (sa / 255) * alpha;
+      setPx(dest, destW, tx, ty, src[si], src[si + 1], src[si + 2], Math.round(a * 255));
+    }
+  }
+}
+
+/** Landing-chapter dawn panorama — Damavand, flat-roof Tehran, warm smog horizon. */
+function bakeIntroHero(w, h) {
+  const buf = Buffer.alloc(w * h * 4);
+  for (let y = 0; y < h; y += 1) {
+    const t = y / h;
+    const top = hexRgb(t < 0.45 ? "#2a1848" : t < 0.72 ? "#8a4868" : "#f0b878");
+    for (let x = 0; x < w; x += 1) setPx(buf, w, x, y, ...top);
+  }
+  // Dawn sun
+  const sunX = Math.round(w * 0.18);
+  const sunY = Math.round(h * 0.22);
+  for (let dy = -14; dy <= 14; dy += 1) {
+    for (let dx = -14; dx <= 14; dx += 1) {
+      if (dx * dx + dy * dy <= 196) setPx(buf, w, sunX + dx, sunY + dy, 255, 236, 190);
+    }
+  }
+  blitRgba(buf, w, h, bakeMountains(512, 128), 512, 128, 0, h - 128, 0.92);
+  blitRgba(buf, w, h, bakeSkylineFar(512, 96), 512, 96, 0, h - 96, 0.88);
+  blitRgba(buf, w, h, bakeBuildingsMid(512, 160), 512, 160, 0, h - 160, 0.75);
+  blitRgba(buf, w, h, bakeMilad(48, 128), 48, 128, Math.round(w * 0.72), h - 128, 0.95);
+  blitRgba(buf, w, h, bakeDomes(96, 80), 96, 80, Math.round(w * 0.12), h - 80, 0.9);
+  // Smog band at the horizon
+  for (let y = Math.round(h * 0.58); y < Math.round(h * 0.72); y += 1) {
+    const a = Math.floor(((y - h * 0.58) / (h * 0.14)) * 90);
+    for (let x = 0; x < w; x += 1) setPx(buf, w, x, y, ...hexRgb(C.smogLight), a);
+  }
+  return buf;
+}
+
+function bakeIntroFloor(w, h) {
+  const buf = Buffer.alloc(w * h * 4);
+  fillRect(buf, w, h, 0, 0, w, h, "#3a2818");
+  for (let x = 0; x < w; x += 16) {
+    fillRect(buf, w, h, x, 0, 15, h, x % 32 === 0 ? "#4a3420" : "#2e2014");
+    fillRect(buf, w, h, x, 0, 15, 2, "#5a4030");
+  }
+  for (let x = 8; x < w; x += 24) {
+    if (rand(x) > 0.5) setPx(buf, w, x, 4, ...hexRgb("#ffe8c0"), 40);
+  }
+  return buf;
+}
+
+function bakeWorkGround(w, h) {
+  const buf = bakeGround(w, h);
+  for (let x = 0; x < w; x += 1) {
+    setPx(buf, w, x, 2, ...hexRgb(C.smogLight), 30);
+  }
+  return buf;
+}
+
+function bakeSkillsMetro(w, h) {
+  const buf = Buffer.alloc(w * h * 4);
+  fillRect(buf, w, h, 0, 0, w, h, "#3a3848");
+  for (let x = 0; x < w; x += 16) {
+    for (let y = 0; y < h; y += 16) {
+      fillRect(buf, w, h, x, y, 15, 15, (x / 16 + y / 16) % 2 === 0 ? "#444058" : "#363448");
+    }
+  }
+  fillRect(buf, w, h, 0, h - 4, w, 2, C.metroRed);
+  fillRect(buf, w, h, 0, h - 6, w, 2, "#f2c200");
+  return buf;
+}
+
+function bakeVaultFloor(w, h) {
+  const buf = Buffer.alloc(w * h * 4);
+  fillRect(buf, w, h, 0, 0, w, h, "#1a3830");
+  for (let x = 0; x < w; x += 16) {
+    for (let y = 0; y < h; y += 16) {
+      fillRect(buf, w, h, x, y, 15, 15, (x / 16 + y / 16) % 2 === 0 ? "#245840" : "#1a3028");
+      if (rand(x + y) > 0.82) setPx(buf, w, x + 4, y + 6, ...hexRgb("#3a6848"));
+    }
+  }
+  return buf;
+}
+
+function bakeRooftopGround(w, h) {
+  const buf = Buffer.alloc(w * h * 4);
+  fillRect(buf, w, h, 0, 0, w, h, "#2a2838");
+  for (let x = 0; x < w; x += 12) {
+    fillRect(buf, w, h, x, 0, 11, h, x % 24 === 0 ? "#343448" : "#222230");
+  }
+  fillRect(buf, w, h, 0, 0, w, 3, "#4a4858");
+  return buf;
+}
+
+const chapterGrounds = {
+  intro: bakeIntroFloor,
+  work: bakeWorkGround,
+  skills: bakeSkillsMetro,
+  writing: bakeVaultFloor,
+  contact: bakeRooftopGround,
+};
+
 const layers = [
   ["alborz-mountains", 512, 128, bakeMountains],
   ["tehran-skyline-far", 512, 96, bakeSkylineFar],
@@ -529,6 +639,14 @@ const wantTilesets = !only || [...only].some((k) => k.startsWith("tilesets/"));
 
 if (wantLayers) {
   if (forceProcedural || only) {
+    const skipHero =
+      existsSync(join(SCENES, "intro-hero-dawn.png")) && !only?.has("intro-hero-dawn");
+    if (!skipHero && (!only || only.has("intro-hero-dawn"))) {
+      writePng(join(SCENES, "intro-hero-dawn.png"), 512, 176, bakeIntroHero(512, 176));
+      console.log("wrote scenes/intro-hero-dawn.png");
+    } else if (skipHero) {
+      console.log("keeping scenes/intro-hero-dawn.png (PixelLab hero preserved)");
+    }
     for (const [id, w, h, fn] of layers) {
       if (only && !only.has(id)) continue;
       writePng(join(SCENES, `${id}.png`), w, h, fn(w, h));
@@ -562,7 +680,8 @@ if (forceProcedural || only) {
     for (const ch of ["intro", "work", "skills", "writing", "contact"]) {
       if (only && !only.has(`tilesets/${ch}`)) continue;
       mkdirSync(join(TILESETS, ch), { recursive: true });
-      writePng(join(TILESETS, ch, "ground.png"), 256, 32, bakeGround(256, 32));
+      const bakeFn = chapterGrounds[ch] ?? bakeGround;
+      writePng(join(TILESETS, ch, "ground.png"), 256, 32, bakeFn(256, 32));
       console.log(`wrote tilesets/${ch}/ground.png`);
     }
   }

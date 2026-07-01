@@ -17,7 +17,6 @@ import type { Sprite } from "@/lib/engine/assets";
 import { categoryColor } from "@/lib/world/skill-colors";
 
 import { drawTapMeHint, interactionShake } from "./canvas-hints";
-import { drawDeskReveal } from "./meta-ending";
 import { drawSkillBadge } from "./skill-badges";
 import { PALETTES, sceneManifest } from "./world-content";
 import { drawTapPointer, vaultLayout, vaultCameraFocusX } from "./writing-vault";
@@ -494,18 +493,30 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           // Title gate — stand on a small ledge, right of centre so dialogue doesn't cover him.
           cx = width * 0.66;
           baseline = gy - height * 0.14;
-          ctx.fillStyle = PALETTES.dawn.buildings;
-          ctx.fillRect(Math.round(cx - 36), Math.round(baseline), 72, Math.round(gy - baseline));
-          ctx.fillStyle = "#b58a52";
-          ctx.fillRect(Math.round(cx - 36), Math.round(baseline), 72, 4);
+          const ledgeW = 72;
+          const ledgeH = Math.round(gy - baseline);
+          if (plate) {
+            drawPropBox(surface, plate, cx, baseline, ledgeW, ledgeH);
+          } else {
+            ctx.fillStyle = PALETTES.dawn.buildings;
+            ctx.fillRect(Math.round(cx - ledgeW / 2), Math.round(baseline), ledgeW, ledgeH);
+            ctx.fillStyle = "#c89868";
+            ctx.fillRect(Math.round(cx - ledgeW / 2), Math.round(baseline), ledgeW, 4);
+          }
         } else if (local < 0.18) {
           // Still in dialogue beats — keep character elevated and right.
           cx = width * 0.66;
           baseline = gy - height * 0.14;
-          ctx.fillStyle = PALETTES.dawn.buildings;
-          ctx.fillRect(Math.round(cx - 36), Math.round(baseline), 72, Math.round(gy - baseline));
-          ctx.fillStyle = "#b58a52";
-          ctx.fillRect(Math.round(cx - 36), Math.round(baseline), 72, 4);
+          const ledgeW = 72;
+          const ledgeH = Math.round(gy - baseline);
+          if (plate) {
+            drawPropBox(surface, plate, cx, baseline, ledgeW, ledgeH);
+          } else {
+            ctx.fillStyle = PALETTES.dawn.buildings;
+            ctx.fillRect(Math.round(cx - ledgeW / 2), Math.round(baseline), ledgeW, ledgeH);
+            ctx.fillStyle = "#c89868";
+            ctx.fillRect(Math.round(cx - ledgeW / 2), Math.round(baseline), ledgeW, 4);
+          }
         } else if (local < 0.28) {
           // Leave the old neighbourhood.
           const t = clamp01((local - 0.08) / 0.2);
@@ -882,7 +893,7 @@ export function createChapters(data: ChapterData): ChapterScene[] {
     {
       id: "contact",
       title: "Rooftop at dusk",
-      weight: 2,
+      weight: 3.2,
       draw(rc: RenderContext) {
         const { surface, character, width, height, local, time } = rc;
         const ctx = surface.ctx;
@@ -900,7 +911,7 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         // Moon (flat stepped glow).
         glowCircle(ctx, width * 0.74, gy * 0.34, Math.max(8, height * 0.06), "255,246,224");
 
-        const metaT = clamp01((local - 0.42) / 0.5);
+        const metaT = clamp01((local - 0.38) / 0.58);
 
         if (local < 0.42) {
           const cafeFade = clamp01((local - 0.08) / 0.12) * clamp01(1 - metaT * 6);
@@ -930,15 +941,9 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           });
         }
 
-        // The meta zoom-out: rooftop fades to black, then bedroom + monitor appear.
-        drawDeskReveal(
-          surface,
-          metaT,
-          {
-            window: prop(data, "intro/bedroom-window"),
-          },
-          time,
-        );
+        // The meta zoom-out is now owned entirely by the 3D room (the live
+        // canvas is streamed onto the center monitor). This 2D layer simply
+        // keeps rendering the rooftop and is crossfaded out by the React layer.
       },
     },
   ];

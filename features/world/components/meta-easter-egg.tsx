@@ -20,6 +20,17 @@ export function MetaEasterEgg({
 }: MetaEasterEggProps): React.ReactElement | null {
   const reduced = useReducedMotion();
   const [showAnswer, setShowAnswer] = React.useState(false);
+  const dialogRef = React.useRef<HTMLDialogElement>(null);
+
+  // Drive the native <dialog> through the top layer so it always centers in the
+  // viewport, escaping the transformed/opacity overlay ancestors (which were
+  // pinning it to the bottom of the panel).
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (revealed && !dialog.open) dialog.showModal();
+    if (!revealed && dialog.open) dialog.close();
+  }, [revealed]);
 
   React.useEffect(() => {
     if (!revealed) {
@@ -62,8 +73,8 @@ export function MetaEasterEgg({
 
       {revealed ? (
         <dialog
-          open
-          className="pointer-events-auto fixed inset-0 z-50 m-0 flex max-h-none max-w-none items-center justify-center border-0 bg-transparent p-0 px-4 backdrop:bg-[#06050c]/88"
+          ref={dialogRef}
+          className="pointer-events-auto m-0 flex h-full max-h-none w-full max-w-none items-center justify-center border-0 bg-transparent p-0 px-4 backdrop:bg-[#06050c]/88"
           aria-labelledby="meta-secret-title"
           onPointerDown={(e) => e.stopPropagation()}
           onCancel={(e) => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { Volume2, VolumeX } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import * as React from "react";
 
@@ -35,8 +36,16 @@ import {
 } from "../world-helpers";
 import { ChapterBlock } from "./chapter-block";
 import { GameDialogueBox } from "./game-dialogue-box";
-import { MetaEasterEgg } from "./meta-easter-egg";
+import { MetaRoomOverlay } from "./meta-room-overlay";
 import { WorldSkillOverlay } from "./world-skill-overlay";
+
+const MetaRoomScene = dynamic(
+  () =>
+    import("@/lib/world/three-runtime").then(() =>
+      import("./meta-room-scene").then((mod) => mod.MetaRoomScene),
+    ),
+  { ssr: false },
+);
 
 export interface WorldProject {
   readonly slug: string;
@@ -116,8 +125,10 @@ export function WorldExperience(props: WorldExperienceProps) {
   const [questLine, setQuestLine] = React.useState({ text: "", opacity: 0 });
   const [workAnimTick, setWorkAnimTick] = React.useState(0);
   const [metaSecretRevealed, setMetaSecretRevealed] = React.useState(false);
+  const [metaGameFrame, setMetaGameFrame] = React.useState<HTMLCanvasElement | null>(null);
 
   const workOpenRef = React.useRef<Map<number, number>>(new Map());
+  const metaFrameRef = React.useRef<HTMLCanvasElement | null>(null);
   const workOpenTargetRef = React.useRef<Map<number, number>>(new Map());
   const openedWorkBoxRef = React.useRef<number | null>(null);
   const lastMetaSwellRef = React.useRef(false);
@@ -134,6 +145,28 @@ export function WorldExperience(props: WorldExperienceProps) {
   const blockRefs = React.useRef<(HTMLDivElement | null)[]>([]);
   const pingLayerRef = React.useRef<HTMLDivElement>(null);
   const viewportRef = React.useRef<GameViewportRect | null>(null);
+  const roomPrefetchedRef = React.useRef(false);
+  const [metaRoomReady, setMetaRoomReady] = React.useState(false);
+
+  const contactChapterIndex = React.useMemo(
+    () =>
+      Math.max(
+        0,
+        chapterMeta.findIndex((chapter) => chapter.id === "contact"),
+      ),
+    [chapterMeta],
+  );
+  const contactChapterIndexRef = React.useRef(contactChapterIndex);
+  contactChapterIndexRef.current = contactChapterIndex;
+
+  // Warm the HTTP cache + JS chunk as soon as the experience mounts so the 4.4 MB
+  // GLB is parsed before the rooftop meta zoom — avoids the "loading lag" hitch.
+  React.useEffect(() => {
+    if (roomPrefetchedRef.current) return;
+    roomPrefetchedRef.current = true;
+    void fetch("/3d-model/ROOM.glb").catch(() => {});
+    void import("@/lib/world/three-runtime").then(() => import("./meta-room-scene"));
+  }, []);
   const storyProfile = React.useMemo<StoryProfile>(
     () => ({ name: profileName, role, tagline, summary, location }),
     [profileName, role, tagline, summary, location],
@@ -358,14 +391,30 @@ export function WorldExperience(props: WorldExperienceProps) {
       }
 
       // Meta swell SFX when desk POV begins.
-      if (active.index === 4) {
-        const metaT = clamp01((active.local - 0.42) / 0.5);
+      if (active.index === contactChapterIndexRef.current) {
+        const metaT = clamp01((active.local - 0.38) / 0.58);
         if (metaT > 0.15 && !lastMetaSwellRef.current) {
           lastMetaSwellRef.current = true;
           sfx.metaSwell();
         } else if (metaT < 0.08) {
           lastMetaSwellRef.current = false;
         }
+        // Feed the *live* game canvas straight into the center monitor so the
+        // 2D fullscreen view and the 3D screen show the identical image — the
+        // crossfade between them becomes invisible.
+        if (metaT > 0.01) {
+          const frame = canvasRef.current;
+          if (frame && frame !== metaFrameRef.current) {
+            metaFrameRef.current = frame;
+            setMetaGameFrame(frame);
+          }
+        } else if (metaFrameRef.current) {
+          metaFrameRef.current = null;
+          setMetaGameFrame(null);
+        }
+      } else if (metaFrameRef.current) {
+        metaFrameRef.current = null;
+        setMetaGameFrame(null);
       }
       if (progressRef.current) progressRef.current.style.width = `${(p * 100).toFixed(2)}%`;
       if (active.index !== lastIndex) {
@@ -545,10 +594,14 @@ export function WorldExperience(props: WorldExperienceProps) {
   }, [mounted, enabled]);
 
   React.useEffect(() => {
-    if (activeIndex !== 4 || chapterLocal < 0.42 + 0.5 * 0.45) {
+    if (activeIndex !== contactChapterIndex || chapterLocal < 0.38 + 0.58 * 0.45) {
       setMetaSecretRevealed(false);
     }
-  }, [activeIndex, chapterLocal]);
+  }, [activeIndex, chapterLocal, contactChapterIndex]);
+
+  React.useEffect(() => {
+    if (activeIndex !== contactChapterIndex) setMetaRoomReady(false);
+  }, [activeIndex, contactChapterIndex]);
 
   if (!enabled) return null;
 
@@ -576,9 +629,32 @@ export function WorldExperience(props: WorldExperienceProps) {
         })
       : null;
   const spotlightSkill = skillBeat ? skillList[skillBeat.idx] : null;
-  const metaReveal = activeIndex === 4 ? clamp01((chapterLocal - 0.42) / 0.5) : 0;
-  const metaCaptionOpacity = clamp01((metaReveal - 0.5) / 0.38);
+  const metaReveal =
+    activeIndex === contactChapterIndex ? clamp01((chapterLocal - 0.38) / 0.58) : 0;
+  // Mount the 3D scene early in the contact chapter so the GLB parses during the
+  // rooftop walk — well before the crossfade at metaReveal ≈ 0.26.
+  const metaSceneMounted = activeIndex === contactChapterIndex && chapterLocal > 0.06;
+  // The 3D room mounts and holds tight on the center monitor (progress < ~0.12)
+  // while the 2D canvas crossfades out beneath it — both show the same live
+  // image, so the swap is invisible — then the camera cranes back to isometric.
+  const metaRoomProgress = metaRoomReady ? clamp01((metaReveal - 0.3) / 0.7) : 0;
+  const metaRoomOpacity = metaRoomReady ? clamp01((metaReveal - 0.26) / 0.1) : 0;
+  const metaCanvasOpacity = 1 - clamp01((metaReveal - 0.28) / 0.12);
+  // Cinematic depth/vignette swells through the pull-back, then eases off once settled.
+  const metaVignette =
+    clamp01((metaReveal - 0.3) / 0.25) * (1 - clamp01((metaReveal - 0.9) / 0.1) * 0.6);
+  // Hand control to the visitor only once the room has fully settled.
+  const metaInteractive = metaReveal > 0.94;
+  // How far into the 2D→3D handoff we are (fades the floating quest-line UI).
+  const metaHandoff = clamp01((metaReveal - 0.28) / 0.12);
   const metaEasterEggVisible = metaReveal > 0.82;
+  const contactBeats = storyBeats.contact ?? [];
+  const questLineOpacity =
+    activeIndex === contactChapterIndex && chapterLocal > 0.28
+      ? 0
+      : activeIndex === contactChapterIndex && metaHandoff > 0.15
+        ? questLine.opacity * (1 - clamp01(metaHandoff / 0.85))
+        : questLine.opacity;
 
   const toggleMute = (): void => {
     unlockAudio();
@@ -729,7 +805,51 @@ export function WorldExperience(props: WorldExperienceProps) {
           ref={canvasRef}
           aria-hidden="true"
           className="absolute inset-0 block h-full w-full"
+          style={{ opacity: metaCanvasOpacity }}
         />
+        {/* Mount (and start loading the GLB) early in the contact chapter so the
+            heavy model is parsed before the camera needs to hold on the wide
+            center monitor. Stays invisible until anchors are ready + crossfade. */}
+        {metaSceneMounted ? (
+          <div
+            className="absolute inset-0 z-[15]"
+            style={{
+              opacity: metaRoomOpacity,
+              pointerEvents: metaInteractive ? "auto" : "none",
+              visibility: metaRoomOpacity > 0.001 ? "visible" : "hidden",
+            }}
+            aria-hidden="true"
+          >
+            <MetaRoomScene
+              progress={metaRoomProgress}
+              gameFrame={metaGameFrame}
+              reducedMotion={reduced}
+              interactive={metaInteractive}
+              onReady={() => setMetaRoomReady(true)}
+            />
+            {/* Cinematic vignette — fakes shallow depth + frames the shot. */}
+            <div
+              className="pointer-events-none absolute inset-0 z-[16]"
+              style={{
+                opacity: metaVignette,
+                background:
+                  "radial-gradient(120% 100% at 50% 46%, rgba(0,0,0,0) 52%, rgba(6,4,12,0.55) 100%)",
+              }}
+            />
+            <MetaRoomOverlay
+              metaReveal={metaReveal}
+              contactBeats={contactBeats}
+              email={email}
+              resumeUrl={resumeUrl}
+              socials={socials}
+              onDownloadResume={downloadResume}
+              metaEasterEggVisible={metaEasterEggVisible}
+              metaSecretRevealed={metaSecretRevealed}
+              onRevealSecret={() => setMetaSecretRevealed(true)}
+              onDismissSecret={() => setMetaSecretRevealed(false)}
+            />
+          </div>
+        ) : null}
         {/* Click / tap feedback */}
         <div
           ref={pingLayerRef}
@@ -781,7 +901,7 @@ export function WorldExperience(props: WorldExperienceProps) {
           {/* Quest narration — thin line above the billboard */}
           <p
             aria-hidden="true"
-            style={{ opacity: questLine.opacity }}
+            style={{ opacity: questLineOpacity }}
             className="pointer-events-none absolute inset-x-0 top-[1%] z-20 mx-auto max-w-[96%] text-center [font-family:var(--font-pixel),monospace] text-xs font-bold text-amber-100 [text-shadow:2px_2px_0_#000] sm:text-sm"
           >
             {questLine.text}
@@ -917,83 +1037,19 @@ export function WorldExperience(props: WorldExperienceProps) {
               ) : null}
             </ChapterBlock>
 
-            {/* 4 — Contact — kept in a left column so the canvas desk/figure stay clear. */}
+            {/* 4 — Contact: rooftop narration only — socials & résumé live in the 3D room. */}
             <ChapterBlock index={4} activeIndex={activeIndex} blockRefs={blockRefs}>
-              {chapterLocal < 0.38 ? (
+              {chapterLocal < 0.28 ? (
                 <GameDialogueBox
                   accent="indigo"
-                  title="Let's build something."
-                  body="Tehran at night. If any of this felt familiar — say hello."
-                  opacity={clamp01(1 - chapterLocal * 1.8)}
+                  title="Almost there."
+                  body="Tehran at night. Keep scrolling — one more surprise waiting for you."
+                  opacity={clamp01(1 - chapterLocal * 2.2)}
                   beatKey="contact"
-                  action={
-                    <div className="flex flex-wrap gap-2">
-                      <a
-                        href={`mailto:${email}`}
-                        className="pointer-events-auto inline-flex min-h-11 items-center border-4 border-white bg-[#6366f1] px-4 py-2 [font-family:var(--font-pixel),monospace] text-sm font-bold text-white shadow-[4px_4px_0_#000] hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
-                      >
-                        Email me →
-                      </a>
-                      {socials.map((s) => (
-                        <a
-                          key={s.label}
-                          href={s.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="pointer-events-auto inline-flex min-h-11 items-center border-4 border-white/70 bg-[#0d0b16] px-3 py-2 [font-family:var(--font-pixel),monospace] text-sm font-bold text-white/90 shadow-[4px_4px_0_#000] hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
-                        >
-                          {s.label}
-                        </a>
-                      ))}
-                    </div>
-                  }
                 />
               ) : null}
             </ChapterBlock>
           </div>
-
-          {metaCaptionOpacity > 0.04 ? (
-            <div
-              className="pointer-events-auto absolute inset-x-0 bottom-0 z-40 px-2 pb-2 sm:px-4"
-              style={{ opacity: metaCaptionOpacity }}
-            >
-              <div className="mx-auto w-full max-w-[min(56rem,99%)] border-4 border-white bg-[#0d0b16]/97 px-4 py-4 [font-family:var(--font-pixel),monospace] shadow-[4px_4px_0_#000] sm:px-6">
-                <p className="text-base leading-snug font-bold text-white [text-shadow:2px_2px_0_#000] sm:text-lg">
-                  Life is a lot like a game — it all depends on how you play it.
-                </p>
-                <p className="mt-1.5 text-sm text-white/70">Thanks for playing through mine.</p>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-sm sm:gap-3">
-                  <a
-                    href={`mailto:${email}`}
-                    className="inline-flex min-h-11 items-center border-4 border-indigo-300 bg-indigo-950 px-4 py-2 font-bold text-indigo-50 shadow-[3px_3px_0_#000] hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
-                  >
-                    Say hello →
-                  </a>
-                  {resumeUrl ? (
-                    <button
-                      type="button"
-                      onClick={downloadResume}
-                      className="inline-flex min-h-11 items-center border-4 border-amber-300 bg-amber-950 px-4 py-2 font-bold text-amber-50 shadow-[3px_3px_0_#000] hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
-                    >
-                      Résumé PDF
-                    </button>
-                  ) : null}
-                  <Link
-                    href="/read"
-                    className="inline-flex min-h-11 items-center border-4 border-white/50 bg-[#0d0b16] px-4 py-2 font-bold text-white/90 shadow-[3px_3px_0_#000] hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
-                  >
-                    Read as a page
-                  </Link>
-                </div>
-                <MetaEasterEgg
-                  visible={metaEasterEggVisible}
-                  revealed={metaSecretRevealed}
-                  onReveal={() => setMetaSecretRevealed(true)}
-                  onDismiss={() => setMetaSecretRevealed(false)}
-                />
-              </div>
-            </div>
-          ) : null}
 
           {workBridge?.spans
             .filter((span) => span.visible)

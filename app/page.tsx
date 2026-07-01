@@ -70,6 +70,7 @@ export default async function HomePage() {
       {WORLD_PRELOADS.map((href) => (
         <link key={href} rel="preload" href={href} as="image" fetchPriority="high" />
       ))}
+      <link rel="preload" href="/3d-model/ROOM.glb" as="fetch" crossOrigin="anonymous" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(graphLd) }}

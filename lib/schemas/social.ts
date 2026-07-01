@@ -3,6 +3,7 @@ import { z } from "zod";
 export const SocialPlatformSchema = z.enum([
   "github",
   "linkedin",
+  "instagram",
   "x",
   "email",
   "website",

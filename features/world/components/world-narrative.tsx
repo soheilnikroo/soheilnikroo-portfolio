@@ -181,6 +181,7 @@ export function WorldNarrative({
                   className="underline-offset-4 hover:underline"
                 >
                   {s.label}
+                  <span className="sr-only"> (opens in new tab)</span>
                 </a>
               ))}
             </div>

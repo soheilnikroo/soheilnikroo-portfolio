@@ -70,6 +70,7 @@ export function VolumeControl({ className }: { className?: string }) {
             >
               <ElasticSlider
                 className="w-28"
+                ariaLabel="Ambient volume"
                 defaultValue={Math.round(volume * 100)}
                 startingValue={0}
                 maxValue={100}
@@ -91,6 +92,7 @@ export function VolumeControl({ className }: { className?: string }) {
           >
             <ElasticSlider
               className="w-full max-w-48"
+              ariaLabel="Ambient volume"
               defaultValue={Math.round(volume * 100)}
               startingValue={0}
               maxValue={100}

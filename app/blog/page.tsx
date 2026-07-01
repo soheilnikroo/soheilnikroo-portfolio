@@ -5,22 +5,26 @@ import { PixelPage } from "@/components/layout/pixel-page";
 import { BlogIndex } from "@/features/blog/components/blog-index";
 import { getAllCategories, getAllPostMeta } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
+import { ogImageEntries, pageTwitter } from "@/lib/seo/metadata-helpers";
 import { PIXEL_HEADING_SHADOW } from "@/lib/world/world-theme";
 
 export const revalidate = 300;
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteConfig();
   const copy = site.pages.blog;
+  const title = copy.title;
   return {
-    title: copy.title,
+    title,
     description: copy.description,
     alternates: { canonical: "/blog" },
     openGraph: {
       type: "website",
-      title: copy.title,
+      title,
       description: copy.description,
       url: `${site.url}/blog`,
+      images: ogImageEntries(site.url, "/opengraph-image"),
     },
+    twitter: pageTwitter(title, copy.description, site.twitterHandle),
   };
 }
 export default async function BlogPage() {
@@ -30,8 +34,28 @@ export default async function BlogPage() {
     getSiteConfig(),
   ]);
   const copy = site.pages.blog;
+  const blogLd = {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    name: copy.title,
+    description: copy.description,
+    url: `${site.url}/blog`,
+    inLanguage: "en",
+    author: { "@type": "Person", name: site.name, url: site.url },
+    blogPost: posts.map((post) => ({
+      "@type": "BlogPosting",
+      headline: post.title,
+      url: `${site.url}/blog/${post.slug}`,
+      datePublished: post.date,
+      dateModified: post.updated ?? post.date,
+    })),
+  };
   return (
     <PixelPage>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogLd) }}
+      />
       <Container className="py-section">
         <header className="max-w-2xl">
           {copy.eyebrow ? (

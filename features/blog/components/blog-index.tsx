@@ -38,6 +38,7 @@ export function BlogIndex({ posts, categories }: { posts: PostMeta[]; categories
           <button
             type="button"
             className={chipClass(category === null)}
+            aria-pressed={category === null}
             onClick={() => setCategory(null)}
           >
             All
@@ -47,6 +48,7 @@ export function BlogIndex({ posts, categories }: { posts: PostMeta[]; categories
               key={c}
               type="button"
               className={chipClass(category === c)}
+              aria-pressed={category === c}
               onClick={() => setCategory(c)}
             >
               {c}

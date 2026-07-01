@@ -129,6 +129,7 @@ export function MetaRoomOverlay({
                           className={`${PIXEL_BTN} border-white/55 bg-[#0d0b16] text-white/90`}
                         >
                           {s.label}
+                          <span className="sr-only"> (opens in new tab)</span>
                         </a>
                       ))}
                       {resumeUrl ? (
@@ -174,6 +175,7 @@ export function MetaRoomOverlay({
                     className="inline-flex min-h-11 items-center border-4 border-white/55 bg-[#0d0b16] px-3 py-2 font-bold text-white/90 shadow-[3px_3px_0_#000] hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                   >
                     {s.label}
+                    <span className="sr-only"> (opens in new tab)</span>
                   </a>
                 ))}
                 {resumeUrl ? (

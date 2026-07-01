@@ -5,8 +5,9 @@ import { notFound } from "next/navigation";
 
 import { Container } from "@/components/layout/container";
 import { PixelPage } from "@/components/layout/pixel-page";
-import { site } from "@/lib/config/site";
 import { getProjectBySlug, getProjects } from "@/lib/data";
+import { getSiteConfig } from "@/lib/data/site-settings";
+import { pageTwitter, resolveOgImage } from "@/lib/seo/metadata-helpers";
 import {
   PIXEL_CARD,
   PIXEL_GHOST_BTN,
@@ -27,18 +28,26 @@ export async function generateMetadata({
   }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const project = await getProjectBySlug(slug);
+  const [project, siteConfig] = await Promise.all([getProjectBySlug(slug), getSiteConfig()]);
   if (!project) return {};
+  const ogTitle = `${project.title} — ${siteConfig.name}`;
+  const ogImage = resolveOgImage(
+    siteConfig.url,
+    project.cover ?? project.screenshots[0],
+    `/work/${slug}/opengraph-image`,
+  );
   return {
     title: project.title,
     description: project.summary,
     alternates: { canonical: `/work/${slug}` },
     openGraph: {
       type: "article",
-      title: `${project.title} — Soheil Nikroo`,
+      title: ogTitle,
       description: project.summary,
       url: `/work/${slug}`,
+      images: [{ url: ogImage, alt: project.title }],
     },
+    twitter: pageTwitter(ogTitle, project.summary, siteConfig.twitterHandle),
   };
 }
 const BEATS = [
@@ -56,14 +65,21 @@ export default async function ProjectPage({
   }>;
 }) {
   const { slug } = await params;
-  const project = await getProjectBySlug(slug);
+  const [project, all, siteConfig] = await Promise.all([
+    getProjectBySlug(slug),
+    getProjects(),
+    getSiteConfig(),
+  ]);
   if (!project) notFound();
-  const all = await getProjects();
   const idx = all.findIndex((p) => p.slug === slug);
   const prev = idx > 0 ? all[idx - 1] : null;
   const next = idx >= 0 && idx < all.length - 1 ? all[idx + 1] : null;
   const accent = project.accent ?? "#a5b4fc";
   const shots = project.screenshots.length > 0 ? project.screenshots : [null, null, null];
+  const projectUrl = `${siteConfig.url}/work/${slug}`;
+  const imageUrls = [...(project.cover ? [project.cover] : []), ...project.screenshots].map((src) =>
+    src.startsWith("http") ? src : `${siteConfig.url}${src.startsWith("/") ? src : `/${src}`}`,
+  );
   const ld = {
     "@context": "https://schema.org",
     "@graph": [
@@ -71,20 +87,21 @@ export default async function ProjectPage({
         "@type": "CreativeWork",
         name: project.title,
         abstract: project.summary,
-        url: `${site.url}/work/${slug}`,
+        url: projectUrl,
+        ...(imageUrls.length > 0 ? { image: imageUrls } : {}),
         keywords: project.tech.join(", "),
-        creator: { "@type": "Person", name: site.name, url: site.url },
+        creator: { "@type": "Person", name: siteConfig.name, url: siteConfig.url },
       },
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: site.url },
-          { "@type": "ListItem", position: 2, name: "Projects", item: `${site.url}/work` },
+          { "@type": "ListItem", position: 1, name: "Home", item: siteConfig.url },
+          { "@type": "ListItem", position: 2, name: "Projects", item: `${siteConfig.url}/work` },
           {
             "@type": "ListItem",
             position: 3,
             name: project.title,
-            item: `${site.url}/work/${slug}`,
+            item: projectUrl,
           },
         ],
       },
@@ -136,7 +153,7 @@ export default async function ProjectPage({
                   rel="noreferrer"
                   className={`${PIXEL_PRIMARY_BTN} px-4 py-2`}
                 >
-                  Visit live ↗
+                  Visit live ↗<span className="sr-only"> (opens in new tab)</span>
                 </a>
               ) : null}
               {project.links.repo ? (
@@ -146,7 +163,7 @@ export default async function ProjectPage({
                   rel="noreferrer"
                   className={`${PIXEL_GHOST_BTN} px-4 py-2`}
                 >
-                  Source ↗
+                  Source ↗<span className="sr-only"> (opens in new tab)</span>
                 </a>
               ) : null}
               {project.links.caseStudy ? (
@@ -156,7 +173,7 @@ export default async function ProjectPage({
                   rel="noreferrer"
                   className={`${PIXEL_GHOST_BTN} px-4 py-2`}
                 >
-                  Case study ↗
+                  Case study ↗<span className="sr-only"> (opens in new tab)</span>
                 </a>
               ) : null}
             </div>

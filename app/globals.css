@@ -703,3 +703,9 @@ code[data-theme="dark"] {
     transform: none;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse {
+    animation: none;
+  }
+}

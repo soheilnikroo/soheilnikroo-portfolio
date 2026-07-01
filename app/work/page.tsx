@@ -1,26 +1,31 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
 import { PixelPage } from "@/components/layout/pixel-page";
 import { getAllPostMeta, getProjects } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
+import { ogImageEntries, pageTwitter } from "@/lib/seo/metadata-helpers";
 import { PIXEL_CARD, PIXEL_HEADING_SHADOW } from "@/lib/world/world-theme";
 
 export const revalidate = 300;
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteConfig();
   const copy = site.pages.work;
+  const title = copy.title;
   return {
-    title: copy.title,
+    title,
     description: copy.description,
     alternates: { canonical: "/work" },
     openGraph: {
       type: "website",
-      title: `${copy.title} — ${site.name}`,
+      title: `${title} — ${site.name}`,
       description: copy.description,
       url: `${site.url}/work`,
+      images: ogImageEntries(site.url, "/opengraph-image"),
     },
+    twitter: pageTwitter(`${title} — ${site.name}`, copy.description, site.twitterHandle),
   };
 }
 const STATUS_LABEL: Record<string, string> = {
@@ -77,15 +82,25 @@ export default async function WorkPage() {
               href={`/work/${p.slug}`}
               className={`group p-5 transition-transform hover:-translate-y-1 ${PIXEL_CARD}`}
             >
-              <div
-                aria-hidden="true"
-                className="mb-4 h-36 w-full overflow-hidden rounded-[3px] border border-pixel-border/25"
-                style={{
-                  background: p.cover
-                    ? `center / cover no-repeat url(${p.cover})`
-                    : `linear-gradient(135deg, ${p.accent ?? "#6366f1"}55, var(--pixel-panel) 75%)`,
-                }}
-              />
+              {p.cover ? (
+                <div className="relative mb-4 h-36 w-full overflow-hidden rounded-[3px] border border-pixel-border/25">
+                  <Image
+                    src={p.cover}
+                    alt=""
+                    fill
+                    sizes="(max-width: 640px) 100vw, 50vw"
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <div
+                  aria-hidden="true"
+                  className="mb-4 h-36 w-full overflow-hidden rounded-[3px] border border-pixel-border/25"
+                  style={{
+                    background: `linear-gradient(135deg, ${p.accent ?? "#6366f1"}55, var(--pixel-panel) 75%)`,
+                  }}
+                />
+              )}
               <div className="flex items-center justify-between text-[10px] text-pixel-fg-muted">
                 <span>
                   {p.role} · {p.year}

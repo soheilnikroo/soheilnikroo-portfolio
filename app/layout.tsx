@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import type { Metadata, Viewport } from "next";
 
 import { SiteFooter, SiteFooterGate, SiteHeader } from "@/components/layout";
+import { SkipToContent } from "@/components/layout/skip-to-content";
 import { MotionConfigProvider, ScrollProgressProvider } from "@/components/motion";
 import { RouteTransition } from "@/components/motion/route-transition";
 import { ClickSpark } from "@/components/reactbits/click-spark";
@@ -49,7 +50,12 @@ export async function generateMetadata(): Promise<Metadata> {
     formatDetection: { telephone: false, address: false, email: false },
     appleWebApp: { capable: true, title: settings.name, statusBarStyle: "black-translucent" },
     icons: { icon: "/web-app-manifest-192x192.png", apple: "/web-app-manifest-192x192.png" },
-    alternates: { types: { "application/rss+xml": `${url}/rss.xml` } },
+    alternates: {
+      types: {
+        "application/rss+xml": `${url}/rss.xml`,
+        "text/markdown": `${url}/llms.txt`,
+      },
+    },
   };
 }
 export const viewport: Viewport = {
@@ -70,7 +76,7 @@ export default async function RootLayout({
   const settings = await getSiteSettings();
   return (
     <html
-      lang="en"
+      lang={settings.locale.split("_")[0] ?? "en"}
       suppressHydrationWarning
       className={`${GeistSans.variable} ${GeistMono.variable} ${pixelFont.variable} h-full antialiased`}
     >
@@ -83,12 +89,7 @@ export default async function RootLayout({
               <AmbientProvider bedSrc="/audio/ambient/site-bed.ogg">
                 <AmbientBackground />
                 <CustomCursor />
-                <a
-                  href="#main"
-                  className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[var(--z-toast)] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:ring-3 focus:ring-ring/50"
-                >
-                  {settings.skipToContent}
-                </a>
+                <SkipToContent label={settings.skipToContent} />
                 <ClickSpark sparkColor="#818cf8" className="flex min-h-svh flex-col">
                   <SiteHeader nav={settings.nav} brand={settings.headerBrand} />
                   <main id="main" className="flex-1">

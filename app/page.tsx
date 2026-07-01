@@ -5,6 +5,7 @@ import { WorldNarrative } from "@/features/world";
 import { WorldExperienceIsland } from "@/features/world/components/world-experience-island";
 import { getProfile } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
+import { ogImageEntries, pageTwitter } from "@/lib/seo/metadata-helpers";
 import { worldAssetUrl, worldImageSrc } from "@/lib/world/asset-url";
 import { getWorldPageProps } from "@/lib/world/get-world-props";
 
@@ -18,13 +19,18 @@ const WORLD_PRELOADS = [
 ] as const;
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteConfig();
+  const description = site.pages.home.ogDescription;
   return {
+    title: site.title,
+    description,
     alternates: { canonical: "/" },
     openGraph: {
       title: site.title,
-      description: site.pages.home.ogDescription,
+      description,
       url: site.url,
+      images: ogImageEntries(site.url, "/opengraph-image"),
     },
+    twitter: pageTwitter(site.title, description, site.twitterHandle),
   };
 }
 export default async function HomePage() {

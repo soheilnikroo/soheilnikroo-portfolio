@@ -11,6 +11,8 @@ import { Container } from "@/components/layout/container";
 import { PixelPage } from "@/components/layout/pixel-page";
 import { site } from "@/lib/config/site";
 import { getAllPostMeta, getPostMetaBySlug, getPostSource } from "@/lib/data";
+import { getSiteConfig } from "@/lib/data/site-settings";
+import { pageTwitter, resolveOgImage } from "@/lib/seo/metadata-helpers";
 import { formatDate } from "@/lib/services/date";
 import { extractToc } from "@/lib/services/toc";
 import { PIXEL_CARD, PIXEL_HEADING_SHADOW } from "@/lib/world/world-theme";
@@ -29,8 +31,9 @@ export async function generateMetadata({
   }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const meta = await getPostMetaBySlug(slug);
+  const [meta, siteConfig] = await Promise.all([getPostMetaBySlug(slug), getSiteConfig()]);
   if (!meta) return {};
+  const ogImage = resolveOgImage(siteConfig.url, meta.cover, `/blog/${slug}/opengraph-image`);
   return {
     title: meta.title,
     description: meta.description,
@@ -43,7 +46,9 @@ export async function generateMetadata({
       publishedTime: meta.date,
       modifiedTime: meta.updated ?? meta.date,
       tags: meta.tags,
+      images: [{ url: ogImage, alt: meta.title }],
     },
+    twitter: pageTwitter(meta.title, meta.description, siteConfig.twitterHandle),
   };
 }
 export default async function PostPage({
@@ -74,6 +79,12 @@ export default async function PostPage({
     },
   });
   const meta = source.meta;
+  const postUrl = `${site.url}/blog/${slug}`;
+  const imageUrl = meta.cover
+    ? meta.cover.startsWith("http")
+      ? meta.cover
+      : `${site.url}${meta.cover.startsWith("/") ? meta.cover : `/${meta.cover}`}`
+    : `${postUrl}/opengraph-image`;
   const articleLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -81,8 +92,11 @@ export default async function PostPage({
     description: meta.description,
     datePublished: meta.date,
     dateModified: meta.updated ?? meta.date,
+    url: postUrl,
+    image: imageUrl,
     author: { "@type": "Person", name: site.name, url: site.url },
-    mainEntityOfPage: `${site.url}/blog/${slug}`,
+    publisher: { "@type": "Person", name: site.name, url: site.url },
+    mainEntityOfPage: { "@type": "WebPage", "@id": postUrl },
     keywords: meta.tags.join(", "),
   };
   return (

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { ProjectsDashboard } from "@/features/admin/components/projects-dashboard";
 import { listAllProjectRows } from "@/lib/data/projects";
 import { toAdminProject } from "@/lib/data/projects-admin";
+import { logContentStoreError } from "@/lib/db/log-content-store";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -14,8 +15,9 @@ export default async function AdminProjectsPage() {
   let dbError = false;
   try {
     rows = await listAllProjectRows();
-  } catch {
+  } catch (error) {
     dbError = true;
+    logContentStoreError("admin/projects", error);
   }
   return <ProjectsDashboard initialProjects={rows.map(toAdminProject)} dbError={dbError} />;
 }

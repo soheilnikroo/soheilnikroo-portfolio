@@ -1,3 +1,4 @@
+import { logContentStoreError } from "@/lib/db/log-content-store";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { MilestonesSchema } from "@/lib/schemas";
 import type { Milestone } from "@/lib/schemas";
@@ -32,19 +33,13 @@ const fallbackMilestones: Milestone[] = [
       "Since 2022, Frontend Engineer at Snapp — TypeScript, React, Next.js, PWAs, UI kit, Redux Toolkit, and SWR on a product used by millions. I care about performance, design patterns, cross-browser quality, and mobile-first delivery. Side quests: learning Swift & SwiftUI; exploring Rust.",
   },
 ];
-function warnDb(error: unknown): void {
-  console.warn(
-    "[milestones] database unavailable — using bundled fallback. Set DATABASE_URL and run `pnpm db:seed`.",
-    error instanceof Error ? error.message : error,
-  );
-}
 export async function getMilestones(): Promise<Milestone[]> {
   try {
     const row = await getSiteContentRow("milestones");
     if (!row) return fallbackMilestones;
     return MilestonesSchema.parse(row.data);
   } catch (error) {
-    warnDb(error);
+    logContentStoreError("milestones", error);
     return fallbackMilestones;
   }
 }

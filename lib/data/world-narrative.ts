@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 
+import { logContentStoreError } from "@/lib/db/log-content-store";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { WorldNarrativeSchema } from "@/lib/schemas";
 import type { StoryBeat, WorldNarrative } from "@/lib/schemas";
@@ -72,19 +73,13 @@ export const fallbackWorldNarrative: WorldNarrative = WorldNarrativeSchema.parse
     ],
   },
 });
-function warnDb(error: unknown): void {
-  console.warn(
-    "[world] database unavailable — using bundled fallback. Set DATABASE_URL and run `pnpm db:seed`.",
-    error instanceof Error ? error.message : error,
-  );
-}
 async function readWorldNarrative(): Promise<WorldNarrative> {
   try {
     const row = await getSiteContentRow("world");
     if (!row) return fallbackWorldNarrative;
     return WorldNarrativeSchema.parse(row.data);
   } catch (error) {
-    warnDb(error);
+    logContentStoreError("world", error);
     return fallbackWorldNarrative;
   }
 }

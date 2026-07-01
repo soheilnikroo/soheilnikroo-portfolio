@@ -30,12 +30,23 @@ Supabase does **not** expose port in Database Settings. The port is part of the 
 3. Or **Transaction pooler** — ends with `:6543/postgres`.
 4. Copy the full URI into Liara `DATABASE_URL` (replace `[YOUR-PASSWORD]` with your DB password).
 
-If logs show `DATABASE_CONNECT_TIMEOUT` on Liara:
+If logs show `CONNECT_TIMEOUT` or `DATABASE_CONNECT_TIMEOUT` on Liara:
 
-1. Edit `DATABASE_URL` on Liara — change `:6543` to `:5432` (same host, same password).
-2. Confirm the hostname matches Supabase exactly (`aws-0-…` vs `aws-1-…` — copy from Supabase **Connect** panel).
-3. Redeploy after saving env vars.
-4. Run `pnpm db:seed` locally to verify the connection string works before redeploying.
+1. Confirm `DATABASE_URL` on Liara matches what works locally (`pnpm db:ping`).
+2. Host must be **`aws-1-ap-northeast-1`** (copy exactly from Supabase **Connect**).
+3. Port **`5432`** (Session pooler).
+4. **Try the Direct connection** if pooler keeps timing out (often better from European hosts):
+
+   ```
+   postgresql://postgres:YOUR_PASSWORD@db.zusjeivveqxtjoiuzmyx.supabase.co:5432/postgres
+   ```
+
+   Username is `postgres` (not `postgres.zusjeivveqxtjoiuzmyx`) for direct connections.
+
+5. Redeploy after changing env vars: `liara deploy --app soheilnikroo`
+6. Run `pnpm db:seed` locally with the same URL to verify.
+
+Liara runs in **Germany**; Supabase is in **Tokyo** (`ap-northeast-1`) — first connections can be slow. The app retries admin connections up to 4 times.
 
 The public site falls back to bundled content when the database is unreachable, but **admin requires a live connection**.
 

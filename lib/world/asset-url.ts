@@ -4,3 +4,7 @@ export function worldAssetUrl(path: string): string {
   const joiner = path.includes("?") ? "&" : "?";
   return `${path}${joiner}v=${encodeURIComponent(version)}`;
 }
+
+export function worldImageSrc(path: string): string {
+  return path.split("?")[0] ?? path;
+}

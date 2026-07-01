@@ -1,3 +1,4 @@
+import { logContentStoreError } from "@/lib/db/log-content-store";
 import {
   createProjectRow,
   deleteProjectRow,
@@ -92,19 +93,13 @@ function byDisplayOrder(a: Project, b: Project): number {
 function rowToProject(row: ProjectRow): Project {
   return ProjectSchema.parse(row.data);
 }
-function warnDb(error: unknown): void {
-  console.warn(
-    "[projects] database unavailable — using bundled fallback. Set DATABASE_URL and run `pnpm db:seed`.",
-    error instanceof Error ? error.message : error,
-  );
-}
 export async function getProjects(): Promise<Project[]> {
   try {
     const rows = await listProjectRows();
     if (rows.length === 0) return [...fallbackProjects].sort(byDisplayOrder);
     return rows.map(rowToProject).sort(byDisplayOrder);
   } catch (error) {
-    warnDb(error);
+    logContentStoreError("projects", error);
     return [...fallbackProjects].sort(byDisplayOrder);
   }
 }
@@ -117,7 +112,7 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
     if (row) return rowToProject(row);
     return fallbackProjects.find((p) => p.slug === slug) ?? null;
   } catch (error) {
-    warnDb(error);
+    logContentStoreError("projects", error);
     return fallbackProjects.find((p) => p.slug === slug) ?? null;
   }
 }

@@ -6,40 +6,66 @@ import { withConnectTimeout } from "./resilience";
 import { runMigrations } from "./schema";
 
 type Sql = ReturnType<typeof postgres>;
+
 declare global {
   var __portfolioSql: Sql | undefined;
   var __portfolioSchemaReady: Promise<void> | undefined;
-  var __portfolioSchemaForceReady: Promise<void> | undefined;
   var __portfolioDbTargetLogged: boolean | undefined;
 }
+
 function logDatabaseTarget(url: string): void {
   if (globalThis.__portfolioDbTargetLogged) return;
   globalThis.__portfolioDbTargetLogged = true;
-  console.info(`[db] target ${describeDatabaseUrl(url)}`);
+  if (process.env.NODE_ENV !== "production") {
+    console.info(`[db] target ${describeDatabaseUrl(url)}`);
+  }
 }
+
+/** Drop a stale client so the next query opens a fresh TCP connection. */
+export function resetSqlClient(): void {
+  const client = globalThis.__portfolioSql;
+  globalThis.__portfolioSql = undefined;
+  globalThis.__portfolioSchemaReady = undefined;
+  if (client) void client.end({ timeout: 5 }).catch(() => {});
+}
+
 export function getSql(): Sql {
   if (globalThis.__portfolioSql) return globalThis.__portfolioSql;
   const url = process.env.DATABASE_URL;
   if (!url) {
-    throw new Error("DATABASE_URL is not set. Copy .env.example to .env and fill it in.");
+    throw new Error(
+      process.env.NODE_ENV === "production"
+        ? "Content store is not configured"
+        : "DATABASE_URL is not set. Copy .env.example to .env and fill it in.",
+    );
   }
   logDatabaseTarget(url);
   const client = postgres(url, getPostgresClientOptions(url));
   globalThis.__portfolioSql = client;
   return client;
 }
+
+async function migrate(options?: DbConnectOptions): Promise<void> {
+  try {
+    await withConnectTimeout(() => runMigrations(getSql()), options);
+  } catch (error) {
+    resetSqlClient();
+    throw error;
+  }
+}
+
+/** Ensures tables exist. Admin (`force`) always retries; public reads memoize success only. */
 export function ensureSchema(options?: DbConnectOptions): Promise<void> {
   const force = options?.force === true;
-  if (force) {
-    if (!globalThis.__portfolioSchemaForceReady) {
-      globalThis.__portfolioSchemaForceReady = withConnectTimeout(() => runMigrations(getSql()), {
-        force: true,
-      });
-    }
-    return globalThis.__portfolioSchemaForceReady;
-  }
+
+  // Admin writes must not cache a rejected promise — Liara cross-region connects can be slow/flaky.
+  if (force) return migrate({ force: true });
+
   if (!globalThis.__portfolioSchemaReady) {
-    globalThis.__portfolioSchemaReady = withConnectTimeout(() => runMigrations(getSql()));
+    globalThis.__portfolioSchemaReady = migrate().catch((error) => {
+      globalThis.__portfolioSchemaReady = undefined;
+      throw error;
+    });
   }
   return globalThis.__portfolioSchemaReady;
 }

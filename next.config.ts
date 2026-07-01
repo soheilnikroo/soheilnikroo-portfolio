@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
   images: {
     formats: ["image/avif", "image/webp"],
-    localPatterns: [{ pathname: "/world/**" }],
+    localPatterns: [{ pathname: "/world/**" }, { pathname: "/world/scenes/intro-hero-dawn.png" }],
   },
   experimental: {
     viewTransition: true,

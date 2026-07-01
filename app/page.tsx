@@ -5,9 +5,10 @@ import { WorldNarrative } from "@/features/world";
 import { WorldExperienceIsland } from "@/features/world/components/world-experience-island";
 import { getProfile } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
-import { worldAssetUrl } from "@/lib/world/asset-url";
+import { worldAssetUrl, worldImageSrc } from "@/lib/world/asset-url";
 import { getWorldPageProps } from "@/lib/world/get-world-props";
 
+const SPLASH_IMAGE = worldImageSrc("/world/scenes/intro-hero-dawn.png");
 const WORLD_PRELOADS = [
   worldAssetUrl("/world/scenes/intro-hero-dawn.png"),
   worldAssetUrl("/world/character/idle/east/0.png"),
@@ -78,7 +79,7 @@ export default async function HomePage() {
         className="fixed inset-0 z-[150] overflow-hidden bg-[#05040b]"
       >
         <Image
-          src={WORLD_PRELOADS[0]}
+          src={SPLASH_IMAGE}
           alt=""
           fill
           priority

@@ -1,5 +1,6 @@
 import readingTime from "reading-time";
 
+import { logContentStoreError } from "@/lib/db/log-content-store";
 import {
   createPostRow,
   deletePostRow,
@@ -33,18 +34,12 @@ export function rowToMeta(row: PostRow): PostMeta {
     readingMinutes: Math.max(1, Math.round(stats.minutes)),
   });
 }
-function warnDb(error: unknown): void {
-  console.warn(
-    "[blog] database unavailable — returning empty content. Set DATABASE_URL and run `pnpm db:seed`.",
-    error instanceof Error ? error.message : error,
-  );
-}
 export async function getAllPostMeta(includeDrafts = false): Promise<PostMeta[]> {
   try {
     const rows = await listPostRows(includeDrafts);
     return rows.map(rowToMeta);
   } catch (error) {
-    warnDb(error);
+    logContentStoreError("blog", error);
     return [];
   }
 }
@@ -58,7 +53,7 @@ export async function getPostMetaBySlug(
     if (!includeDrafts && !row.published) return null;
     return rowToMeta(row);
   } catch (error) {
-    warnDb(error);
+    logContentStoreError("blog", error);
     return null;
   }
 }
@@ -72,7 +67,7 @@ export async function getPostSource(
     if (!includeDrafts && !row.published) return null;
     return { meta: rowToMeta(row), content: row.body };
   } catch (error) {
-    warnDb(error);
+    logContentStoreError("blog", error);
     return null;
   }
 }
@@ -81,7 +76,7 @@ export async function getAllCategories(): Promise<string[]> {
     const rows = await listPostRows(false);
     return [...new Set(rows.map((r) => r.category))].sort();
   } catch (error) {
-    warnDb(error);
+    logContentStoreError("blog", error);
     return [];
   }
 }
@@ -90,7 +85,7 @@ export async function getAllTags(): Promise<string[]> {
     const rows = await listPostRows(false);
     return [...new Set(rows.flatMap((r) => r.tags))].sort();
   } catch (error) {
-    warnDb(error);
+    logContentStoreError("blog", error);
     return [];
   }
 }

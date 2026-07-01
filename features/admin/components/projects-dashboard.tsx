@@ -5,6 +5,7 @@ import * as React from "react";
 
 import { Button } from "@/components/ui/button";
 
+import { AdminDbUnavailable } from "./admin-db-unavailable";
 import type { AdminProject } from "./types";
 
 export function ProjectsDashboard({
@@ -43,12 +44,7 @@ export function ProjectsDashboard({
         </Button>
       </div>
 
-      {dbError ? (
-        <div className="mt-6 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-          Cannot reach the database. Set <code>DATABASE_URL</code> on Liara (Supabase pooler, try
-          port <code>5432</code>) and run <code>pnpm db:seed</code>. See <code>ADMIN.md</code>.
-        </div>
-      ) : null}
+      {dbError ? <AdminDbUnavailable /> : null}
 
       <ul className="mt-8 grid gap-3">
         {projects.map((project) => (
@@ -90,7 +86,7 @@ export function ProjectsDashboard({
         ))}
         {projects.length === 0 ? (
           <li className="rounded-xl border border-dashed border-border/70 p-10 text-center text-muted-foreground">
-            No projects yet. Create your first one or run <code>pnpm db:seed</code>.
+            No projects yet. Create your first one.
           </li>
         ) : null}
       </ul>

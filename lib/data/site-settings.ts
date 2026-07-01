@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 
+import { logContentStoreError } from "@/lib/db/log-content-store";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { SiteSettingsSchema } from "@/lib/schemas";
 import type { SiteSettings } from "@/lib/schemas";
@@ -69,19 +70,13 @@ export const fallbackSiteSettings: SiteSettings = SiteSettingsSchema.parse({
     },
   },
 });
-function warnDb(error: unknown): void {
-  console.warn(
-    "[site] database unavailable — using bundled fallback. Set DATABASE_URL and run `pnpm db:seed`.",
-    error instanceof Error ? error.message : error,
-  );
-}
 async function readSiteSettings(): Promise<SiteSettings> {
   try {
     const row = await getSiteContentRow("site");
     if (!row) return fallbackSiteSettings;
     return SiteSettingsSchema.parse(row.data);
   } catch (error) {
-    warnDb(error);
+    logContentStoreError("site", error);
     return fallbackSiteSettings;
   }
 }

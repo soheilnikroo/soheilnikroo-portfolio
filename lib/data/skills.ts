@@ -1,3 +1,4 @@
+import { logContentStoreError } from "@/lib/db/log-content-store";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { SkillGraphSchema } from "@/lib/schemas";
 import type { SkillGraph } from "@/lib/schemas";
@@ -132,19 +133,13 @@ const fallbackGraph: SkillGraph = SkillGraphSchema.parse({
     { source: "swift", target: "swiftui", strength: 0.9 },
   ],
 });
-function warnDb(error: unknown): void {
-  console.warn(
-    "[skills] database unavailable — using bundled fallback. Set DATABASE_URL and run `pnpm db:seed`.",
-    error instanceof Error ? error.message : error,
-  );
-}
 export async function getSkillGraph(): Promise<SkillGraph> {
   try {
     const row = await getSiteContentRow("skills");
     if (!row) return fallbackGraph;
     return SkillGraphSchema.parse(row.data);
   } catch (error) {
-    warnDb(error);
+    logContentStoreError("skills", error);
     return fallbackGraph;
   }
 }

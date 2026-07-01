@@ -6,6 +6,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/services/date";
 
+import { AdminDbUnavailable } from "./admin-db-unavailable";
 import type { AdminPost } from "./types";
 
 export function AdminDashboard({
@@ -44,14 +45,7 @@ export function AdminDashboard({
         </Button>
       </div>
 
-      {dbError ? (
-        <div className="mt-6 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-          Cannot reach the database. In Liara, set <code>DATABASE_URL</code> (Supabase pooler, port{" "}
-          <code>5432</code> or <code>6543</code>), <code>ADMIN_PASSWORD</code>, and{" "}
-          <code>SESSION_SECRET</code> in the app environment, then run <code>pnpm db:seed</code>{" "}
-          locally or from CI. See <code>ADMIN.md</code>.
-        </div>
-      ) : null}
+      {dbError ? <AdminDbUnavailable /> : null}
 
       <ul className="mt-8 grid gap-3">
         {posts.map((post) => (

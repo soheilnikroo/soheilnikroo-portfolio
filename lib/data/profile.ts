@@ -1,3 +1,4 @@
+import { logContentStoreError } from "@/lib/db/log-content-store";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { ProfileSchema } from "@/lib/schemas";
 import type { Profile } from "@/lib/schemas";
@@ -43,19 +44,13 @@ const fallbackProfile: Profile = ProfileSchema.parse({
     },
   ],
 });
-function warnDb(error: unknown): void {
-  console.warn(
-    "[profile] database unavailable — using bundled fallback. Set DATABASE_URL and run `pnpm db:seed`.",
-    error instanceof Error ? error.message : error,
-  );
-}
 export async function getProfile(): Promise<Profile> {
   try {
     const row = await getSiteContentRow("profile");
     if (!row) return fallbackProfile;
     return ProfileSchema.parse(row.data);
   } catch (error) {
-    warnDb(error);
+    logContentStoreError("profile", error);
     return fallbackProfile;
   }
 }

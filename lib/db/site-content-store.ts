@@ -1,3 +1,6 @@
+import { resolveDbConnectOptions } from "./request-context";
+import type { DbConnectOptions } from "./resilience";
+import { withConnectTimeout } from "./resilience";
 import { ensureSchema, getSql } from "./sql";
 
 export type SiteContentKey = "profile" | "skills" | "milestones" | "site" | "world";
@@ -6,14 +9,25 @@ export type SiteContentRow = {
   data: unknown;
   updated_at: Date;
 };
-export async function getSiteContentRow(key: SiteContentKey): Promise<SiteContentRow | null> {
-  await ensureSchema();
-  const sql = getSql();
-  const rows = await sql<SiteContentRow[]>`
-    SELECT key, data, updated_at FROM site_content WHERE key = ${key} LIMIT 1
-  `;
-  return rows[0] ?? null;
+
+export async function getSiteContentRow(
+  key: SiteContentKey,
+  options?: DbConnectOptions,
+): Promise<SiteContentRow | null> {
+  const readOptions = await resolveDbConnectOptions(options);
+  return withConnectTimeout(
+    async () => {
+      await ensureSchema(readOptions);
+      const sql = getSql();
+      const rows = await sql<SiteContentRow[]>`
+      SELECT key, data, updated_at FROM site_content WHERE key = ${key} LIMIT 1
+    `;
+      return rows[0] ?? null;
+    },
+    readOptions.force ? { force: true } : readOptions,
+  );
 }
+
 export async function upsertSiteContentRow(key: SiteContentKey, data: unknown): Promise<void> {
   await ensureSchema({ force: true });
   const sql = getSql();

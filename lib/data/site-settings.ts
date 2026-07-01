@@ -1,7 +1,7 @@
 import { unstable_cache } from "next/cache";
 
+import { isAdmin } from "@/lib/auth/session";
 import { logContentStoreError } from "@/lib/db/log-content-store";
-import { isAdminPageRequest } from "@/lib/db/request-context";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { SiteSettingsSchema } from "@/lib/schemas";
 import type { SiteSettings } from "@/lib/schemas";
@@ -72,7 +72,6 @@ export const fallbackSiteSettings: SiteSettings = SiteSettingsSchema.parse({
   },
 });
 async function readSiteSettings(): Promise<SiteSettings> {
-  if (await isAdminPageRequest()) return fallbackSiteSettings;
   try {
     const row = await getSiteContentRow("site");
     if (!row) return fallbackSiteSettings;
@@ -88,7 +87,7 @@ const getSiteSettingsCached = unstable_cache(readSiteSettings, ["site-settings"]
 });
 export async function getSiteSettings(): Promise<SiteSettings> {
   if (process.env.NODE_ENV === "test") return readSiteSettings();
-  if (await isAdminPageRequest()) return fallbackSiteSettings;
+  if (await isAdmin()) return readSiteSettings();
   return getSiteSettingsCached();
 }
 export async function saveSiteSettings(data: SiteSettings): Promise<void> {

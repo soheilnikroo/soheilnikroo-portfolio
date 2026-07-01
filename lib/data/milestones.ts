@@ -1,7 +1,12 @@
+import { unstable_cache } from "next/cache";
+
+import { isAdmin } from "@/lib/auth/session";
 import { logContentStoreError } from "@/lib/db/log-content-store";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { MilestonesSchema } from "@/lib/schemas";
 import type { Milestone } from "@/lib/schemas";
+
+import { CONTENT_CACHE_TAG } from "./revalidate-content";
 
 const fallbackMilestones: Milestone[] = [
   {
@@ -33,7 +38,7 @@ const fallbackMilestones: Milestone[] = [
       "Since 2022, Frontend Engineer at Snapp — TypeScript, React, Next.js, PWAs, UI kit, Redux Toolkit, and SWR on a product used by millions. I care about performance, design patterns, cross-browser quality, and mobile-first delivery. Side quests: learning Swift & SwiftUI; exploring Rust.",
   },
 ];
-export async function getMilestones(): Promise<Milestone[]> {
+async function readMilestones(): Promise<Milestone[]> {
   try {
     const row = await getSiteContentRow("milestones");
     if (!row) return fallbackMilestones;
@@ -42,6 +47,14 @@ export async function getMilestones(): Promise<Milestone[]> {
     logContentStoreError("milestones", error);
     return fallbackMilestones;
   }
+}
+const getMilestonesCached = unstable_cache(readMilestones, ["milestones-public"], {
+  tags: [CONTENT_CACHE_TAG],
+  revalidate: 60,
+});
+export async function getMilestones(): Promise<Milestone[]> {
+  if (process.env.NODE_ENV === "test" || (await isAdmin())) return readMilestones();
+  return getMilestonesCached();
 }
 export async function saveMilestones(data: Milestone[]): Promise<void> {
   const parsed = MilestonesSchema.parse(data);

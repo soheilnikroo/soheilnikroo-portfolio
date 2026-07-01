@@ -8,7 +8,7 @@ import { getSiteConfig } from "@/lib/data/site-settings";
 import { worldAssetUrl, worldImageSrc } from "@/lib/world/asset-url";
 import { getWorldPageProps } from "@/lib/world/get-world-props";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 const SPLASH_IMAGE = worldImageSrc("/world/scenes/intro-hero-dawn.png");
 const WORLD_PRELOADS = [

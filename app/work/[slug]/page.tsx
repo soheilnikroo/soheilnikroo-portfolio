@@ -8,7 +8,7 @@ import { PixelPage } from "@/components/layout/pixel-page";
 import { site } from "@/lib/config/site";
 import { getProjectBySlug, getProjects } from "@/lib/data";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 export async function generateStaticParams() {
   const projects = await getProjects();
   return projects.map((p) => ({ slug: p.slug }));

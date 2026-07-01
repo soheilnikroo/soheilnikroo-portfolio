@@ -6,7 +6,7 @@ import { PixelPage } from "@/components/layout/pixel-page";
 import { getAllPostMeta, getProjects } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteConfig();
   const copy = site.pages.work;

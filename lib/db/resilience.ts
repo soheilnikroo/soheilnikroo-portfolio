@@ -25,41 +25,57 @@ export type DbConnectOptions = {
   force?: boolean;
   /** Fail fast (build-time SSG). */
   quick?: boolean;
-  /** Live CMS reads: bypass circuit breaker, use normal read timeout. */
+  /** Live CMS reads: bypass circuit breaker, use admin read timeout. */
   preferLive?: boolean;
+  /** Public pages with bundled fallbacks: short timeout, single attempt, circuit breaker on. */
+  fastFail?: boolean;
 };
 
 export const LIVE_READ: DbConnectOptions = { preferLive: true };
+export const PUBLIC_READ: DbConnectOptions = { fastFail: true };
 
 function shouldUseCircuitBreaker(options?: DbConnectOptions): boolean {
   if (options?.force || options?.quick || options?.preferLive) return false;
-  return !process.env.DATABASE_URL;
+  return true;
 }
 
+const PUBLIC_CONNECT_TIMEOUT_MS = 12_000;
 const QUICK_CONNECT_TIMEOUT_MS = 30_000;
-const READ_CONNECT_TIMEOUT_MS = process.env.NODE_ENV === "production" ? 90_000 : 35_000;
+const ADMIN_CONNECT_TIMEOUT_MS = 60_000;
 const BUILD_CONNECT_TIMEOUT_MS = 10_000;
-const ADMIN_CONNECT_TIMEOUT_MS = 45_000;
-const READ_ATTEMPTS = process.env.NODE_ENV === "production" ? 3 : 1;
+const PUBLIC_ATTEMPTS = 1;
 const BUILD_ATTEMPTS = 1;
 const ADMIN_ATTEMPTS = 2;
 
 export function connectTimeoutMs(options?: DbConnectOptions): number {
+  if (options?.fastFail) return PUBLIC_CONNECT_TIMEOUT_MS;
   if (options?.quick) return QUICK_CONNECT_TIMEOUT_MS;
-  if (options?.force) return ADMIN_CONNECT_TIMEOUT_MS;
+  if (options?.force || options?.preferLive) return ADMIN_CONNECT_TIMEOUT_MS;
   if (isNextProductionBuild()) return BUILD_CONNECT_TIMEOUT_MS;
-  return READ_CONNECT_TIMEOUT_MS;
+  return PUBLIC_CONNECT_TIMEOUT_MS;
 }
 
 function connectAttempts(options?: DbConnectOptions): number {
+  if (options?.fastFail) return PUBLIC_ATTEMPTS;
   if (options?.quick) return 1;
-  if (options?.force) return ADMIN_ATTEMPTS;
+  if (options?.force || options?.preferLive) return ADMIN_ATTEMPTS;
   if (isNextProductionBuild()) return BUILD_ATTEMPTS;
-  return READ_ATTEMPTS;
+  return PUBLIC_ATTEMPTS;
 }
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function shouldResetSqlClient(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /TIMEOUT|CONNECT|ECONN|CIRCUIT|terminated|closed/i.test(message);
+}
+
+async function resetSqlClientAfterFailure(error: unknown): Promise<void> {
+  if (!shouldResetSqlClient(error)) return;
+  const { resetSqlClient } = await import("./sql");
+  resetSqlClient();
 }
 
 export async function withConnectTimeout<T>(
@@ -89,6 +105,7 @@ export async function withConnectTimeout<T>(
       return result;
     } catch (error) {
       lastError = error;
+      await resetSqlClientAfterFailure(error);
       const message = error instanceof Error ? error.message : String(error);
       if (process.env.NODE_ENV !== "production") {
         console.warn(`[db] connect attempt ${attempt + 1}/${attempts} failed: ${message}`);
@@ -97,5 +114,6 @@ export async function withConnectTimeout<T>(
   }
 
   if (shouldUseCircuitBreaker(options)) openDbCircuit();
+  await resetSqlClientAfterFailure(lastError);
   throw lastError;
 }

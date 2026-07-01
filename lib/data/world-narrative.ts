@@ -1,5 +1,6 @@
 import { unstable_cache } from "next/cache";
 
+import { isAdmin } from "@/lib/auth/session";
 import { logContentStoreError } from "@/lib/db/log-content-store";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { WorldNarrativeSchema } from "@/lib/schemas";
@@ -88,7 +89,7 @@ const getWorldNarrativeCached = unstable_cache(readWorldNarrative, ["world-narra
   revalidate: 60,
 });
 export async function getWorldNarrative(): Promise<WorldNarrative> {
-  if (process.env.NODE_ENV === "test") return readWorldNarrative();
+  if (process.env.NODE_ENV === "test" || (await isAdmin())) return readWorldNarrative();
   return getWorldNarrativeCached();
 }
 export async function saveWorldNarrative(data: WorldNarrative): Promise<void> {

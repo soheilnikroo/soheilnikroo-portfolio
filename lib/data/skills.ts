@@ -1,7 +1,12 @@
+import { unstable_cache } from "next/cache";
+
+import { isAdmin } from "@/lib/auth/session";
 import { logContentStoreError } from "@/lib/db/log-content-store";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { SkillGraphSchema } from "@/lib/schemas";
 import type { SkillGraph } from "@/lib/schemas";
+
+import { CONTENT_CACHE_TAG } from "./revalidate-content";
 
 const fallbackGraph: SkillGraph = SkillGraphSchema.parse({
   nodes: [
@@ -133,7 +138,7 @@ const fallbackGraph: SkillGraph = SkillGraphSchema.parse({
     { source: "swift", target: "swiftui", strength: 0.9 },
   ],
 });
-export async function getSkillGraph(): Promise<SkillGraph> {
+async function readSkillGraph(): Promise<SkillGraph> {
   try {
     const row = await getSiteContentRow("skills");
     if (!row) return fallbackGraph;
@@ -142,6 +147,14 @@ export async function getSkillGraph(): Promise<SkillGraph> {
     logContentStoreError("skills", error);
     return fallbackGraph;
   }
+}
+const getSkillGraphCached = unstable_cache(readSkillGraph, ["skills-public"], {
+  tags: [CONTENT_CACHE_TAG],
+  revalidate: 60,
+});
+export async function getSkillGraph(): Promise<SkillGraph> {
+  if (process.env.NODE_ENV === "test" || (await isAdmin())) return readSkillGraph();
+  return getSkillGraphCached();
 }
 export async function saveSkillGraph(data: SkillGraph): Promise<void> {
   const parsed = SkillGraphSchema.parse(data);

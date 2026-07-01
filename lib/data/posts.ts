@@ -1,6 +1,8 @@
+import { unstable_cache } from "next/cache";
 import readingTime from "reading-time";
 
 import { loadPostMetaFromDisk, loadPostSourceFromDisk } from "@/lib/data/posts-fallback";
+import { CONTENT_CACHE_TAG } from "@/lib/data/revalidate-content";
 import { logContentStoreError } from "@/lib/db/log-content-store";
 import {
   createPostRow,
@@ -11,6 +13,7 @@ import {
   updatePostRow,
 } from "@/lib/db/posts-store";
 import type { PostInput, PostRow } from "@/lib/db/posts-store";
+import { PUBLIC_READ } from "@/lib/db/resilience";
 import { PostMetaSchema } from "@/lib/schemas";
 import type { PostInputValues, PostMeta } from "@/lib/schemas";
 
@@ -43,19 +46,36 @@ function safeRowToMeta(row: PostRow): PostMeta | null {
     return null;
   }
 }
+function rowsToMeta(rows: PostRow[]): PostMeta[] {
+  return rows.flatMap((row) => {
+    const meta = safeRowToMeta(row);
+    return meta ? [meta] : [];
+  });
+}
+async function readPublicPostMetaFromDb(): Promise<PostMeta[]> {
+  const rows = await listPostRows(false, PUBLIC_READ);
+  return rowsToMeta(rows);
+}
+const getPublicPostMetaCached = unstable_cache(readPublicPostMetaFromDb, ["posts-meta-public"], {
+  tags: [CONTENT_CACHE_TAG],
+  revalidate: 60,
+});
 export async function getAllPostMeta(includeDrafts = false): Promise<PostMeta[]> {
+  if (includeDrafts) {
+    try {
+      return rowsToMeta(await listPostRows(true, { force: true }));
+    } catch (error) {
+      logContentStoreError("blog", error);
+      return [];
+    }
+  }
   try {
-    const rows = await listPostRows(includeDrafts);
-    const metas = rows.flatMap((row) => {
-      const meta = safeRowToMeta(row);
-      return meta ? [meta] : [];
-    });
-    if (metas.length > 0 || includeDrafts) return metas;
+    const metas = await getPublicPostMetaCached();
+    if (metas.length > 0) return metas;
   } catch (error) {
     logContentStoreError("blog", error);
-    if (includeDrafts) return [];
   }
-  return loadPostMetaFromDisk(includeDrafts);
+  return loadPostMetaFromDisk(false);
 }
 export async function getPostMetaBySlug(
   slug: string,
@@ -112,10 +132,10 @@ function toDbInput(input: PostInputValues): PostInput {
   };
 }
 export async function listAllPostRows(includeDrafts = false): Promise<PostRow[]> {
-  return listPostRows(includeDrafts);
+  return listPostRows(includeDrafts, { force: true });
 }
 export async function getPostById(id: string): Promise<PostRow | null> {
-  return getPostRowById(id);
+  return getPostRowById(id, { force: true });
 }
 export async function createPost(input: PostInputValues): Promise<PostRow> {
   return createPostRow(toDbInput(input));

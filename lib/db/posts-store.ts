@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 
+import { resolveDbConnectOptions } from "./request-context";
 import type { DbConnectOptions } from "./resilience";
-import { LIVE_READ, withConnectTimeout } from "./resilience";
+import { PUBLIC_READ, withConnectTimeout } from "./resilience";
 import { ensureSchema, getSql } from "./sql";
 import { normalizeTextArray, sqlTextArray } from "./text-array";
 
@@ -37,7 +38,9 @@ export async function listPostRows(
   includeDrafts = false,
   options?: DbConnectOptions,
 ): Promise<PostRow[]> {
-  const readOptions = options ?? LIVE_READ;
+  const readOptions = await resolveDbConnectOptions(
+    options ?? (includeDrafts ? { force: true } : PUBLIC_READ),
+  );
   return withConnectTimeout(
     async () => {
       await ensureSchema(readOptions);
@@ -47,25 +50,38 @@ export async function listPostRows(
         : await sql<PostRow[]>`SELECT * FROM posts WHERE published = true ORDER BY date DESC`;
       return rows.map(normalizePostRow);
     },
-    readOptions.force ? { force: true } : LIVE_READ,
+    readOptions.force ? { force: true } : readOptions,
   );
 }
-export async function getPostRowBySlug(slug: string): Promise<PostRow | null> {
-  return withConnectTimeout(async () => {
-    await ensureSchema(LIVE_READ);
-    const sql = getSql();
-    const rows = await sql<PostRow[]>`SELECT * FROM posts WHERE slug = ${slug} LIMIT 1`;
-    return rows[0] ? normalizePostRow(rows[0]) : null;
-  }, LIVE_READ);
+export async function getPostRowBySlug(
+  slug: string,
+  options?: DbConnectOptions,
+): Promise<PostRow | null> {
+  const readOptions = await resolveDbConnectOptions(options ?? PUBLIC_READ);
+  return withConnectTimeout(
+    async () => {
+      await ensureSchema(readOptions);
+      const sql = getSql();
+      const rows = await sql<PostRow[]>`SELECT * FROM posts WHERE slug = ${slug} LIMIT 1`;
+      return rows[0] ? normalizePostRow(rows[0]) : null;
+    },
+    readOptions.force ? { force: true } : readOptions,
+  );
 }
 export async function getPostRowById(
   id: string,
   options?: DbConnectOptions,
 ): Promise<PostRow | null> {
-  await ensureSchema(options);
-  const sql = getSql();
-  const rows = await sql<PostRow[]>`SELECT * FROM posts WHERE id = ${id} LIMIT 1`;
-  return rows[0] ? normalizePostRow(rows[0]) : null;
+  const readOptions = await resolveDbConnectOptions(options);
+  return withConnectTimeout(
+    async () => {
+      await ensureSchema(readOptions);
+      const sql = getSql();
+      const rows = await sql<PostRow[]>`SELECT * FROM posts WHERE id = ${id} LIMIT 1`;
+      return rows[0] ? normalizePostRow(rows[0]) : null;
+    },
+    readOptions.force ? { force: true } : readOptions,
+  );
 }
 export async function createPostRow(input: PostInput): Promise<PostRow> {
   return withConnectTimeout(

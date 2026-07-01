@@ -1,7 +1,12 @@
+import { unstable_cache } from "next/cache";
+
+import { isAdmin } from "@/lib/auth/session";
 import { logContentStoreError } from "@/lib/db/log-content-store";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { ProfileSchema } from "@/lib/schemas";
 import type { Profile } from "@/lib/schemas";
+
+import { CONTENT_CACHE_TAG } from "./revalidate-content";
 
 const fallbackProfile: Profile = ProfileSchema.parse({
   name: "Soheil Nikroo",
@@ -44,7 +49,7 @@ const fallbackProfile: Profile = ProfileSchema.parse({
     },
   ],
 });
-export async function getProfile(): Promise<Profile> {
+async function readProfile(): Promise<Profile> {
   try {
     const row = await getSiteContentRow("profile");
     if (!row) return fallbackProfile;
@@ -53,6 +58,14 @@ export async function getProfile(): Promise<Profile> {
     logContentStoreError("profile", error);
     return fallbackProfile;
   }
+}
+const getProfileCached = unstable_cache(readProfile, ["profile-public"], {
+  tags: [CONTENT_CACHE_TAG],
+  revalidate: 60,
+});
+export async function getProfile(): Promise<Profile> {
+  if (process.env.NODE_ENV === "test" || (await isAdmin())) return readProfile();
+  return getProfileCached();
 }
 export async function saveProfile(data: Profile): Promise<void> {
   const parsed = ProfileSchema.parse(data);

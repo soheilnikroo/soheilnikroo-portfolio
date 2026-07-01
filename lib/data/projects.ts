@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+
 import { logContentStoreError } from "@/lib/db/log-content-store";
 import {
   createProjectRow,
@@ -8,8 +10,11 @@ import {
   updateProjectRow,
 } from "@/lib/db/projects-store";
 import type { ProjectRow } from "@/lib/db/projects-store";
+import { PUBLIC_READ } from "@/lib/db/resilience";
 import { ProjectSchema } from "@/lib/schemas";
 import type { Project } from "@/lib/schemas";
+
+import { CONTENT_CACHE_TAG } from "./revalidate-content";
 
 const fallbackProjects: Project[] = [
   {
@@ -93,11 +98,21 @@ function byDisplayOrder(a: Project, b: Project): number {
 function rowToProject(row: ProjectRow): Project {
   return ProjectSchema.parse(row.data);
 }
+
+async function readProjectsFromDb(): Promise<Project[]> {
+  const rows = await listProjectRows(PUBLIC_READ);
+  if (rows.length === 0) return [];
+  return rows.map(rowToProject).sort(byDisplayOrder);
+}
+const getProjectsCached = unstable_cache(readProjectsFromDb, ["projects-public"], {
+  tags: [CONTENT_CACHE_TAG],
+  revalidate: 60,
+});
 export async function getProjects(): Promise<Project[]> {
   try {
-    const rows = await listProjectRows();
-    if (rows.length === 0) return [...fallbackProjects].sort(byDisplayOrder);
-    return rows.map(rowToProject).sort(byDisplayOrder);
+    const projects = await getProjectsCached();
+    if (projects.length === 0) return [...fallbackProjects].sort(byDisplayOrder);
+    return projects;
   } catch (error) {
     logContentStoreError("projects", error);
     return [...fallbackProjects].sort(byDisplayOrder);
@@ -117,10 +132,10 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   }
 }
 export async function listAllProjectRows(): Promise<ProjectRow[]> {
-  return listProjectRows();
+  return listProjectRows({ force: true });
 }
 export async function getProjectRow(id: string): Promise<ProjectRow | null> {
-  return getProjectRowById(id);
+  return getProjectRowById(id, { force: true });
 }
 export async function createProject(data: Project): Promise<ProjectRow> {
   return createProjectRow(data.slug, data);

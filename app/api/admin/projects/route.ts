@@ -1,7 +1,9 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { isAdmin } from "@/lib/auth/session";
 import { createProject, listAllProjectRows } from "@/lib/data/projects";
+import { revalidateContent } from "@/lib/data/revalidate-content";
 import { ProjectSchema } from "@/lib/schemas";
 
 export const runtime = "nodejs";
@@ -23,6 +25,11 @@ export async function POST(request: Request) {
   }
   try {
     const row = await createProject(parsed.data);
+    revalidateContent();
+    revalidatePath("/work");
+    revalidatePath("/");
+    revalidatePath("/read");
+    revalidatePath("/admin/projects");
     return NextResponse.json({ project: row }, { status: 201 });
   } catch (error) {
     const message =

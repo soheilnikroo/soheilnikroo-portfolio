@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { isAdmin } from "@/lib/auth/session";
 import { createPost, listAllPostRows } from "@/lib/data/posts";
+import { revalidateContent } from "@/lib/data/revalidate-content";
 import { PostInputSchema } from "@/lib/schemas";
 
 export const runtime = "nodejs";
@@ -24,6 +25,7 @@ export async function POST(request: Request) {
   }
   try {
     const row = await createPost(parsed.data);
+    revalidateContent();
     revalidatePath("/blog");
     revalidatePath("/");
     revalidatePath("/read");

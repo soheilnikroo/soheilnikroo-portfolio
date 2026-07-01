@@ -2,8 +2,9 @@ import { randomUUID } from "node:crypto";
 
 import type { Project } from "@/lib/schemas";
 
+import { resolveDbConnectOptions } from "./request-context";
 import type { DbConnectOptions } from "./resilience";
-import { LIVE_READ, withConnectTimeout } from "./resilience";
+import { PUBLIC_READ, withConnectTimeout } from "./resilience";
 import { ensureSchema, getSql } from "./sql";
 
 export type ProjectRow = {
@@ -14,7 +15,7 @@ export type ProjectRow = {
   updated_at: Date;
 };
 export async function listProjectRows(options?: DbConnectOptions): Promise<ProjectRow[]> {
-  const readOptions = options ?? LIVE_READ;
+  const readOptions = await resolveDbConnectOptions(options ?? PUBLIC_READ);
   return withConnectTimeout(
     async () => {
       await ensureSchema(readOptions);
@@ -26,23 +27,38 @@ export async function listProjectRows(options?: DbConnectOptions): Promise<Proje
   `;
       return [...rows];
     },
-    readOptions.force ? { force: true } : LIVE_READ,
+    readOptions.force ? { force: true } : readOptions,
   );
 }
 export async function getProjectRowById(
   id: string,
   options?: DbConnectOptions,
 ): Promise<ProjectRow | null> {
-  await ensureSchema(options);
-  const sql = getSql();
-  const rows = await sql<ProjectRow[]>`SELECT * FROM projects WHERE id = ${id} LIMIT 1`;
-  return rows[0] ?? null;
+  const readOptions = await resolveDbConnectOptions(options);
+  return withConnectTimeout(
+    async () => {
+      await ensureSchema(readOptions);
+      const sql = getSql();
+      const rows = await sql<ProjectRow[]>`SELECT * FROM projects WHERE id = ${id} LIMIT 1`;
+      return rows[0] ?? null;
+    },
+    readOptions.force ? { force: true } : readOptions,
+  );
 }
-export async function getProjectRowBySlug(slug: string): Promise<ProjectRow | null> {
-  await ensureSchema();
-  const sql = getSql();
-  const rows = await sql<ProjectRow[]>`SELECT * FROM projects WHERE slug = ${slug} LIMIT 1`;
-  return rows[0] ?? null;
+export async function getProjectRowBySlug(
+  slug: string,
+  options?: DbConnectOptions,
+): Promise<ProjectRow | null> {
+  const readOptions = await resolveDbConnectOptions(options ?? PUBLIC_READ);
+  return withConnectTimeout(
+    async () => {
+      await ensureSchema(readOptions);
+      const sql = getSql();
+      const rows = await sql<ProjectRow[]>`SELECT * FROM projects WHERE slug = ${slug} LIMIT 1`;
+      return rows[0] ?? null;
+    },
+    readOptions.force ? { force: true } : readOptions,
+  );
 }
 export async function createProjectRow(slug: string, data: Project): Promise<ProjectRow> {
   return withConnectTimeout(

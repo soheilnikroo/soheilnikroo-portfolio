@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { isAdmin } from "@/lib/auth/session";
 import { deletePost, updatePost } from "@/lib/data/posts";
+import { revalidateContent } from "@/lib/data/revalidate-content";
 import { PostInputSchema } from "@/lib/schemas";
 
 export const runtime = "nodejs";
@@ -30,6 +31,7 @@ export async function PUT(
   try {
     const row = await updatePost(id, parsed.data);
     if (!row) return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    revalidateContent();
     revalidatePath("/blog");
     revalidatePath(`/blog/${row.slug}`);
     revalidatePath("/");
@@ -58,6 +60,7 @@ export async function DELETE(
   const { id } = await params;
   const ok = await deletePost(id);
   if (!ok) return NextResponse.json({ error: "Post not found" }, { status: 404 });
+  revalidateContent();
   revalidatePath("/blog");
   revalidatePath("/");
   revalidatePath("/read");

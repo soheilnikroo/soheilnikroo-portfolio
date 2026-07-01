@@ -1,13 +1,12 @@
 import { unstable_cache } from "next/cache";
 
-import { isAdmin } from "@/lib/auth/session";
 import { logContentStoreError } from "@/lib/db/log-content-store";
 import { shouldUseContentStore } from "@/lib/db/request-context";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { MilestonesSchema } from "@/lib/schemas";
 import type { Milestone } from "@/lib/schemas";
 
-import { CONTENT_CACHE_TAG } from "./revalidate-content";
+import { CONTENT_CACHE_REVALIDATE_SECONDS, CONTENT_CACHE_TAG } from "./revalidate-content";
 
 const fallbackMilestones: Milestone[] = [
   {
@@ -52,10 +51,10 @@ async function readMilestones(): Promise<Milestone[]> {
 }
 const getMilestonesCached = unstable_cache(readMilestones, ["milestones-public"], {
   tags: [CONTENT_CACHE_TAG],
-  revalidate: 60,
+  revalidate: CONTENT_CACHE_REVALIDATE_SECONDS,
 });
 export async function getMilestones(): Promise<Milestone[]> {
-  if (process.env.NODE_ENV === "test" || (await isAdmin())) return readMilestones();
+  if (process.env.NODE_ENV === "test") return readMilestones();
   return getMilestonesCached();
 }
 export async function saveMilestones(data: Milestone[]): Promise<void> {

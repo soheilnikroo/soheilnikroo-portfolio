@@ -15,6 +15,9 @@ import { pixelFont } from "@/lib/world/pixel-font";
 
 import "./globals.css";
 
+/** ISR — keep in sync with CONTENT_CACHE_REVALIDATE_SECONDS (lib/data/revalidate-content.ts). */
+export const revalidate = 300;
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   const url = getSiteUrl();

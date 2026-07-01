@@ -1,6 +1,10 @@
 import postgres from "postgres";
 
-import { describeDatabaseUrl, getPostgresClientOptions } from "./connection-url";
+import {
+  describeDatabaseUrl,
+  getPostgresClientOptions,
+  resolveRuntimeDatabaseUrl,
+} from "./connection-url";
 import { resolveDbConnectOptions } from "./request-context";
 import type { DbConnectOptions } from "./resilience";
 import { withConnectTimeout } from "./resilience";
@@ -41,7 +45,8 @@ export function getSql(): Sql {
     );
   }
   logDatabaseTarget(url);
-  const client = postgres(url, getPostgresClientOptions(url));
+  const runtimeUrl = resolveRuntimeDatabaseUrl(url);
+  const client = postgres(runtimeUrl, getPostgresClientOptions(runtimeUrl));
   globalThis.__portfolioSql = client;
   return client;
 }
@@ -55,9 +60,12 @@ async function migrate(options?: DbConnectOptions): Promise<void> {
   }
 }
 
-/** Ensures tables exist. Admin (`force`) always retries; public reads memoize success only. */
+/** Ensures tables exist. Skipped on production reads — run `pnpm db:seed` once to migrate. */
 export async function ensureSchema(options?: DbConnectOptions): Promise<void> {
   const resolved = await resolveDbConnectOptions(options);
+  if (process.env.NODE_ENV === "production" && !resolved.force) {
+    return;
+  }
   if (globalThis.__portfolioSchemaReady) return globalThis.__portfolioSchemaReady;
 
   globalThis.__portfolioSchemaReady = migrate(resolved).catch((error) => {

@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { resolveDbConnectOptions } from "./request-context";
 import type { DbConnectOptions } from "./resilience";
-import { PUBLIC_READ, withConnectTimeout } from "./resilience";
+import { LIVE_READ, PUBLIC_READ, withConnectTimeout } from "./resilience";
 import { ensureSchema, getSql } from "./sql";
 import { normalizeTextArray, sqlTextArray } from "./text-array";
 
@@ -39,7 +39,7 @@ export async function listPostRows(
   options?: DbConnectOptions,
 ): Promise<PostRow[]> {
   const readOptions = await resolveDbConnectOptions(
-    options ?? (includeDrafts ? { force: true } : PUBLIC_READ),
+    options ?? (includeDrafts ? LIVE_READ : PUBLIC_READ),
   );
   return withConnectTimeout(
     async () => {

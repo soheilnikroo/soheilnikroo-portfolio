@@ -1,9 +1,12 @@
+import { unstable_cache } from "next/cache";
+
 import type { WorldExperienceProps } from "@/features/world/components/world-experience";
 import { getAllPostMeta, getProfile, getProjects, getSkillGraph } from "@/lib/data";
 import { getMilestones } from "@/lib/data/milestones";
+import { CONTENT_CACHE_REVALIDATE_SECONDS, CONTENT_CACHE_TAG } from "@/lib/data/revalidate-content";
 import { getWorldNarrative, trackHeightVh } from "@/lib/data/world-narrative";
 
-export async function getWorldPageProps(): Promise<WorldExperienceProps> {
+async function fetchWorldPageProps(): Promise<WorldExperienceProps> {
   const [profile, projects, graph, posts, milestoneList, world] = await Promise.all([
     getProfile(),
     getProjects(),
@@ -54,4 +57,14 @@ export async function getWorldPageProps(): Promise<WorldExperienceProps> {
     storyBeats: world.storyBeats,
     trackHeightVh: trackHeightVh(world.chapters),
   };
+}
+
+const getWorldPagePropsCached = unstable_cache(fetchWorldPageProps, ["world-page-props"], {
+  tags: [CONTENT_CACHE_TAG],
+  revalidate: CONTENT_CACHE_REVALIDATE_SECONDS,
+});
+
+export async function getWorldPageProps(): Promise<WorldExperienceProps> {
+  if (process.env.NODE_ENV === "test") return fetchWorldPageProps();
+  return getWorldPagePropsCached();
 }

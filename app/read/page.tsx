@@ -4,7 +4,7 @@ import { WorldNarrative } from "@/features/world";
 import { getSiteConfig } from "@/lib/data/site-settings";
 import { getWorldPageProps } from "@/lib/world/get-world-props";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteConfig();

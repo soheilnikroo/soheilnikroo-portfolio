@@ -1,13 +1,12 @@
 import { unstable_cache } from "next/cache";
 
-import { isAdmin } from "@/lib/auth/session";
 import { logContentStoreError } from "@/lib/db/log-content-store";
 import { shouldUseContentStore } from "@/lib/db/request-context";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { SkillGraphSchema } from "@/lib/schemas";
 import type { SkillGraph } from "@/lib/schemas";
 
-import { CONTENT_CACHE_TAG } from "./revalidate-content";
+import { CONTENT_CACHE_REVALIDATE_SECONDS, CONTENT_CACHE_TAG } from "./revalidate-content";
 
 const fallbackGraph: SkillGraph = SkillGraphSchema.parse({
   nodes: [
@@ -152,10 +151,10 @@ async function readSkillGraph(): Promise<SkillGraph> {
 }
 const getSkillGraphCached = unstable_cache(readSkillGraph, ["skills-public"], {
   tags: [CONTENT_CACHE_TAG],
-  revalidate: 60,
+  revalidate: CONTENT_CACHE_REVALIDATE_SECONDS,
 });
 export async function getSkillGraph(): Promise<SkillGraph> {
-  if (process.env.NODE_ENV === "test" || (await isAdmin())) return readSkillGraph();
+  if (process.env.NODE_ENV === "test") return readSkillGraph();
   return getSkillGraphCached();
 }
 export async function saveSkillGraph(data: SkillGraph): Promise<void> {

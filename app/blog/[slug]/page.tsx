@@ -10,11 +10,16 @@ import remarkGfm from "remark-gfm";
 import { Container } from "@/components/layout/container";
 import { PixelPage } from "@/components/layout/pixel-page";
 import { site } from "@/lib/config/site";
-import { getPostMetaBySlug, getPostSource } from "@/lib/data";
+import { getAllPostMeta, getPostMetaBySlug, getPostSource } from "@/lib/data";
 import { formatDate } from "@/lib/services/date";
 import { extractToc } from "@/lib/services/toc";
 
-export const revalidate = 60;
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  const posts = await getAllPostMeta();
+  return posts.map((post) => ({ slug: post.slug }));
+}
 export async function generateMetadata({
   params,
 }: {

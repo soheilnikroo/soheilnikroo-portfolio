@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 import { site } from "@/lib/config/site";
 import { getAllPostMeta, getProjects } from "@/lib/data";
 
-export const revalidate = 60;
+export const revalidate = 300;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [posts, projects] = await Promise.all([
     getAllPostMeta().catch(() => []),

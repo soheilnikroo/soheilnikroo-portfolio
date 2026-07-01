@@ -1,7 +1,7 @@
 import { site } from "@/lib/config/site";
 import { getAllPostMeta } from "@/lib/data";
 
-export const revalidate = 60;
+export const revalidate = 300;
 function esc(value: string): string {
   return value
     .replace(/&/g, "&amp;")

@@ -2,7 +2,7 @@ import { unstable_cache } from "next/cache";
 import readingTime from "reading-time";
 
 import { loadPostMetaFromDisk, loadPostSourceFromDisk } from "@/lib/data/posts-fallback";
-import { CONTENT_CACHE_TAG } from "@/lib/data/revalidate-content";
+import { CONTENT_CACHE_REVALIDATE_SECONDS, CONTENT_CACHE_TAG } from "@/lib/data/revalidate-content";
 import { logContentStoreError } from "@/lib/db/log-content-store";
 import {
   createPostRow,
@@ -14,7 +14,7 @@ import {
 } from "@/lib/db/posts-store";
 import type { PostInput, PostRow } from "@/lib/db/posts-store";
 import { shouldUseContentStore } from "@/lib/db/request-context";
-import { PUBLIC_READ } from "@/lib/db/resilience";
+import { PUBLIC_READ, LIVE_READ } from "@/lib/db/resilience";
 import { PostMetaSchema } from "@/lib/schemas";
 import type { PostInputValues, PostMeta } from "@/lib/schemas";
 
@@ -60,7 +60,7 @@ async function readPublicPostMetaFromDb(): Promise<PostMeta[]> {
 }
 const getPublicPostMetaCached = unstable_cache(readPublicPostMetaFromDb, ["posts-meta-public"], {
   tags: [CONTENT_CACHE_TAG],
-  revalidate: 60,
+  revalidate: CONTENT_CACHE_REVALIDATE_SECONDS,
 });
 export async function getAllPostMeta(includeDrafts = false): Promise<PostMeta[]> {
   if (includeDrafts) {
@@ -139,10 +139,10 @@ function toDbInput(input: PostInputValues): PostInput {
   };
 }
 export async function listAllPostRows(includeDrafts = false): Promise<PostRow[]> {
-  return listPostRows(includeDrafts, { force: true });
+  return listPostRows(includeDrafts, LIVE_READ);
 }
 export async function getPostById(id: string): Promise<PostRow | null> {
-  return getPostRowById(id, { force: true });
+  return getPostRowById(id, LIVE_READ);
 }
 export async function createPost(input: PostInputValues): Promise<PostRow> {
   return createPostRow(toDbInput(input));

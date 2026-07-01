@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og";
 import { site } from "@/lib/config/site";
 import { getPostMetaBySlug } from "@/lib/data";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export default async function PostOgImage({

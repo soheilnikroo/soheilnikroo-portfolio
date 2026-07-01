@@ -40,7 +40,7 @@ export async function resolveDbConnectOptions(
 ): Promise<DbConnectOptions> {
   const base = options ?? {};
   if (base.quick || base.force || base.preferLive || base.fastFail) return base;
-  if (await isAdminContentRequest()) return { ...base, force: true };
+  if (await isAdminContentRequest()) return { ...base, preferLive: true };
   if (isContentStoreEnabled()) return { ...base, fastFail: true };
   return base;
 }

@@ -1,25 +1,12 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 
-import { ProjectEditor } from "@/features/admin/components/project-editor";
-import { getProjectRow } from "@/lib/data/projects";
-import { toAdminProject } from "@/lib/data/projects-admin";
+import { ProjectEditorLoader } from "@/features/admin/components/project-editor-loader";
 
 export const dynamic = "force-dynamic";
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{
-    id: string;
-  }>;
-}): Promise<Metadata> {
-  const { id } = await params;
-  const row = await getProjectRow(id);
-  return {
-    title: row ? `Admin — ${row.data.title}` : "Admin — Project",
-    robots: { index: false, follow: false },
-  };
-}
+export const metadata: Metadata = {
+  title: "Admin — Project",
+  robots: { index: false, follow: false },
+};
 export default async function AdminEditProjectPage({
   params,
 }: {
@@ -28,7 +15,5 @@ export default async function AdminEditProjectPage({
   }>;
 }) {
   const { id } = await params;
-  const row = await getProjectRow(id);
-  if (!row) notFound();
-  return <ProjectEditor mode="edit" project={toAdminProject(row)} />;
+  return <ProjectEditorLoader id={id} />;
 }

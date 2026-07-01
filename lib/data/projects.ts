@@ -11,11 +11,11 @@ import {
 } from "@/lib/db/projects-store";
 import type { ProjectRow } from "@/lib/db/projects-store";
 import { shouldUseContentStore } from "@/lib/db/request-context";
-import { PUBLIC_READ } from "@/lib/db/resilience";
+import { LIVE_READ, PUBLIC_READ } from "@/lib/db/resilience";
 import { ProjectSchema } from "@/lib/schemas";
 import type { Project } from "@/lib/schemas";
 
-import { CONTENT_CACHE_TAG } from "./revalidate-content";
+import { CONTENT_CACHE_REVALIDATE_SECONDS, CONTENT_CACHE_TAG } from "./revalidate-content";
 
 const fallbackProjects: Project[] = [
   {
@@ -108,7 +108,7 @@ async function readProjectsFromDb(): Promise<Project[]> {
 }
 const getProjectsCached = unstable_cache(readProjectsFromDb, ["projects-public"], {
   tags: [CONTENT_CACHE_TAG],
-  revalidate: 60,
+  revalidate: CONTENT_CACHE_REVALIDATE_SECONDS,
 });
 export async function getProjects(): Promise<Project[]> {
   try {
@@ -137,10 +137,10 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   }
 }
 export async function listAllProjectRows(): Promise<ProjectRow[]> {
-  return listProjectRows({ force: true });
+  return listProjectRows(LIVE_READ);
 }
 export async function getProjectRow(id: string): Promise<ProjectRow | null> {
-  return getProjectRowById(id, { force: true });
+  return getProjectRowById(id, LIVE_READ);
 }
 export async function createProject(data: Project): Promise<ProjectRow> {
   return createProjectRow(data.slug, data);

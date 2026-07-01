@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { isSameOriginRequest } from "@/lib/auth/origin";
 import { ADMIN_API_PREFIX, isAdminPagePath, isProtectedAdminPath } from "@/lib/auth/paths";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
-import { updateSession } from "@/lib/supabase/update-session";
 
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
@@ -40,16 +39,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(login);
   }
 
-  let response: NextResponse;
-  const usesSupabaseAuth =
-    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  const skipSupabaseSession = pathname.startsWith(ADMIN_API_PREFIX) || isAdminPagePath(pathname);
-
-  if (usesSupabaseAuth && !skipSupabaseSession) {
-    response = await updateSession(requestWithPath);
-  } else {
-    response = NextResponse.next({ request: requestWithPath });
-  }
+  const response = NextResponse.next({ request: requestWithPath });
 
   if (isAdminPagePath(pathname)) {
     withAdminNoIndex(response);

@@ -6,7 +6,7 @@ import { BlogIndex } from "@/features/blog/components/blog-index";
 import { getAllCategories, getAllPostMeta } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
 
-export const revalidate = 60;
+export const revalidate = 300;
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteConfig();
   const copy = site.pages.blog;

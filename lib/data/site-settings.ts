@@ -1,13 +1,12 @@
 import { unstable_cache } from "next/cache";
 
-import { isAdmin } from "@/lib/auth/session";
 import { logContentStoreError } from "@/lib/db/log-content-store";
 import { shouldUseContentStore } from "@/lib/db/request-context";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { SiteSettingsSchema } from "@/lib/schemas";
 import type { SiteSettings } from "@/lib/schemas";
 
-import { CONTENT_CACHE_TAG } from "./revalidate-content";
+import { CONTENT_CACHE_REVALIDATE_SECONDS, CONTENT_CACHE_TAG } from "./revalidate-content";
 
 export const fallbackSiteSettings: SiteSettings = SiteSettingsSchema.parse({
   name: "Soheil Nikroo",
@@ -85,12 +84,16 @@ async function readSiteSettings(): Promise<SiteSettings> {
 }
 const getSiteSettingsCached = unstable_cache(readSiteSettings, ["site-settings"], {
   tags: [CONTENT_CACHE_TAG],
-  revalidate: 60,
+  revalidate: CONTENT_CACHE_REVALIDATE_SECONDS,
 });
 export async function getSiteSettings(): Promise<SiteSettings> {
   if (process.env.NODE_ENV === "test") return readSiteSettings();
-  if (await isAdmin()) return readSiteSettings();
   return getSiteSettingsCached();
+}
+
+/** Live CMS read for admin API routes — bypasses ISR cache. */
+export async function getSiteSettingsLive(): Promise<SiteSettings> {
+  return readSiteSettings();
 }
 export async function saveSiteSettings(data: SiteSettings): Promise<void> {
   const parsed = SiteSettingsSchema.parse(data);

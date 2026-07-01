@@ -1,13 +1,12 @@
 import { unstable_cache } from "next/cache";
 
-import { isAdmin } from "@/lib/auth/session";
 import { logContentStoreError } from "@/lib/db/log-content-store";
 import { shouldUseContentStore } from "@/lib/db/request-context";
 import { getSiteContentRow, upsertSiteContentRow } from "@/lib/db/site-content-store";
 import { WorldNarrativeSchema } from "@/lib/schemas";
 import type { StoryBeat, WorldNarrative } from "@/lib/schemas";
 
-import { CONTENT_CACHE_TAG } from "./revalidate-content";
+import { CONTENT_CACHE_REVALIDATE_SECONDS, CONTENT_CACHE_TAG } from "./revalidate-content";
 
 export const fallbackWorldNarrative: WorldNarrative = WorldNarrativeSchema.parse({
   introProse:
@@ -88,10 +87,10 @@ async function readWorldNarrative(): Promise<WorldNarrative> {
 }
 const getWorldNarrativeCached = unstable_cache(readWorldNarrative, ["world-narrative"], {
   tags: [CONTENT_CACHE_TAG],
-  revalidate: 60,
+  revalidate: CONTENT_CACHE_REVALIDATE_SECONDS,
 });
 export async function getWorldNarrative(): Promise<WorldNarrative> {
-  if (process.env.NODE_ENV === "test" || (await isAdmin())) return readWorldNarrative();
+  if (process.env.NODE_ENV === "test") return readWorldNarrative();
   return getWorldNarrativeCached();
 }
 export async function saveWorldNarrative(data: WorldNarrative): Promise<void> {

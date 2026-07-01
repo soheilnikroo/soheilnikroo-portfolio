@@ -37,17 +37,12 @@ export async function listPostRows(
   includeDrafts = false,
   options?: DbConnectOptions,
 ): Promise<PostRow[]> {
-  return withConnectTimeout(
-    async () => {
-      await ensureSchema(options);
-      const sql = getSql();
-      const rows = includeDrafts
-        ? await sql<PostRow[]>`SELECT * FROM posts ORDER BY date DESC`
-        : await sql<PostRow[]>`SELECT * FROM posts WHERE published = true ORDER BY date DESC`;
-      return rows.map(normalizePostRow);
-    },
-    options?.force ? { force: true } : options?.quick ? { quick: true } : undefined,
-  );
+  await ensureSchema(options);
+  const sql = getSql();
+  const rows = includeDrafts
+    ? await sql<PostRow[]>`SELECT * FROM posts ORDER BY date DESC`
+    : await sql<PostRow[]>`SELECT * FROM posts WHERE published = true ORDER BY date DESC`;
+  return rows.map(normalizePostRow);
 }
 export async function getPostRowBySlug(slug: string): Promise<PostRow | null> {
   await ensureSchema();

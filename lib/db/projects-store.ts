@@ -14,17 +14,14 @@ export type ProjectRow = {
   updated_at: Date;
 };
 export async function listProjectRows(options?: DbConnectOptions): Promise<ProjectRow[]> {
-  return withConnectTimeout(
-    async () => {
-      await ensureSchema(options);
-      const sql = getSql();
-      const rows = await sql<ProjectRow[]>`
-    SELECT id, slug, data, created_at, updated_at FROM projects ORDER BY (data->>'order')::int, (data->>'year')::int DESC
+  await ensureSchema(options);
+  const sql = getSql();
+  const rows = await sql<ProjectRow[]>`
+    SELECT id, slug, data, created_at, updated_at
+    FROM projects
+    ORDER BY (data->>'order')::int NULLS LAST, (data->>'year')::int DESC NULLS LAST
   `;
-      return [...rows];
-    },
-    options?.force ? { force: true } : options?.quick ? { quick: true } : undefined,
-  );
+  return [...rows];
 }
 export async function getProjectRowById(
   id: string,

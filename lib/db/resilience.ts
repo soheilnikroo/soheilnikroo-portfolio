@@ -23,8 +23,10 @@ export function resetDbCircuit(): void {
 export type DbConnectOptions = {
   /** Admin writes bypass the circuit breaker and use a longer timeout. */
   force?: boolean;
-  /** Fail fast (admin UI reads, build-time SSG). */
+  /** Fail fast (build-time SSG). */
   quick?: boolean;
+  /** Admin reads: bypass circuit breaker, use normal read timeout. */
+  preferLive?: boolean;
 };
 
 const QUICK_CONNECT_TIMEOUT_MS = 30_000;
@@ -57,7 +59,8 @@ export async function withConnectTimeout<T>(
   operation: () => Promise<T>,
   options?: DbConnectOptions,
 ): Promise<T> {
-  const bypassCircuit = options?.force === true || options?.quick === true;
+  const bypassCircuit =
+    options?.force === true || options?.quick === true || options?.preferLive === true;
   if (!bypassCircuit && isDbCircuitOpen()) {
     throw new Error("DATABASE_CIRCUIT_OPEN");
   }

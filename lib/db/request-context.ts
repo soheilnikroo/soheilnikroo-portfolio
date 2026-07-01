@@ -13,13 +13,13 @@ export async function isAdminPageRequest(): Promise<boolean> {
   }
 }
 
-/** Admin UI reads fail fast; explicit `force` (writes) keeps long retries. */
+/** Admin reads use the same path as site_content (no short timeout). */
 export async function resolveDbConnectOptions(
   options?: DbConnectOptions,
 ): Promise<DbConnectOptions> {
   const base = options ?? {};
-  if (base.quick || base.force) return base;
-  if (await isAdminPageRequest()) return { ...base, quick: true };
+  if (base.quick || base.force || base.preferLive) return base;
+  if (await isAdminPageRequest()) return { ...base, preferLive: true };
   return base;
 }
 

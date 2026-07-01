@@ -22,22 +22,27 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Seed database
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          if [ -n "$DATABASE_URL" ]; then
-            node scripts/seed.mjs
-          else
+          if [ -z "$DATABASE_URL" ]; then
             echo "DATABASE_URL secret not set — skipping seed"
+            exit 0
           fi
+          pnpm db:seed
 
       - name: Deploy to Liara
         env:

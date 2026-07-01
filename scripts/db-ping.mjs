@@ -1,21 +1,16 @@
 #!/usr/bin/env node
 import postgres from "postgres";
 
-const url = process.env.DATABASE_URL;
+import { describeDatabaseUrl, printDatabaseUrlHelp, resolveDatabaseUrl } from "./db-url.mjs";
+
+const url = resolveDatabaseUrl();
 if (!url) {
-  console.error("DATABASE_URL is not set.");
+  printDatabaseUrlHelp();
   process.exit(1);
 }
-function describe(url) {
-  try {
-    const parsed = new URL(url.replace(/^postgresql:/i, "http:"));
-    return `${parsed.username}@${parsed.hostname}:${parsed.port || "5432"}`;
-  } catch {
-    return "(unparseable URL)";
-  }
-}
+
 const isTransactionPooler = url.includes("pooler.supabase.com") && /:6543(?:\/|$)/.test(url);
-console.log("Target:", describe(url));
+console.log("Target:", describeDatabaseUrl(url));
 console.log("Pooler mode:", isTransactionPooler ? "transaction (6543)" : "session/direct (5432)");
 const sql = postgres(url, {
   max: 1,

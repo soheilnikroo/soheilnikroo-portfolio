@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 import postgres from "postgres";
 
-const url = process.env.DATABASE_URL;
+import { printDatabaseUrlHelp, resolveDatabaseUrl } from "./db-url.mjs";
+
+const url = resolveDatabaseUrl();
 if (!url) {
-  console.error("DATABASE_URL is not set.");
+  printDatabaseUrlHelp();
   process.exit(1);
 }
 

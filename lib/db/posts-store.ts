@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { DbConnectOptions } from "./resilience";
-import { withConnectTimeout } from "./resilience";
+import { LIVE_READ, withConnectTimeout } from "./resilience";
 import { ensureSchema, getSql } from "./sql";
 import { normalizeTextArray, sqlTextArray } from "./text-array";
 
@@ -37,18 +37,26 @@ export async function listPostRows(
   includeDrafts = false,
   options?: DbConnectOptions,
 ): Promise<PostRow[]> {
-  await ensureSchema(options);
-  const sql = getSql();
-  const rows = includeDrafts
-    ? await sql<PostRow[]>`SELECT * FROM posts ORDER BY date DESC`
-    : await sql<PostRow[]>`SELECT * FROM posts WHERE published = true ORDER BY date DESC`;
-  return rows.map(normalizePostRow);
+  const readOptions = options ?? LIVE_READ;
+  return withConnectTimeout(
+    async () => {
+      await ensureSchema(readOptions);
+      const sql = getSql();
+      const rows = includeDrafts
+        ? await sql<PostRow[]>`SELECT * FROM posts ORDER BY date DESC`
+        : await sql<PostRow[]>`SELECT * FROM posts WHERE published = true ORDER BY date DESC`;
+      return rows.map(normalizePostRow);
+    },
+    readOptions.force ? { force: true } : LIVE_READ,
+  );
 }
 export async function getPostRowBySlug(slug: string): Promise<PostRow | null> {
-  await ensureSchema();
-  const sql = getSql();
-  const rows = await sql<PostRow[]>`SELECT * FROM posts WHERE slug = ${slug} LIMIT 1`;
-  return rows[0] ? normalizePostRow(rows[0]) : null;
+  return withConnectTimeout(async () => {
+    await ensureSchema(LIVE_READ);
+    const sql = getSql();
+    const rows = await sql<PostRow[]>`SELECT * FROM posts WHERE slug = ${slug} LIMIT 1`;
+    return rows[0] ? normalizePostRow(rows[0]) : null;
+  }, LIVE_READ);
 }
 export async function getPostRowById(
   id: string,

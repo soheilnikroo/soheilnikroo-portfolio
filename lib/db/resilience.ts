@@ -25,15 +25,22 @@ export type DbConnectOptions = {
   force?: boolean;
   /** Fail fast (build-time SSG). */
   quick?: boolean;
-  /** Admin reads: bypass circuit breaker, use normal read timeout. */
+  /** Live CMS reads: bypass circuit breaker, use normal read timeout. */
   preferLive?: boolean;
 };
 
+export const LIVE_READ: DbConnectOptions = { preferLive: true };
+
+function shouldUseCircuitBreaker(options?: DbConnectOptions): boolean {
+  if (options?.force || options?.quick || options?.preferLive) return false;
+  return !process.env.DATABASE_URL;
+}
+
 const QUICK_CONNECT_TIMEOUT_MS = 30_000;
-const READ_CONNECT_TIMEOUT_MS = process.env.NODE_ENV === "production" ? 60_000 : 35_000;
+const READ_CONNECT_TIMEOUT_MS = process.env.NODE_ENV === "production" ? 90_000 : 35_000;
 const BUILD_CONNECT_TIMEOUT_MS = 10_000;
 const ADMIN_CONNECT_TIMEOUT_MS = 45_000;
-const READ_ATTEMPTS = process.env.NODE_ENV === "production" ? 2 : 1;
+const READ_ATTEMPTS = process.env.NODE_ENV === "production" ? 3 : 1;
 const BUILD_ATTEMPTS = 1;
 const ADMIN_ATTEMPTS = 2;
 
@@ -59,8 +66,7 @@ export async function withConnectTimeout<T>(
   operation: () => Promise<T>,
   options?: DbConnectOptions,
 ): Promise<T> {
-  const bypassCircuit =
-    options?.force === true || options?.quick === true || options?.preferLive === true;
+  const bypassCircuit = !shouldUseCircuitBreaker(options);
   if (!bypassCircuit && isDbCircuitOpen()) {
     throw new Error("DATABASE_CIRCUIT_OPEN");
   }
@@ -90,6 +96,6 @@ export async function withConnectTimeout<T>(
     }
   }
 
-  if (!bypassCircuit) openDbCircuit();
+  if (shouldUseCircuitBreaker(options)) openDbCircuit();
   throw lastError;
 }

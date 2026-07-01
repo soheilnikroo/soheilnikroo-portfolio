@@ -5,11 +5,14 @@ import path from "node:path";
 import matter from "gray-matter";
 import postgres from "postgres";
 
-const url = process.env.DATABASE_URL;
+import { describeDatabaseUrl, printDatabaseUrlHelp, resolveDatabaseUrl } from "./db-url.mjs";
+
+const url = resolveDatabaseUrl();
 if (!url) {
-  console.error("DATABASE_URL is not set. Run with: node --env-file=.env scripts/seed.mjs");
+  printDatabaseUrlHelp();
   process.exit(1);
 }
+console.log("Seed target:", describeDatabaseUrl(url));
 const sql = postgres(url, {
   max: 1,
   prepare: false,

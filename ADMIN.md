@@ -50,6 +50,24 @@ Liara **builds in Germany** (`liara.json`) but **runs in Iran** — Supabase is 
 
 The public site falls back to bundled content when the database is unreachable, but **admin requires a live connection**.
 
+## GitHub Actions (`DATABASE_URL` secret)
+
+The Liara deploy workflow seeds the database when `secrets.DATABASE_URL` is set. If CI fails with `TypeError: Invalid URL`, the secret value is malformed — not a code bug.
+
+1. Open **GitHub → Settings → Secrets and variables → Actions**.
+2. Edit `DATABASE_URL` and paste the **exact** Supabase Session pooler URI (same one that works with `pnpm db:ping` locally).
+3. **No quotes** around the value.
+4. **No trailing spaces or newlines** after paste.
+5. If the DB password contains `@`, `#`, `=`, `%`, or `&`, **URL-encode** them (e.g. `@` → `%40`, `=` → `%3D`).
+
+Example (password `p@ss=word`):
+
+```
+postgresql://postgres.PROJECT:p%40ss%3Dword@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres
+```
+
+After updating the secret, re-run the failed **CD-Liara** workflow.
+
 ## Seeding
 
 ```bash

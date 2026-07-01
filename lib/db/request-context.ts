@@ -13,13 +13,17 @@ export async function isAdminPageRequest(): Promise<boolean> {
   }
 }
 
-/** Admin reads use the same path as site_content (no short timeout). */
+export function isContentStoreEnabled(): boolean {
+  return Boolean(process.env.DATABASE_URL);
+}
+
+/** CMS reads always try the live database when configured. */
 export async function resolveDbConnectOptions(
   options?: DbConnectOptions,
 ): Promise<DbConnectOptions> {
   const base = options ?? {};
   if (base.quick || base.force || base.preferLive) return base;
-  if (await isAdminPageRequest()) return { ...base, preferLive: true };
+  if (isContentStoreEnabled()) return { ...base, preferLive: true };
   return base;
 }
 

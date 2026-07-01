@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import type { Project } from "@/lib/schemas";
 
 import type { DbConnectOptions } from "./resilience";
-import { withConnectTimeout } from "./resilience";
+import { LIVE_READ, withConnectTimeout } from "./resilience";
 import { ensureSchema, getSql } from "./sql";
 
 export type ProjectRow = {
@@ -14,14 +14,20 @@ export type ProjectRow = {
   updated_at: Date;
 };
 export async function listProjectRows(options?: DbConnectOptions): Promise<ProjectRow[]> {
-  await ensureSchema(options);
-  const sql = getSql();
-  const rows = await sql<ProjectRow[]>`
+  const readOptions = options ?? LIVE_READ;
+  return withConnectTimeout(
+    async () => {
+      await ensureSchema(readOptions);
+      const sql = getSql();
+      const rows = await sql<ProjectRow[]>`
     SELECT id, slug, data, created_at, updated_at
     FROM projects
     ORDER BY (data->>'order')::int NULLS LAST, (data->>'year')::int DESC NULLS LAST
   `;
-  return [...rows];
+      return [...rows];
+    },
+    readOptions.force ? { force: true } : LIVE_READ,
+  );
 }
 export async function getProjectRowById(
   id: string,

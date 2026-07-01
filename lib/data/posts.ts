@@ -1,5 +1,6 @@
 import readingTime from "reading-time";
 
+import { loadPostMetaFromDisk, loadPostSourceFromDisk } from "@/lib/data/posts-fallback";
 import { logContentStoreError } from "@/lib/db/log-content-store";
 import {
   createPostRow,
@@ -45,14 +46,16 @@ function safeRowToMeta(row: PostRow): PostMeta | null {
 export async function getAllPostMeta(includeDrafts = false): Promise<PostMeta[]> {
   try {
     const rows = await listPostRows(includeDrafts);
-    return rows.flatMap((row) => {
+    const metas = rows.flatMap((row) => {
       const meta = safeRowToMeta(row);
       return meta ? [meta] : [];
     });
+    if (metas.length > 0 || includeDrafts) return metas;
   } catch (error) {
     logContentStoreError("blog", error);
-    return [];
+    if (includeDrafts) return [];
   }
+  return loadPostMetaFromDisk(includeDrafts);
 }
 export async function getPostMetaBySlug(
   slug: string,
@@ -60,13 +63,16 @@ export async function getPostMetaBySlug(
 ): Promise<PostMeta | null> {
   try {
     const row = await getPostRowBySlug(slug);
-    if (!row) return null;
-    if (!includeDrafts && !row.published) return null;
-    return rowToMeta(row);
+    if (row) {
+      if (!includeDrafts && !row.published) return null;
+      return rowToMeta(row);
+    }
   } catch (error) {
     logContentStoreError("blog", error);
-    return null;
+    if (includeDrafts) return null;
   }
+  const fallback = await loadPostSourceFromDisk(slug, includeDrafts);
+  return fallback?.meta ?? null;
 }
 export async function getPostSource(
   slug: string,
@@ -74,31 +80,23 @@ export async function getPostSource(
 ): Promise<PostSource | null> {
   try {
     const row = await getPostRowBySlug(slug);
-    if (!row) return null;
-    if (!includeDrafts && !row.published) return null;
-    return { meta: rowToMeta(row), content: row.body };
+    if (row) {
+      if (!includeDrafts && !row.published) return null;
+      return { meta: rowToMeta(row), content: row.body };
+    }
   } catch (error) {
     logContentStoreError("blog", error);
-    return null;
+    if (includeDrafts) return null;
   }
+  return loadPostSourceFromDisk(slug, includeDrafts);
 }
 export async function getAllCategories(): Promise<string[]> {
-  try {
-    const rows = await listPostRows(false);
-    return [...new Set(rows.map((r) => r.category))].sort();
-  } catch (error) {
-    logContentStoreError("blog", error);
-    return [];
-  }
+  const posts = await getAllPostMeta();
+  return [...new Set(posts.map((post) => post.category))].sort();
 }
 export async function getAllTags(): Promise<string[]> {
-  try {
-    const rows = await listPostRows(false);
-    return [...new Set(rows.flatMap((r) => r.tags))].sort();
-  } catch (error) {
-    logContentStoreError("blog", error);
-    return [];
-  }
+  const posts = await getAllPostMeta();
+  return [...new Set(posts.flatMap((post) => post.tags))].sort();
 }
 function toDbInput(input: PostInputValues): PostInput {
   return {

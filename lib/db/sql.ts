@@ -6,22 +6,17 @@ import { withConnectTimeout } from "./resilience";
 import { runMigrations } from "./schema";
 
 type Sql = ReturnType<typeof postgres>;
-
 declare global {
   var __portfolioSql: Sql | undefined;
   var __portfolioSchemaReady: Promise<void> | undefined;
   var __portfolioSchemaForceReady: Promise<void> | undefined;
   var __portfolioDbTargetLogged: boolean | undefined;
 }
-
 function logDatabaseTarget(url: string): void {
   if (globalThis.__portfolioDbTargetLogged) return;
   globalThis.__portfolioDbTargetLogged = true;
   console.info(`[db] target ${describeDatabaseUrl(url)}`);
 }
-
-/** Lazily-created Postgres client (pooled). Safe to import at build time —
- * a connection is only opened when a query actually runs. */
 export function getSql(): Sql {
   if (globalThis.__portfolioSql) return globalThis.__portfolioSql;
   const url = process.env.DATABASE_URL;
@@ -33,8 +28,6 @@ export function getSql(): Sql {
   globalThis.__portfolioSql = client;
   return client;
 }
-
-/** Ensures tables exist. Memoized per process; public reads use a short timeout. */
 export function ensureSchema(options?: DbConnectOptions): Promise<void> {
   const force = options?.force === true;
   if (force) {
@@ -45,7 +38,6 @@ export function ensureSchema(options?: DbConnectOptions): Promise<void> {
     }
     return globalThis.__portfolioSchemaForceReady;
   }
-
   if (!globalThis.__portfolioSchemaReady) {
     globalThis.__portfolioSchemaReady = withConnectTimeout(() => runMigrations(getSql()));
   }

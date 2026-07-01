@@ -72,14 +72,12 @@ export const fallbackWorldNarrative: WorldNarrative = WorldNarrativeSchema.parse
     ],
   },
 });
-
 function warnDb(error: unknown): void {
   console.warn(
     "[world] database unavailable — using bundled fallback. Set DATABASE_URL and run `pnpm db:seed`.",
     error instanceof Error ? error.message : error,
   );
 }
-
 async function readWorldNarrative(): Promise<WorldNarrative> {
   try {
     const row = await getSiteContentRow("world");
@@ -90,27 +88,22 @@ async function readWorldNarrative(): Promise<WorldNarrative> {
     return fallbackWorldNarrative;
   }
 }
-
 const getWorldNarrativeCached = unstable_cache(readWorldNarrative, ["world-narrative"], {
   tags: [CONTENT_CACHE_TAG],
   revalidate: 60,
 });
-
 export async function getWorldNarrative(): Promise<WorldNarrative> {
   if (process.env.NODE_ENV === "test") return readWorldNarrative();
   return getWorldNarrativeCached();
 }
-
 export async function saveWorldNarrative(data: WorldNarrative): Promise<void> {
   const parsed = WorldNarrativeSchema.parse(data);
   await upsertSiteContentRow("world", parsed);
 }
-
 export function trackHeightVh(chapters: WorldNarrative["chapters"], vhPerWeight = 210): number {
   const total = chapters.reduce((sum, c) => sum + c.weight, 0);
   return Math.round(total * vhPerWeight);
 }
-
 export function beatsForChapter(
   chapterId: string,
   storyBeats: WorldNarrative["storyBeats"],

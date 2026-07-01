@@ -17,7 +17,6 @@ export type PostRow = {
   created_at: Date;
   updated_at: Date;
 };
-
 export type PostInput = {
   slug: string;
   title: string;
@@ -29,14 +28,14 @@ export type PostInput = {
   published: boolean;
   date: Date;
 };
-
 function normalizePostRow(row: PostRow): PostRow {
   return { ...row, tags: normalizeTextArray(row.tags) };
 }
-
 export async function listPostRows(
   includeDrafts = false,
-  options?: { force?: boolean },
+  options?: {
+    force?: boolean;
+  },
 ): Promise<PostRow[]> {
   await ensureSchema(options);
   const sql = getSql();
@@ -45,24 +44,23 @@ export async function listPostRows(
     : await sql<PostRow[]>`SELECT * FROM posts WHERE published = true ORDER BY date DESC`;
   return rows.map(normalizePostRow);
 }
-
 export async function getPostRowBySlug(slug: string): Promise<PostRow | null> {
   await ensureSchema();
   const sql = getSql();
   const rows = await sql<PostRow[]>`SELECT * FROM posts WHERE slug = ${slug} LIMIT 1`;
   return rows[0] ? normalizePostRow(rows[0]) : null;
 }
-
 export async function getPostRowById(
   id: string,
-  options?: { force?: boolean },
+  options?: {
+    force?: boolean;
+  },
 ): Promise<PostRow | null> {
   await ensureSchema(options);
   const sql = getSql();
   const rows = await sql<PostRow[]>`SELECT * FROM posts WHERE id = ${id} LIMIT 1`;
   return rows[0] ? normalizePostRow(rows[0]) : null;
 }
-
 export async function createPostRow(input: PostInput): Promise<PostRow> {
   await ensureSchema({ force: true });
   const sql = getSql();
@@ -78,7 +76,6 @@ export async function createPostRow(input: PostInput): Promise<PostRow> {
   if (!rows[0]) throw new Error("Failed to create post");
   return normalizePostRow(rows[0]);
 }
-
 export async function updatePostRow(id: string, input: PostInput): Promise<PostRow | null> {
   await ensureSchema({ force: true });
   const sql = getSql();
@@ -99,7 +96,6 @@ export async function updatePostRow(id: string, input: PostInput): Promise<PostR
   `;
   return rows[0] ? normalizePostRow(rows[0]) : null;
 }
-
 export async function deletePostRow(id: string): Promise<boolean> {
   await ensureSchema({ force: true });
   const sql = getSql();

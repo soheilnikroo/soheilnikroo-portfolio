@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
@@ -10,7 +9,6 @@ export function LoginForm() {
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -25,11 +23,12 @@ export function LoginForm() {
       router.refresh();
       return;
     }
-    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    const data = (await res.json().catch(() => ({}))) as {
+      error?: string;
+    };
     setError(data.error ?? "Login failed");
     setLoading(false);
   }
-
   return (
     <form onSubmit={onSubmit} className="mx-auto mt-24 w-full max-w-sm">
       <h1 className="font-heading text-2xl font-semibold">Admin</h1>

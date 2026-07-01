@@ -1,13 +1,11 @@
 "use client";
-
-// Catches errors in the root layout itself. It replaces the entire document, so
-// styles are inlined (the app stylesheet / fonts may not be available here). A
-// monospace, chunky-bordered "system crash" panel keeps it on-theme.
 export default function GlobalError({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
+  error: Error & {
+    digest?: string;
+  };
   reset: () => void;
 }) {
   const mono = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";

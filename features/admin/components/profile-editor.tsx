@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
@@ -10,7 +9,6 @@ import type { Profile } from "@/lib/schemas";
 const field =
   "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 const labelCls = "block text-sm font-medium";
-
 export function ProfileEditor({ initial }: { initial: Profile }) {
   const router = useRouter();
   const [name, setName] = React.useState(initial.name);
@@ -24,12 +22,10 @@ export function ProfileEditor({ initial }: { initial: Profile }) {
   const [socialsJson, setSocialsJson] = React.useState(JSON.stringify(initial.socials, null, 2));
   const [error, setError] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     setError(null);
-
     let socials: Profile["socials"];
     try {
       socials = JSON.parse(socialsJson) as Profile["socials"];
@@ -38,7 +34,6 @@ export function ProfileEditor({ initial }: { initial: Profile }) {
       setSaving(false);
       return;
     }
-
     const parsed = ProfileSchema.safeParse({
       name,
       role,
@@ -50,30 +45,27 @@ export function ProfileEditor({ initial }: { initial: Profile }) {
       resumeUrl: resumeUrl || undefined,
       socials,
     });
-
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Invalid profile data.");
       setSaving(false);
       return;
     }
-
     const res = await fetch("/api/admin/profile", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(parsed.data),
     });
-
     if (res.ok) {
       router.refresh();
       setSaving(false);
       return;
     }
-
-    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    const data = (await res.json().catch(() => ({}))) as {
+      error?: string;
+    };
     setError(data.error ?? "Failed to save profile.");
     setSaving(false);
   }
-
   return (
     <form onSubmit={onSubmit} className="grid gap-5">
       <div>

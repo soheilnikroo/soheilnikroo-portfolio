@@ -7,7 +7,6 @@ import { Container } from "./container";
 export async function SiteFooter({ tagline }: { tagline: string }) {
   const profile = await getProfile();
   const year = new Date().getFullYear();
-
   return (
     <footer className="mt-section border-t-2 border-white/15 bg-[#0d0b16] py-10 [font-family:var(--font-pixel),ui-monospace,monospace] text-white">
       <Container className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">

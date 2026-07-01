@@ -5,7 +5,6 @@ import { site } from "@/lib/config/site";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt = site.title;
-
 export default function OpengraphImage() {
   return new ImageResponse(
     <div

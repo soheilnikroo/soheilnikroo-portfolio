@@ -7,10 +7,8 @@ import { CHAPTER_ACCENTS, WORLD_SHELL } from "@/lib/world/world-theme";
 import type { WorldExperienceProps } from "./world-experience";
 
 export type WorldNarrativeProps = WorldExperienceProps & {
-  /** `embedded` hides on `/` while the game runs; `standalone` is always visible on `/read`. */
   readonly variant?: "embedded" | "standalone";
 };
-
 function ChapterPanel({
   id,
   chapterId,
@@ -39,11 +37,6 @@ function ChapterPanel({
     </section>
   );
 }
-
-/**
- * Layer A — crawlable mirror of the scroll game. Styled like in-world dialogue
- * panels so `/read` feels like the same save file, not a separate site.
- */
 export function WorldNarrative({
   profileName,
   role,
@@ -57,7 +50,6 @@ export function WorldNarrative({
   variant = "embedded",
 }: WorldNarrativeProps) {
   const standalone = variant === "standalone";
-
   return (
     <div
       id={standalone ? undefined : "world-narrative"}

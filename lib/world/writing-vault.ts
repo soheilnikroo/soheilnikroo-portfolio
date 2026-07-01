@@ -2,12 +2,8 @@ import { clamp01, groundY, lerp, smoothstep } from "@/lib/engine";
 import { DESIGN_HEIGHT, DESIGN_WIDTH } from "@/lib/engine/viewport";
 
 export const VAULT_POST_ZONE = { start: 0.05, end: 0.88 } as const;
-
-/** Chest sprite half-width + margin so props stay inside the design buffer. */
 const CHEST_MARGIN = 44;
-
 export interface VaultLayout {
-  /** Blog-post chest count (slots 1…postN). Slot 0 is always the résumé chest. */
   readonly postN: number;
   readonly totalSlots: number;
   readonly gy: number;
@@ -18,7 +14,6 @@ export interface VaultLayout {
   readonly resumeOpen: number;
   readonly buildT: number;
 }
-
 export function vaultLayout(
   local: number,
   postCount: number,
@@ -48,8 +43,6 @@ export function vaultLayout(
     buildT,
   };
 }
-
-/** Horizontal camera target — pans from the résumé chest across blog chests. */
 export function vaultCameraFocusX(local: number, postCount: number, width = DESIGN_WIDTH): number {
   const { rowX0, spacing, resumeCx, buildT, postN } = vaultLayout(
     local,
@@ -62,11 +55,15 @@ export function vaultCameraFocusX(local: number, postCount: number, width = DESI
   const activeCx = rowX0 + spacing * (postIdx + 1.5);
   return lerp(resumeCx, activeCx, smoothstep(buildT));
 }
-
 export function resumeChestBounds(
   layout: VaultLayout,
   time = 0,
-): { cx: number; cy: number; w: number; h: number } | null {
+): {
+  cx: number;
+  cy: number;
+  w: number;
+  h: number;
+} | null {
   if (layout.resumeOpen < 0.35) return null;
   const size = 48;
   const lift = clamp01((layout.resumeOpen - 0.35) / 0.65);
@@ -80,7 +77,6 @@ export function resumeChestBounds(
     h: Math.max(scrollH + 20, size),
   };
 }
-
 export function hitResumeChest(
   vx: number,
   vy: number,
@@ -93,8 +89,6 @@ export function hitResumeChest(
   if (!bounds) return false;
   return Math.abs(vx - bounds.cx) < bounds.w / 2 && Math.abs(vy - bounds.cy) < bounds.h / 2;
 }
-
-/** Pixel pointer nudging the player to tap the floating loot. */
 export function drawTapPointer(
   ctx: CanvasRenderingContext2D,
   targetX: number,

@@ -1,13 +1,10 @@
 "use client";
-
 import { Volume2, VolumeX } from "lucide-react";
 
 import { useAmbient } from "./ambient-provider";
 
-/** Accessible opt-in control for the ambient audio bed + interaction cues. */
 export function SoundToggle({ className }: { className?: string }) {
   const { soundEnabled, reducedMotion, unsupported, toggleSound, cue } = useAmbient();
-
   const disabledByMotion = reducedMotion;
   const label = unsupported
     ? "Ambient sound is not supported in this browser"
@@ -16,7 +13,6 @@ export function SoundToggle({ className }: { className?: string }) {
       : soundEnabled
         ? "Turn sound off"
         : "Turn sound on";
-
   return (
     <button
       type="button"

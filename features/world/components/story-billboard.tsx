@@ -1,10 +1,14 @@
 import type { ReactNode } from "react";
 
 export type BillboardAccent = "indigo" | "amber" | "emerald" | "cyan" | "white";
-
 const STYLES: Record<
   BillboardAccent,
-  { border: string; kicker: string; panel: string; glow: string }
+  {
+    border: string;
+    kicker: string;
+    panel: string;
+    glow: string;
+  }
 > = {
   indigo: {
     border: "border-indigo-300/80",
@@ -37,7 +41,6 @@ const STYLES: Record<
     glow: "shadow-[0_0_28px_rgba(255,255,255,0.12),6px_6px_0_rgba(0,0,0,0.75)]",
   },
 };
-
 export interface StoryBillboardProps {
   readonly kicker?: string;
   readonly title: string;
@@ -50,13 +53,9 @@ export interface StoryBillboardProps {
   readonly dotIndex?: number;
   readonly action?: ReactNode;
   readonly className?: string;
-  /** `bottom` keeps the centre clear for canvas animations (e.g. skill hologram). */
   readonly position?: "top" | "bottom";
-  /** Smaller, more transparent panel — pairs with `bottom`. */
   readonly compact?: boolean;
 }
-
-/** Center-stage pixel billboard — one focused beat at a time. */
 export function StoryBillboard({
   kicker,
   title,
@@ -78,7 +77,6 @@ export function StoryBillboard({
     position === "bottom" ? "top-auto bottom-[4%]" : compact ? "top-[8%]" : "top-[11%]";
   const panelBg = compact ? s.panel.replace("/94", "/72").replace("/95", "/72") : s.panel;
   const glow = compact ? "shadow-[4px_4px_0_rgba(0,0,0,0.65)]" : s.glow;
-
   return (
     <div
       className={`pointer-events-none absolute inset-x-0 z-30 flex justify-center px-3 sm:px-5 ${posClass} ${className}`}

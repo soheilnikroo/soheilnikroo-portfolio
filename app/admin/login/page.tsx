@@ -10,7 +10,6 @@ export const metadata: Metadata = {
   title: "Admin sign in",
   robots: { index: false, follow: false },
 };
-
 export default async function AdminLoginPage() {
   if (await isAdmin()) redirect("/admin");
   return (

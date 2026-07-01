@@ -8,13 +8,11 @@ import { getSiteConfig } from "@/lib/data/site-settings";
 import { worldAssetUrl } from "@/lib/world/asset-url";
 import { getWorldPageProps } from "@/lib/world/get-world-props";
 
-/** Intro-critical sprites — fetched early while the island chunk downloads. */
 const WORLD_PRELOADS = [
   worldAssetUrl("/world/scenes/intro-hero-dawn.png"),
   worldAssetUrl("/world/character/idle/east/0.png"),
   worldAssetUrl("/world/tilesets/intro/ground.png"),
 ] as const;
-
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteConfig();
   return {
@@ -26,14 +24,12 @@ export async function generateMetadata(): Promise<Metadata> {
     },
   };
 }
-
 export default async function HomePage() {
   const [props, profile, site] = await Promise.all([
     getWorldPageProps(),
     getProfile(),
     getSiteConfig(),
   ]);
-
   const graphLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -66,7 +62,6 @@ export default async function HomePage() {
       },
     ],
   };
-
   return (
     <>
       {WORLD_PRELOADS.map((href) => (
@@ -82,7 +77,6 @@ export default async function HomePage() {
         aria-hidden="true"
         className="fixed inset-0 z-[150] overflow-hidden bg-[#05040b]"
       >
-        {/* Splash paints before the client island hydrates */}
         <Image
           src={WORLD_PRELOADS[0]}
           alt=""

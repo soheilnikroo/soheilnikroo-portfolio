@@ -17,5 +17,4 @@ export const ProfileSchema = z.object({
     .optional(),
   socials: z.array(SocialLinkSchema).default([]),
 });
-
 export type Profile = z.infer<typeof ProfileSchema>;

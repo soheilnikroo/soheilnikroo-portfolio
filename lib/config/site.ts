@@ -1,6 +1,5 @@
 import { fallbackSiteSettings, getSiteUrl } from "@/lib/data/site-settings";
 
-/** Static fallback for legacy imports. Prefer `getSiteConfig()` in Server Components. */
 export const site = {
   name: fallbackSiteSettings.name,
   title: fallbackSiteSettings.title,
@@ -8,7 +7,6 @@ export const site = {
   url: getSiteUrl(),
   locale: fallbackSiteSettings.locale,
 } as const;
-
 export {
   fallbackSiteSettings,
   getSiteConfig,

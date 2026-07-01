@@ -7,7 +7,6 @@ const original = window.matchMedia;
 afterEach(() => {
   window.matchMedia = original;
 });
-
 describe("useReducedMotion", () => {
   it("returns true when the user prefers reduced motion", async () => {
     window.matchMedia = ((query: string) => ({
@@ -20,11 +19,9 @@ describe("useReducedMotion", () => {
       removeListener: () => {},
       dispatchEvent: () => false,
     })) as unknown as typeof window.matchMedia;
-
     const { result } = renderHook(() => useReducedMotion());
     await waitFor(() => expect(result.current).toBe(true));
   });
-
   it("returns false by default", async () => {
     const { result } = renderHook(() => useReducedMotion());
     await waitFor(() => expect(result.current).toBe(false));

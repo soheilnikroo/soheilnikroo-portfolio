@@ -1,5 +1,4 @@
 "use client";
-
 import { Volume2, VolumeX } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 
@@ -8,10 +7,6 @@ import { Button } from "@/components/ui/button";
 
 import { useAmbient } from "./ambient-provider";
 
-/**
- * Ambient sound control: an opt-in speaker toggle plus a React Bits ElasticSlider
- * for volume that reveals itself once sound is on.
- */
 export function VolumeControl({ className }: { className?: string }) {
   const {
     soundEnabled,
@@ -23,7 +18,6 @@ export function VolumeControl({ className }: { className?: string }) {
     setVolume,
     cue,
   } = useAmbient();
-
   const disabledByMotion = reducedMotion && !soundActive;
   const label = unsupported
     ? "Ambient sound is not supported in this browser"
@@ -32,7 +26,6 @@ export function VolumeControl({ className }: { className?: string }) {
       : soundEnabled
         ? "Turn ambient sound off"
         : "Turn ambient sound on";
-
   return (
     <div className={className}>
       <div className="flex items-center gap-2">

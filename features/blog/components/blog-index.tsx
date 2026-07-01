@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import * as React from "react";
 
@@ -12,12 +11,10 @@ import { filterPosts } from "../use-cases/filter-posts";
 export function BlogIndex({ posts, categories }: { posts: PostMeta[]; categories: string[] }) {
   const [query, setQuery] = React.useState("");
   const [category, setCategory] = React.useState<string | null>(null);
-
   const filtered = React.useMemo(
     () => filterPosts(posts, query, category),
     [posts, query, category],
   );
-
   const chipClass = (on: boolean) =>
     cn(
       "rounded-[3px] border-2 px-3 py-1 text-xs transition-colors focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none",
@@ -25,7 +22,6 @@ export function BlogIndex({ posts, categories }: { posts: PostMeta[]; categories
         ? "border-emerald-400/60 bg-emerald-900/40 text-emerald-100"
         : "border-white/20 bg-[#0d0b16] text-white/65 hover:border-white/35",
     );
-
   return (
     <div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

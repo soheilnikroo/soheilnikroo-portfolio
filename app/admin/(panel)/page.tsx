@@ -9,7 +9,6 @@ export const metadata: Metadata = {
   title: "Admin — Writing",
   robots: { index: false, follow: false },
 };
-
 export default async function AdminPage() {
   let rows: Awaited<ReturnType<typeof listAllPostRows>> = [];
   let dbError = false;

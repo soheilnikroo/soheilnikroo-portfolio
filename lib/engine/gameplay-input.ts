@@ -1,7 +1,6 @@
 import type { GameViewportRect } from "./viewport";
 import { DESIGN_HEIGHT, DESIGN_WIDTH } from "./viewport";
 
-/** Scroll the timeline — always instant; ScrollTimeline maxRate caps playback speed. */
 export function nudgeScrollProgress(track: HTMLElement, deltaProgress: number): void {
   const rect = track.getBoundingClientRect();
   const distance = rect.height - window.innerHeight;
@@ -9,14 +8,15 @@ export function nudgeScrollProgress(track: HTMLElement, deltaProgress: number): 
   const deltaY = deltaProgress * distance;
   window.scrollBy({ top: deltaY, behavior: "auto" });
 }
-
-/** Map a client pointer position to virtual 480×270 game coordinates. */
 export function clientToVirtual(
   clientX: number,
   clientY: number,
   viewport: GameViewportRect,
   stageRect: DOMRect,
-): { x: number; y: number } | null {
+): {
+  x: number;
+  y: number;
+} | null {
   const localX = clientX - stageRect.left - viewport.offsetX;
   const localY = clientY - stageRect.top - viewport.offsetY;
   if (
@@ -34,10 +34,7 @@ export function clientToVirtual(
     y: Math.max(0, Math.min(DESIGN_HEIGHT, y)),
   };
 }
-
 export type TapZone = "back" | "forward" | "jump";
-
-/** Left third rewinds, right two-thirds advance; top band is a jump burst. */
 export function classifyTapZone(
   virtualX: number,
   virtualY: number,
@@ -48,7 +45,6 @@ export function classifyTapZone(
   if (virtualX < width * 0.34) return "back";
   return "forward";
 }
-
 export const SCROLL_NUDGE = {
   forward: 0.028,
   back: -0.022,

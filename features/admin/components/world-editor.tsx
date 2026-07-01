@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
@@ -10,21 +9,18 @@ import type { StoryBeat, WorldNarrative } from "@/lib/schemas";
 import { adminField, adminHint, adminLabel } from "./admin-fields";
 
 const CHAPTER_IDS = ["intro", "work", "skills", "writing", "contact"] as const;
-
 export function WorldEditor({ initial }: { initial: WorldNarrative }) {
   const router = useRouter();
   const [form, setForm] = React.useState(initial);
   const [activeChapter, setActiveChapter] = React.useState<(typeof CHAPTER_IDS)[number]>("intro");
   const [error, setError] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
-
   function updateChapter(index: number, patch: Partial<WorldNarrative["chapters"][number]>) {
     setForm((prev) => ({
       ...prev,
       chapters: prev.chapters.map((c, i) => (i === index ? { ...c, ...patch } : c)),
     }));
   }
-
   function updateBeat(index: number, patch: Partial<StoryBeat>) {
     setForm((prev) => {
       const beats = [...(prev.storyBeats[activeChapter] ?? [])];
@@ -32,7 +28,6 @@ export function WorldEditor({ initial }: { initial: WorldNarrative }) {
       return { ...prev, storyBeats: { ...prev.storyBeats, [activeChapter]: beats } };
     });
   }
-
   function addBeat() {
     setForm((prev) => ({
       ...prev,
@@ -42,7 +37,6 @@ export function WorldEditor({ initial }: { initial: WorldNarrative }) {
       },
     }));
   }
-
   function removeBeat(index: number) {
     setForm((prev) => ({
       ...prev,
@@ -52,7 +46,6 @@ export function WorldEditor({ initial }: { initial: WorldNarrative }) {
       },
     }));
   }
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -76,9 +69,7 @@ export function WorldEditor({ initial }: { initial: WorldNarrative }) {
     setError("Failed to save world content.");
     setSaving(false);
   }
-
   const beats = form.storyBeats[activeChapter] ?? [];
-
   return (
     <form onSubmit={onSubmit} className="grid gap-8">
       <div>

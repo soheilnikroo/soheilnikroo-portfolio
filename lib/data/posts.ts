@@ -14,14 +14,11 @@ import type { PostInputValues, PostMeta } from "@/lib/schemas";
 
 export type PostSource = {
   meta: PostMeta;
-  /** Raw markdown/MDX body, rendered by the blog at request time. */
   content: string;
 };
-
 function toIsoDate(value: Date): string {
   return new Date(value).toISOString().slice(0, 10);
 }
-
 export function rowToMeta(row: PostRow): PostMeta {
   const stats = readingTime(row.body);
   return PostMetaSchema.parse({
@@ -36,14 +33,12 @@ export function rowToMeta(row: PostRow): PostMeta {
     readingMinutes: Math.max(1, Math.round(stats.minutes)),
   });
 }
-
 function warnDb(error: unknown): void {
   console.warn(
     "[blog] database unavailable — returning empty content. Set DATABASE_URL and run `pnpm db:seed`.",
     error instanceof Error ? error.message : error,
   );
 }
-
 export async function getAllPostMeta(includeDrafts = false): Promise<PostMeta[]> {
   try {
     const rows = await listPostRows(includeDrafts);
@@ -53,7 +48,6 @@ export async function getAllPostMeta(includeDrafts = false): Promise<PostMeta[]>
     return [];
   }
 }
-
 export async function getPostMetaBySlug(
   slug: string,
   includeDrafts = false,
@@ -68,7 +62,6 @@ export async function getPostMetaBySlug(
     return null;
   }
 }
-
 export async function getPostSource(
   slug: string,
   includeDrafts = false,
@@ -83,7 +76,6 @@ export async function getPostSource(
     return null;
   }
 }
-
 export async function getAllCategories(): Promise<string[]> {
   try {
     const rows = await listPostRows(false);
@@ -93,7 +85,6 @@ export async function getAllCategories(): Promise<string[]> {
     return [];
   }
 }
-
 export async function getAllTags(): Promise<string[]> {
   try {
     const rows = await listPostRows(false);
@@ -103,7 +94,6 @@ export async function getAllTags(): Promise<string[]> {
     return [];
   }
 }
-
 function toDbInput(input: PostInputValues): PostInput {
   return {
     slug: input.slug,
@@ -117,23 +107,18 @@ function toDbInput(input: PostInputValues): PostInput {
     date: new Date(input.date),
   };
 }
-
 export async function listAllPostRows(includeDrafts = false): Promise<PostRow[]> {
   return listPostRows(includeDrafts, { force: true });
 }
-
 export async function getPostById(id: string): Promise<PostRow | null> {
   return getPostRowById(id, { force: true });
 }
-
 export async function createPost(input: PostInputValues): Promise<PostRow> {
   return createPostRow(toDbInput(input));
 }
-
 export async function updatePost(id: string, input: PostInputValues): Promise<PostRow | null> {
   return updatePostRow(id, toDbInput(input));
 }
-
 export async function deletePost(id: string): Promise<boolean> {
   return deletePostRow(id);
 }

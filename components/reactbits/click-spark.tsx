@@ -1,7 +1,4 @@
 "use client";
-
-// Adapted from React Bits (https://reactbits.dev) — "ClickSpark". Listens globally
-// (no onClick on a non-interactive element), respects reduced motion, theme-tinted.
 import { usePathname } from "next/navigation";
 import * as React from "react";
 
@@ -18,9 +15,12 @@ interface ClickSparkProps {
   className?: string;
   children?: React.ReactNode;
 }
-
-type Spark = { x: number; y: number; angle: number; startTime: number };
-
+type Spark = {
+  x: number;
+  y: number;
+  angle: number;
+  startTime: number;
+};
 export function ClickSpark({
   sparkColor = "#a1a1aa",
   sparkSize = 9,
@@ -34,20 +34,16 @@ export function ClickSpark({
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const sparks = React.useRef<Spark[]>([]);
   const reduced = useReducedMotion();
-  // Skip the always-on canvas + rAF on the immersive experience route.
   const isExperience = usePathname() === "/";
-
   React.useEffect(() => {
     if (reduced || isExperience) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-
     const canvasEl = canvas;
     const context = ctx;
     const parent = canvasEl.parentElement;
-
     const resize = () => {
       const rect = (parent ?? canvasEl).getBoundingClientRect();
       canvasEl.width = rect.width;
@@ -56,7 +52,6 @@ export function ClickSpark({
     resize();
     const ro = parent ? new ResizeObserver(resize) : null;
     ro?.observe(parent ?? canvasEl);
-
     const ease = (t: number) => t * (2 - t);
     let raf = 0;
     const draw = (timestamp: number) => {
@@ -82,7 +77,6 @@ export function ClickSpark({
       raf = requestAnimationFrame(draw);
     };
     raf = requestAnimationFrame(draw);
-
     const onClick = (event: MouseEvent) => {
       const rect = canvasEl.getBoundingClientRect();
       const x = event.clientX - rect.left;
@@ -94,14 +88,12 @@ export function ClickSpark({
       }
     };
     window.addEventListener("click", onClick);
-
     return () => {
       cancelAnimationFrame(raf);
       ro?.disconnect();
       window.removeEventListener("click", onClick);
     };
   }, [reduced, isExperience, sparkColor, sparkSize, sparkRadius, sparkCount, duration, extraScale]);
-
   return (
     <div className={cn("relative w-full", className)}>
       {isExperience ? null : (

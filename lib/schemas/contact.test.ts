@@ -8,7 +8,6 @@ describe("ContactFormSchema", () => {
     email: "ada@example.com",
     message: "Hello there, this is a message.",
   };
-
   it("accepts valid input", () => {
     expect(ContactFormSchema.safeParse(base).success).toBe(true);
   });

@@ -2,11 +2,6 @@ import type { CharacterManifest, SceneManifest, WorldPalette } from "@/lib/engin
 
 import { worldAssetUrl } from "./asset-url";
 
-/**
- * Static configuration for the scroll-linked journey. Pure data — only *types* are
- * imported from the engine, so this module adds no engine code to the route bundle.
- */
-
 const WALK = [0, 1, 2, 3, 4, 5] as const;
 const RUN = [0, 1, 2, 3] as const;
 const JUMP = [0, 1, 2, 3, 4, 5] as const;
@@ -15,7 +10,6 @@ const dir = (clip: string, frames: readonly number[]) => ({
   east: frames.map((i) => worldAssetUrl(`/world/character/${clip}/east/${i}.png`)),
   west: frames.map((i) => worldAssetUrl(`/world/character/${clip}/west/${i}.png`)),
 });
-
 export const characterManifest: CharacterManifest = {
   frameSize: 68,
   clips: {
@@ -27,13 +21,10 @@ export const characterManifest: CharacterManifest = {
     pull: dir("pull", WALK),
   },
 };
-
-/** Which parallax layers + landmarks appear per chapter (0 = hidden, 1 = full). Keeps scenes simple. */
 export interface ChapterSceneProfile {
   readonly layers: Readonly<Partial<Record<string, number>>>;
   readonly landmarks: Readonly<Partial<Record<string, number>>>;
 }
-
 export const CHAPTER_SCENE_PROFILES: Record<string, ChapterSceneProfile> = {
   intro: {
     layers: { "alborz-mountains": 0.42, "tehran-skyline-far": 0.28 },
@@ -56,8 +47,6 @@ export const CHAPTER_SCENE_PROFILES: Record<string, ChapterSceneProfile> = {
     landmarks: { "milad-tower": 0.88 },
   },
 };
-
-/** Parallax background layers + Tehran landmarks (authored pixel art). */
 export const sceneManifest: SceneManifest = {
   layers: [
     {
@@ -131,8 +120,6 @@ export const sceneManifest: SceneManifest = {
     },
   ],
 };
-
-/** Chapter prop sprite paths keyed as `chapterId/propId`. */
 export const propPaths: Record<string, string> = {
   "intro/childhood-house": worldAssetUrl("/world/objects/intro/childhood-house.png"),
   "intro/road-pit": worldAssetUrl("/world/objects/intro/road-pit.png"),
@@ -148,8 +135,6 @@ export const propPaths: Record<string, string> = {
   "writing/bookshelf": worldAssetUrl("/world/objects/writing/bookshelf.png"),
   "contact/rooftop-cafe": worldAssetUrl("/world/objects/contact/rooftop-cafe.png"),
 };
-
-/** Per-chapter ground tile overrides (swapped in drawCityscape). */
 export const chapterGroundTiles: Record<string, string> = {
   intro: worldAssetUrl("/world/tilesets/intro/ground.png"),
   work: worldAssetUrl("/world/tilesets/work/ground.png"),
@@ -157,8 +142,6 @@ export const chapterGroundTiles: Record<string, string> = {
   writing: worldAssetUrl("/world/tilesets/writing/ground.png"),
   contact: worldAssetUrl("/world/tilesets/contact/ground.png"),
 };
-
-/** Distinct colour worlds per chapter — drives the procedural backdrop + mood wash. */
 export const PALETTES: Record<string, WorldPalette> = {
   dawn: {
     skyTop: "#1e1038",
@@ -246,10 +229,7 @@ export const PALETTES: Record<string, WorldPalette> = {
     tint: "rgba(28,154,170,0.07)",
   },
 };
-
-/** @deprecated Narrative copy lives in the database — passed via `WorldExperienceProps`. */
 export type { StoryBeat } from "@/lib/schemas/world-narrative";
-
 export interface StoryProfile {
   readonly name: string;
   readonly role: string;
@@ -257,7 +237,6 @@ export interface StoryProfile {
   readonly summary: string;
   readonly location: string;
 }
-
 export interface StoryMilestone {
   readonly period: string;
   readonly title: string;

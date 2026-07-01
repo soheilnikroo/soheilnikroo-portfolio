@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 
-/** Consistent chapter heading: eyebrow + title + optional lead paragraph. */
 export function SectionHeading({
   eyebrow,
   title,

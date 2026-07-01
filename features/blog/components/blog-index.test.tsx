@@ -28,18 +28,15 @@ const posts: PostMeta[] = [
     readingMinutes: 4,
   },
 ];
-
 describe("BlogIndex", () => {
   it("filters by search query", async () => {
     render(<BlogIndex posts={posts} categories={["Motion", "Architecture"]} />);
     expect(screen.getByText("Motion matters")).toBeInTheDocument();
     expect(screen.getByText("Clean architecture")).toBeInTheDocument();
-
     await userEvent.type(screen.getByRole("searchbox"), "motion");
     expect(screen.getByText("Motion matters")).toBeInTheDocument();
     expect(screen.queryByText("Clean architecture")).not.toBeInTheDocument();
   });
-
   it("filters by category", async () => {
     render(<BlogIndex posts={posts} categories={["Motion", "Architecture"]} />);
     await userEvent.click(screen.getByRole("button", { name: "Architecture" }));

@@ -9,7 +9,6 @@ export const metadata: Metadata = {
   title: "Admin — Projects",
   robots: { index: false, follow: false },
 };
-
 export default async function AdminProjectsPage() {
   let rows: Awaited<ReturnType<typeof listAllProjectRows>> = [];
   let dbError = false;

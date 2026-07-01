@@ -6,16 +6,32 @@ import { ProjectSchema } from "@/lib/schemas";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _request: Request,
+  {
+    params,
+  }: {
+    params: Promise<{
+      id: string;
+    }>;
+  },
+) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   const row = await getProjectRow(id);
   if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ project: row });
 }
-
-export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  request: Request,
+  {
+    params,
+  }: {
+    params: Promise<{
+      id: string;
+    }>;
+  },
+) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   const json = await request.json().catch(() => null);
@@ -38,8 +54,16 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: message }, { status: 409 });
   }
 }
-
-export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _request: Request,
+  {
+    params,
+  }: {
+    params: Promise<{
+      id: string;
+    }>;
+  },
+) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   const ok = await deleteProject(id);

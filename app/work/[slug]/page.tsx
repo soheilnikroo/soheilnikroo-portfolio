@@ -9,16 +9,16 @@ import { site } from "@/lib/config/site";
 import { getProjectBySlug, getProjects } from "@/lib/data";
 
 export const revalidate = 60;
-
 export async function generateStaticParams() {
   const projects = await getProjects();
   return projects.map((p) => ({ slug: p.slug }));
 }
-
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{
+    slug: string;
+  }>;
 }): Promise<Metadata> {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
@@ -35,7 +35,6 @@ export async function generateMetadata({
     },
   };
 }
-
 const BEATS = [
   { key: "problem", label: "The problem" },
   { key: "challenge", label: "The challenge" },
@@ -43,19 +42,22 @@ const BEATS = [
   { key: "solution", label: "The solution" },
   { key: "outcome", label: "The outcome" },
 ] as const;
-
-export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ProjectPage({
+  params,
+}: {
+  params: Promise<{
+    slug: string;
+  }>;
+}) {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
-
   const all = await getProjects();
   const idx = all.findIndex((p) => p.slug === slug);
   const prev = idx > 0 ? all[idx - 1] : null;
   const next = idx >= 0 && idx < all.length - 1 ? all[idx + 1] : null;
   const accent = project.accent ?? "#a5b4fc";
   const shots = project.screenshots.length > 0 ? project.screenshots : [null, null, null];
-
   const ld = {
     "@context": "https://schema.org",
     "@graph": [
@@ -82,7 +84,6 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
       },
     ],
   };
-
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />

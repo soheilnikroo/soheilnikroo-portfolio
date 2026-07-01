@@ -1,6 +1,5 @@
 import "@testing-library/jest-dom/vitest";
 
-// jsdom lacks matchMedia — provide a default (no-match) implementation.
 if (typeof window !== "undefined" && !window.matchMedia) {
   Object.defineProperty(window, "matchMedia", {
     writable: true,

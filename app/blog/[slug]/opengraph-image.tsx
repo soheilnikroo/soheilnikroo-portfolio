@@ -6,13 +6,17 @@ import { getPostMetaBySlug } from "@/lib/data";
 export const dynamic = "force-dynamic";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-
-export default async function PostOgImage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function PostOgImage({
+  params,
+}: {
+  params: Promise<{
+    slug: string;
+  }>;
+}) {
   const { slug } = await params;
   const meta = await getPostMetaBySlug(slug).catch(() => null);
   const title = meta?.title ?? site.name;
   const category = meta?.category ?? "Writing";
-
   return new ImageResponse(
     <div
       style={{

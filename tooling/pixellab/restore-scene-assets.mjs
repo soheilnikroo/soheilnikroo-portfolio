@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/** Re-download PixelLab scene + object PNGs from job IDs. */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,15 +11,12 @@ if (!token) {
   console.error("Set PIXELLAB_API_TOKEN");
   process.exit(1);
 }
-
-/** First-account generations (still downloadable while jobs exist). */
 const LEGACY_SCENES = [
   ["public/world/scenes/alborz-mountains.png", "c0270f79-74aa-47db-8b1b-6f57e0fbc36e"],
   ["public/world/scenes/tehran-buildings-mid.png", "fc745119-6bd2-47b8-91ad-c3686fd69a57"],
   ["public/world/scenes/milad-tower.png", "8428ac1a-e001-4a90-9715-e8ad96079486"],
   ["public/world/objects/intro/childhood-house.png", "157e7f1a-88f1-4ab6-8691-47ce136505a5"],
 ];
-
 async function downloadMapObject(destRel, jobId) {
   const dest = join(ROOT, destRel);
   const url = `https://api.pixellab.ai/mcp/map-objects/${jobId}/download`;
@@ -35,7 +31,6 @@ async function downloadMapObject(destRel, jobId) {
   console.log("restored", destRel, buf.length, "bytes");
   return true;
 }
-
 async function downloadTileset(destRel, jobId) {
   const dest = join(ROOT, destRel);
   const res = await fetch("https://api.pixellab.ai/mcp", {
@@ -78,9 +73,7 @@ async function downloadTileset(destRel, jobId) {
   console.log("restored", destRel, buf.length, "bytes");
   return true;
 }
-
 const seen = new Set();
-
 if (existsSync(JOBS_FILE)) {
   const jobs = JSON.parse(readFileSync(JOBS_FILE, "utf8"));
   for (const job of jobs) {
@@ -88,7 +81,6 @@ if (existsSync(JOBS_FILE)) {
     const rel = job.dest.replace(ROOT + "/", "");
     if (seen.has(rel)) continue;
     seen.add(rel);
-    // PixelLab ground job cb85e932 is a broken 112-byte bar — keep authored strip instead.
     if (rel.endsWith("tehran-ground-tiles.png")) continue;
     if (job.type === "sidescroller_tileset") {
       await downloadTileset(rel, job.jobId);
@@ -97,7 +89,6 @@ if (existsSync(JOBS_FILE)) {
     }
   }
 }
-
 for (const [rel, id] of LEGACY_SCENES) {
   if (seen.has(rel)) continue;
   await downloadMapObject(rel, id);

@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-/** The five-beat narrative every project "destination" tells. */
 export const ProjectNarrativeSchema = z.object({
   problem: z.string().min(1),
   challenge: z.string().min(1),
@@ -8,18 +7,14 @@ export const ProjectNarrativeSchema = z.object({
   solution: z.string().min(1),
   outcome: z.string().min(1),
 });
-
 export type ProjectNarrative = z.infer<typeof ProjectNarrativeSchema>;
-
 export const ProjectStatusSchema = z.enum(["live", "in-progress", "archived", "concept"]);
 export type ProjectStatus = z.infer<typeof ProjectStatusSchema>;
-
 export const ProjectLinksSchema = z.object({
   live: z.url().optional(),
   repo: z.url().optional(),
   caseStudy: z.url().optional(),
 });
-
 export const ProjectSchema = z.object({
   slug: z
     .string()
@@ -34,12 +29,10 @@ export const ProjectSchema = z.object({
   tech: z.array(z.string().min(1)).default([]),
   links: ProjectLinksSchema.default({}),
   cover: z.string().optional(),
-  /** Screenshot image paths served from /public. Empty → the UI shows placeholders. */
   screenshots: z.array(z.string()).default([]),
   accent: z.string().optional(),
   narrative: ProjectNarrativeSchema,
   featured: z.boolean().default(false),
   order: z.number().int().default(0),
 });
-
 export type Project = z.infer<typeof ProjectSchema>;

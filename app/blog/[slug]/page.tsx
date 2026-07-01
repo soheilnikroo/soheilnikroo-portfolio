@@ -15,11 +15,12 @@ import { formatDate } from "@/lib/services/date";
 import { extractToc } from "@/lib/services/toc";
 
 export const revalidate = 60;
-
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{
+    slug: string;
+  }>;
 }): Promise<Metadata> {
   const { slug } = await params;
   const meta = await getPostMetaBySlug(slug);
@@ -39,12 +40,16 @@ export async function generateMetadata({
     },
   };
 }
-
-export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function PostPage({
+  params,
+}: {
+  params: Promise<{
+    slug: string;
+  }>;
+}) {
   const { slug } = await params;
   const source = await getPostSource(slug);
   if (!source) notFound();
-
   const toc = extractToc(source.content);
   const { content } = await compileMDX({
     source: source.content,
@@ -59,7 +64,6 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       },
     },
   });
-
   const meta = source.meta;
   const articleLd = {
     "@context": "https://schema.org",
@@ -72,7 +76,6 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
     mainEntityOfPage: `${site.url}/blog/${slug}`,
     keywords: meta.tags.join(", "),
   };
-
   return (
     <PixelPage>
       <script

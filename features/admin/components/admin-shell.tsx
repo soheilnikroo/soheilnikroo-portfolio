@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
@@ -29,17 +28,14 @@ const links = [
     match: (path: string) => path === "/admin/settings",
   },
 ];
-
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-
   async function onLogout() {
     await fetch("/api/admin/logout", { method: "POST" });
     router.push("/admin/login");
     router.refresh();
   }
-
   return (
     <div>
       <header className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-border/70 pb-4">

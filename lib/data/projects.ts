@@ -85,23 +85,19 @@ const fallbackProjects: Project[] = [
     },
   },
 ];
-
 function byDisplayOrder(a: Project, b: Project): number {
   if (a.order !== b.order) return a.order - b.order;
   return b.year - a.year;
 }
-
 function rowToProject(row: ProjectRow): Project {
   return ProjectSchema.parse(row.data);
 }
-
 function warnDb(error: unknown): void {
   console.warn(
     "[projects] database unavailable — using bundled fallback. Set DATABASE_URL and run `pnpm db:seed`.",
     error instanceof Error ? error.message : error,
   );
 }
-
 export async function getProjects(): Promise<Project[]> {
   try {
     const rows = await listProjectRows();
@@ -112,11 +108,9 @@ export async function getProjects(): Promise<Project[]> {
     return [...fallbackProjects].sort(byDisplayOrder);
   }
 }
-
 export async function getFeaturedProjects(): Promise<Project[]> {
   return (await getProjects()).filter((p) => p.featured);
 }
-
 export async function getProjectBySlug(slug: string): Promise<Project | null> {
   try {
     const row = await getProjectRowBySlug(slug);
@@ -127,25 +121,19 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
     return fallbackProjects.find((p) => p.slug === slug) ?? null;
   }
 }
-
 export async function listAllProjectRows(): Promise<ProjectRow[]> {
   return listProjectRows({ force: true });
 }
-
 export async function getProjectRow(id: string): Promise<ProjectRow | null> {
   return getProjectRowById(id, { force: true });
 }
-
 export async function createProject(data: Project): Promise<ProjectRow> {
   return createProjectRow(data.slug, data);
 }
-
 export async function updateProject(id: string, data: Project): Promise<ProjectRow | null> {
   return updateProjectRow(id, data.slug, data);
 }
-
 export async function deleteProject(id: string): Promise<boolean> {
   return deleteProjectRow(id);
 }
-
 export { fallbackProjects };

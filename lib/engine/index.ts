@@ -1,6 +1,3 @@
-/**
- * Public surface of the scroll-linked timeline engine.
- */
 export { ScrollTimeline } from "./scroll";
 export type { ScrollTimelineOptions } from "./scroll";
 export { Stage } from "./stage";

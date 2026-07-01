@@ -1,5 +1,4 @@
 "use client";
-
 import { motion, useInView } from "motion/react";
 import * as React from "react";
 
@@ -9,17 +8,11 @@ import { durations, easing } from "@/lib/design/tokens";
 type RevealProps = {
   children: React.ReactNode;
   className?: string;
-  /** Seconds of delay before revealing. */
   delay?: number;
-  /** Initial vertical offset in pixels (ignored under reduced motion). */
   y?: number;
-  /** Fraction of the element visible before triggering (0..1). */
   amount?: number;
-  /** Reveal only once. */
   once?: boolean;
 };
-
-/** Reveals its children when scrolled into view. Opacity-only under reduced motion. */
 export function Reveal({
   children,
   className,
@@ -31,7 +24,6 @@ export function Reveal({
   const ref = React.useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once, amount });
   const reduced = useReducedMotion();
-
   return (
     <motion.div
       ref={ref}

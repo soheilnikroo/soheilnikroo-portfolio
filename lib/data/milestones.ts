@@ -32,14 +32,12 @@ const fallbackMilestones: Milestone[] = [
       "Since 2022, Frontend Engineer at Snapp — TypeScript, React, Next.js, PWAs, UI kit, Redux Toolkit, and SWR on a product used by millions. I care about performance, design patterns, cross-browser quality, and mobile-first delivery. Side quests: learning Swift & SwiftUI; exploring Rust.",
   },
 ];
-
 function warnDb(error: unknown): void {
   console.warn(
     "[milestones] database unavailable — using bundled fallback. Set DATABASE_URL and run `pnpm db:seed`.",
     error instanceof Error ? error.message : error,
   );
 }
-
 export async function getMilestones(): Promise<Milestone[]> {
   try {
     const row = await getSiteContentRow("milestones");
@@ -50,15 +48,10 @@ export async function getMilestones(): Promise<Milestone[]> {
     return fallbackMilestones;
   }
 }
-
 export async function saveMilestones(data: Milestone[]): Promise<void> {
   const parsed = MilestonesSchema.parse(data);
   await upsertSiteContentRow("milestones", parsed);
 }
-
-/** @deprecated Use getMilestones() — kept for seed script compatibility. */
 export const milestones = fallbackMilestones;
-
 export type { Milestone };
-
 export { fallbackMilestones };

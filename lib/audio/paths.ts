@@ -1,4 +1,3 @@
-/** Royalty-free audio under `public/audio/` — see `public/audio/LICENSES.md`. */
 export const AUDIO = {
   ambient: {
     siteBed: "/audio/ambient/site-bed.ogg",
@@ -22,5 +21,4 @@ export const AUDIO = {
     hover: "/audio/sfx/hover.ogg",
   },
 } as const;
-
 export type SfxId = keyof typeof AUDIO.sfx;

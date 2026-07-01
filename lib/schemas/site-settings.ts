@@ -4,18 +4,14 @@ export const NavLinkSchema = z.object({
   href: z.string().min(1),
   label: z.string().min(1),
 });
-
 export type NavLink = z.infer<typeof NavLinkSchema>;
-
 export const PageCopySchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   eyebrow: z.string().optional(),
   subtitle: z.string().optional(),
 });
-
 export type PageCopy = z.infer<typeof PageCopySchema>;
-
 export const SiteSettingsSchema = z.object({
   name: z.string().min(1),
   title: z.string().min(1),
@@ -44,5 +40,4 @@ export const SiteSettingsSchema = z.object({
     }),
   }),
 });
-
 export type SiteSettings = z.infer<typeof SiteSettingsSchema>;

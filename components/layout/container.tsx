@@ -2,7 +2,6 @@ import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-/** Centered content column with consistent max-width + gutter padding. */
 export function Container({
   className,
   children,

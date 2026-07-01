@@ -1,15 +1,7 @@
 import { clamp01 } from "./math";
 import type { RenderSurface } from "./types";
 
-/**
- * Cinematic, scroll-scrubbed transitions between chapters. Each is a pure function
- * of `coverage` (0 = clear, 1 = fully obscuring the seam), so — like everything
- * else in the engine — they play forward as you scroll down and reverse exactly as
- * you scroll up. The Stage picks a different style per chapter boundary so each
- * "world change" feels distinct.
- */
 export type TransitionStyle = "pixelate" | "iris" | "bars" | "diagonal" | "glitch";
-
 export const TRANSITION_STYLES: readonly TransitionStyle[] = [
   "iris",
   "pixelate",
@@ -17,14 +9,11 @@ export const TRANSITION_STYLES: readonly TransitionStyle[] = [
   "diagonal",
   "glitch",
 ];
-
 const COVER = "#04040b";
-
 function hash2(x: number, y: number): number {
   const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
   return n - Math.floor(n);
 }
-
 function pixelate(surface: RenderSurface, c: number): void {
   const { ctx, width, height } = surface;
   const block = 28;
@@ -37,7 +26,6 @@ function pixelate(surface: RenderSurface, c: number): void {
     }
   }
 }
-
 function iris(surface: RenderSurface, c: number): void {
   const { ctx, width, height } = surface;
   const maxR = Math.hypot(width, height) / 2;
@@ -48,7 +36,6 @@ function iris(surface: RenderSurface, c: number): void {
   ctx.arc(width / 2, height / 2, holeR, 0, Math.PI * 2, true);
   ctx.fill("evenodd");
 }
-
 function bars(surface: RenderSurface, c: number): void {
   const { ctx, width, height } = surface;
   const n = 14;
@@ -60,7 +47,6 @@ function bars(surface: RenderSurface, c: number): void {
     ctx.fillRect(Math.floor(i * bw), Math.floor(y), Math.ceil(bw) + 1, Math.ceil(bh));
   }
 }
-
 function diagonal(surface: RenderSurface, c: number): void {
   const { ctx, width, height } = surface;
   const edge = c * (width + height);
@@ -72,7 +58,6 @@ function diagonal(surface: RenderSurface, c: number): void {
   ctx.closePath();
   ctx.fill();
 }
-
 function glitch(surface: RenderSurface, c: number): void {
   const { ctx, width, height } = surface;
   const slice = 16;
@@ -82,13 +67,11 @@ function glitch(surface: RenderSurface, c: number): void {
       ctx.fillStyle = COVER;
       ctx.fillRect(0, y, width, slice + 1);
     } else if (r < c + 0.12) {
-      // Leading colour-shifted scanline for a chromatic "glitch" edge.
       ctx.fillStyle = hash2(1, y) > 0.5 ? "rgba(129,140,248,0.5)" : "rgba(34,211,238,0.5)";
       ctx.fillRect((hash2(2, y) - 0.5) * 40, y, width, 3);
     }
   }
 }
-
 export function drawTransition(
   surface: RenderSurface,
   style: TransitionStyle,

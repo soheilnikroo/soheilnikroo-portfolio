@@ -26,16 +26,13 @@ const posts: PostMeta[] = [
     draft: false,
   },
 ];
-
 describe("filterPosts", () => {
   it("returns all posts when query and category are empty", () => {
     expect(filterPosts(posts, "", null)).toHaveLength(2);
   });
-
   it("filters by category", () => {
     expect(filterPosts(posts, "", "Design")).toEqual([posts[1]]);
   });
-
   it("filters by title, description, and tags", () => {
     expect(filterPosts(posts, "motion", null)).toEqual([posts[1]]);
     expect(filterPosts(posts, "alpha", null)).toEqual([posts[0]]);

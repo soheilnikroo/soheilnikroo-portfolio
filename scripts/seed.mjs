@@ -1,6 +1,4 @@
 import { randomUUID } from "node:crypto";
-// Seed blog posts, projects, profile, skills, and milestones into Postgres (Supabase).
-// Run: pnpm db:seed   (reads DATABASE_URL from .env)
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
@@ -12,7 +10,6 @@ if (!url) {
   console.error("DATABASE_URL is not set. Run with: node --env-file=.env scripts/seed.mjs");
   process.exit(1);
 }
-
 const sql = postgres(url, {
   max: 1,
   prepare: false,
@@ -25,26 +22,21 @@ const sql = postgres(url, {
 const root = process.cwd();
 const blogDir = path.join(root, "content", "blog");
 const seedDir = path.join(root, "content", "seed");
-
 async function readJson(name) {
   const raw = await fs.readFile(path.join(seedDir, name), "utf8");
   return JSON.parse(raw);
 }
-
 function normalizeTags(tags) {
   if (Array.isArray(tags)) return tags.map(String);
   if (typeof tags === "string" && tags.trim()) return tags.split(",").map((t) => t.trim());
   return [];
 }
-
-/** Bind text[] for Supabase transaction pooler (prepare: false). */
 function pgTextArrayLiteral(values) {
   if (values.length === 0) return "{}";
   return `{${values
     .map((value) => `"${String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`)
     .join(",")}}`;
 }
-
 async function ensureSchema() {
   await sql`
     CREATE TABLE IF NOT EXISTS posts (
@@ -55,20 +47,17 @@ async function ensureSchema() {
       updated_at timestamptz NOT NULL DEFAULT now()
     )`;
   await sql`CREATE INDEX IF NOT EXISTS posts_published_date_idx ON posts (published, date DESC)`;
-
   await sql`
     CREATE TABLE IF NOT EXISTS projects (
       id text PRIMARY KEY, slug text UNIQUE NOT NULL, data jsonb NOT NULL,
       created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now()
     )`;
   await sql`CREATE INDEX IF NOT EXISTS projects_slug_idx ON projects (slug)`;
-
   await sql`
     CREATE TABLE IF NOT EXISTS site_content (
       key text PRIMARY KEY, data jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now()
     )`;
 }
-
 async function seedBlogPosts() {
   let files = [];
   try {
@@ -77,7 +66,6 @@ async function seedBlogPosts() {
     console.log("No content/blog directory — skipping blog seed.");
     return;
   }
-
   for (const file of files) {
     const raw = await fs.readFile(path.join(blogDir, file), "utf8");
     const { data, content } = matter(raw);
@@ -98,7 +86,6 @@ async function seedBlogPosts() {
     console.log("seeded post", slug);
   }
 }
-
 async function seedProjects() {
   const projects = await readJson("projects.json");
   for (const project of projects) {
@@ -110,7 +97,6 @@ async function seedProjects() {
     console.log("seeded project", project.slug);
   }
 }
-
 async function seedSiteContent() {
   const entries = [
     ["profile", await readJson("profile.json")],
@@ -128,14 +114,12 @@ async function seedSiteContent() {
     console.log("seeded site content", key);
   }
 }
-
 async function main() {
   await ensureSchema();
   await seedBlogPosts();
   await seedProjects();
   await seedSiteContent();
 }
-
 main()
   .catch((e) => {
     console.error(e);

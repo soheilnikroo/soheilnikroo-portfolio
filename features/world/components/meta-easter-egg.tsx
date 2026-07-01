@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from "react";
 
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
@@ -11,7 +10,6 @@ export interface MetaEasterEggProps {
   readonly onReveal: () => void;
   readonly onDismiss: () => void;
 }
-
 export function MetaEasterEgg({
   visible,
   revealed,
@@ -21,17 +19,12 @@ export function MetaEasterEgg({
   const reduced = useReducedMotion();
   const [showAnswer, setShowAnswer] = React.useState(false);
   const dialogRef = React.useRef<HTMLDialogElement>(null);
-
-  // Drive the native <dialog> through the top layer so it always centers in the
-  // viewport, escaping the transformed/opacity overlay ancestors (which were
-  // pinning it to the bottom of the panel).
   React.useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (revealed && !dialog.open) dialog.showModal();
     if (!revealed && dialog.open) dialog.close();
   }, [revealed]);
-
   React.useEffect(() => {
     if (!revealed) {
       setShowAnswer(false);
@@ -44,15 +37,12 @@ export function MetaEasterEgg({
     const id = window.setTimeout(() => setShowAnswer(true), 120);
     return () => window.clearTimeout(id);
   }, [revealed, reduced]);
-
   const handleAsk = (): void => {
     unlockAudio();
     sfx.reveal();
     onReveal();
   };
-
   if (!visible && !revealed) return null;
-
   return (
     <>
       {visible && !revealed ? (
@@ -89,9 +79,7 @@ export function MetaEasterEgg({
             onClick={onDismiss}
           />
           <div
-            className={`relative z-10 w-full max-w-xl border-4 border-white bg-[#0d0b16] px-6 py-8 text-center [font-family:var(--font-pixel),monospace] shadow-[8px_8px_0_#000,0_0_48px_rgba(129,140,248,0.35)] sm:px-10 sm:py-10 ${
-              showAnswer ? "animate-[metaSecretIn_0.55s_ease-out_both]" : "opacity-0"
-            }`}
+            className={`relative z-10 w-full max-w-xl border-4 border-white bg-[#0d0b16] px-6 py-8 text-center [font-family:var(--font-pixel),monospace] shadow-[8px_8px_0_#000,0_0_48px_rgba(129,140,248,0.35)] sm:px-10 sm:py-10 ${showAnswer ? "animate-[metaSecretIn_0.55s_ease-out_both]" : "opacity-0"}`}
           >
             <div
               aria-hidden="true"

@@ -8,7 +8,6 @@ export const metadata: Metadata = {
   title: "Admin — Profile",
   robots: { index: false, follow: false },
 };
-
 export default async function AdminProfilePage() {
   const profile = await getProfile();
   return <ProfileEditor initial={profile} />;

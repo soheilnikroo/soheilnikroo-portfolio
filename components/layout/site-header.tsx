@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,11 +10,9 @@ import { Container } from "./container";
 
 const PIXEL_ICON_BTN =
   "inline-flex size-10 items-center justify-center rounded-[3px] border-2 border-white/60 bg-[#0d0b16] text-white/85 shadow-[2px_2px_0_rgba(0,0,0,0.5)] transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none disabled:opacity-40";
-
 export function SiteHeader({ nav, brand }: { nav: readonly NavLink[]; brand: string }) {
   const pathname = usePathname();
   if (pathname === "/") return null;
-
   return (
     <header className="sticky top-0 z-[var(--z-nav)] border-b-2 border-white/15 bg-[#0d0b16]/95 [font-family:var(--font-pixel),ui-monospace,monospace] text-white">
       <Container className="flex h-14 items-center justify-between gap-4">

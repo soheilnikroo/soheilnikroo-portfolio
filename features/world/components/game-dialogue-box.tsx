@@ -1,5 +1,4 @@
 "use client";
-
 import Image from "next/image";
 import type { ReactNode } from "react";
 import * as React from "react";
@@ -10,7 +9,13 @@ import type { BillboardAccent } from "./story-billboard";
 
 const STYLES: Record<
   BillboardAccent,
-  { border: string; kicker: string; panel: string; glow: string; accent: string }
+  {
+    border: string;
+    kicker: string;
+    panel: string;
+    glow: string;
+    accent: string;
+  }
 > = {
   indigo: {
     border: "border-indigo-400",
@@ -48,10 +53,7 @@ const STYLES: Record<
     accent: "#ffffff",
   },
 };
-
 const PORTRAIT_SRC = "/world/character/idle/east/0.png";
-
-/** Split body on **bold** markers into React nodes. */
 export function renderHighlightedBody(text: string): ReactNode {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((part, i) => {
@@ -65,7 +67,6 @@ export function renderHighlightedBody(text: string): ReactNode {
     return <React.Fragment key={i}>{part}</React.Fragment>;
   });
 }
-
 export interface GameDialogueBoxProps {
   readonly speaker?: string;
   readonly kicker?: string;
@@ -81,11 +82,8 @@ export interface GameDialogueBoxProps {
   readonly beatKey?: string;
   readonly onBeatComplete?: () => void;
   readonly compact?: boolean;
-  /** Title-gate mode: minimal height, character stays visible above. */
   readonly gate?: boolean;
 }
-
-/** JRPG-style dialogue — portrait left, panel anchored to bottom (never blocks scene centre). */
 export function GameDialogueBox({
   speaker,
   kicker,
@@ -109,11 +107,9 @@ export function GameDialogueBox({
   const [displayed, setDisplayed] = React.useState(reduced ? fullText : "");
   const liveRef = React.useRef<HTMLParagraphElement>(null);
   const firedRef = React.useRef("");
-
   React.useEffect(() => {
     if (liveRef.current) liveRef.current.textContent = fullText;
   }, [fullText]);
-
   React.useEffect(() => {
     if (reduced) {
       setDisplayed(fullText);
@@ -134,20 +130,16 @@ export function GameDialogueBox({
     }, 18);
     return () => window.clearInterval(id);
   }, [beatKey, fullText, reduced, onBeatComplete]);
-
   if (opacity <= 0.03) return null;
-
   const showHook = hook && displayed.length > title.length;
   const showBody =
     body && displayed.length > title.length + (hook?.length ?? 0) + (showHook ? 1 : 0);
-
   const maxH = gate ? "max-h-[18vh]" : compact ? "max-h-[24vh]" : "max-h-[30vh]";
   const portraitSize = gate
     ? "size-14 sm:size-16"
     : compact
       ? "size-16 sm:size-[4.25rem]"
       : "size-[4.25rem] sm:size-20";
-
   return (
     <section
       aria-label={speaker ? `Dialogue from ${speaker}` : "Story dialogue"}

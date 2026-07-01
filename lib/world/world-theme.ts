@@ -1,4 +1,3 @@
-/** Shared pixel-RPG chapter accents — game dialogue boxes + read page sections. */
 export const CHAPTER_ACCENTS = {
   intro: {
     id: "intro",
@@ -56,8 +55,6 @@ export const CHAPTER_ACCENTS = {
     body: "text-indigo-100/80",
   },
 } as const;
-
 export type ChapterAccentId = keyof typeof CHAPTER_ACCENTS;
-
 export const WORLD_SHELL =
   "bg-[#05040b] text-white [font-family:var(--font-pixel),ui-monospace,monospace]" as const;

@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "three-esm-bundle": ["./node_modules/three/build/three.module.js"]
     }
   },
   "include": [

@@ -1,8 +1,10 @@
 import GithubSlugger from "github-slugger";
 
-export type TocItem = { depth: number; text: string; id: string };
-
-/** Extract h2/h3 headings from raw MDX (ids match rehype-slug's github-slugger). */
+export type TocItem = {
+  depth: number;
+  text: string;
+  id: string;
+};
 export function extractToc(markdown: string): TocItem[] {
   const slugger = new GithubSlugger();
   const items: TocItem[] = [];

@@ -1,6 +1,5 @@
 import { AUDIO } from "@/lib/audio/paths";
 
-/** Readable + listing pages share one looping intro bed — no scroll chapter swaps. */
 export function isContentMusicRoute(pathname: string | null): boolean {
   if (!pathname) return false;
   return (
@@ -11,5 +10,4 @@ export function isContentMusicRoute(pathname: string | null): boolean {
     pathname.startsWith("/work/")
   );
 }
-
 export const CONTENT_MUSIC_BED = AUDIO.music.intro;

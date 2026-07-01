@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import * as React from "react";
 
@@ -19,14 +18,16 @@ export interface MetaRoomOverlayProps {
   readonly contactBeats: readonly StoryBeat[];
   readonly email: string;
   readonly resumeUrl?: string;
-  readonly socials: readonly { label: string; href: string }[];
+  readonly socials: readonly {
+    label: string;
+    href: string;
+  }[];
   readonly onDownloadResume: () => void;
   readonly metaEasterEggVisible: boolean;
   readonly metaSecretRevealed: boolean;
   readonly onRevealSecret: () => void;
   readonly onDismissSecret: () => void;
 }
-
 export function MetaRoomOverlay({
   metaReveal,
   contactBeats,
@@ -44,11 +45,8 @@ export function MetaRoomOverlay({
   const activeBeat = resolveMetaOverlayBeat(metaReveal, beats);
   const beatPop = metaBeatPop(metaReveal, activeBeat);
   const ctaOpacity = metaCtaPanelOpacity(metaReveal);
-
   if (metaReveal < 0.36) return null;
-
   const beatKey = activeBeat ? `${activeBeat.at}-${activeBeat.title}` : "none";
-
   return (
     <div className="pointer-events-none absolute inset-0 z-[18]">
       {activeBeat && beatPop > 0.02 ? (

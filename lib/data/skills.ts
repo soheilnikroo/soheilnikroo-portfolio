@@ -132,14 +132,12 @@ const fallbackGraph: SkillGraph = SkillGraphSchema.parse({
     { source: "swift", target: "swiftui", strength: 0.9 },
   ],
 });
-
 function warnDb(error: unknown): void {
   console.warn(
     "[skills] database unavailable — using bundled fallback. Set DATABASE_URL and run `pnpm db:seed`.",
     error instanceof Error ? error.message : error,
   );
 }
-
 export async function getSkillGraph(): Promise<SkillGraph> {
   try {
     const row = await getSiteContentRow("skills");
@@ -150,10 +148,8 @@ export async function getSkillGraph(): Promise<SkillGraph> {
     return fallbackGraph;
   }
 }
-
 export async function saveSkillGraph(data: SkillGraph): Promise<void> {
   const parsed = SkillGraphSchema.parse(data);
   await upsertSiteContentRow("skills", parsed);
 }
-
 export { fallbackGraph };

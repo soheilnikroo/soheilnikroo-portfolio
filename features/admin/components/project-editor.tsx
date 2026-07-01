@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
@@ -16,11 +15,9 @@ function slugify(value: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
-
 const field =
   "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 const labelCls = "block text-sm font-medium";
-
 const emptyNarrative: ProjectNarrative = {
   problem: "",
   challenge: "",
@@ -28,7 +25,6 @@ const emptyNarrative: ProjectNarrative = {
   solution: "",
   outcome: "",
 };
-
 export function ProjectEditor({
   mode,
   project,
@@ -38,7 +34,6 @@ export function ProjectEditor({
 }) {
   const router = useRouter();
   const initial = project?.data;
-
   const [title, setTitle] = React.useState(initial?.title ?? "");
   const [slug, setSlug] = React.useState(initial?.slug ?? project?.slug ?? "");
   const [slugTouched, setSlugTouched] = React.useState(Boolean(initial?.slug));
@@ -58,14 +53,11 @@ export function ProjectEditor({
   );
   const [error, setError] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
-
   const effectiveSlug = slugTouched ? slug : slugify(title);
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     setError(null);
-
     const payload = ProjectSchema.safeParse({
       slug: effectiveSlug,
       title,
@@ -90,35 +82,31 @@ export function ProjectEditor({
       order: Number(order),
       narrative,
     });
-
     if (!payload.success) {
       setError(payload.error.issues[0]?.message ?? "Invalid project data.");
       setSaving(false);
       return;
     }
-
     const url = mode === "create" ? "/api/admin/projects" : `/api/admin/projects/${project?.id}`;
     const res = await fetch(url, {
       method: mode === "create" ? "POST" : "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload.data),
     });
-
     if (res.ok) {
       router.push("/admin/projects");
       router.refresh();
       return;
     }
-
-    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    const data = (await res.json().catch(() => ({}))) as {
+      error?: string;
+    };
     setError(data.error ?? "Failed to save.");
     setSaving(false);
   }
-
   function setNarrativeField(key: keyof ProjectNarrative, value: string) {
     setNarrative((prev) => ({ ...prev, [key]: value }));
   }
-
   return (
     <form onSubmit={onSubmit} className="grid gap-5">
       <div className="flex items-center justify-between">

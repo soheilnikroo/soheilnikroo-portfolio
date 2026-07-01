@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/** Test DATABASE_URL connectivity. Run: pnpm db:ping */
 import postgres from "postgres";
 
 const url = process.env.DATABASE_URL;
@@ -7,7 +6,6 @@ if (!url) {
   console.error("DATABASE_URL is not set.");
   process.exit(1);
 }
-
 function describe(url) {
   try {
     const parsed = new URL(url.replace(/^postgresql:/i, "http:"));
@@ -16,19 +14,15 @@ function describe(url) {
     return "(unparseable URL)";
   }
 }
-
 const isTransactionPooler = url.includes("pooler.supabase.com") && /:6543(?:\/|$)/.test(url);
-
 console.log("Target:", describe(url));
 console.log("Pooler mode:", isTransactionPooler ? "transaction (6543)" : "session/direct (5432)");
-
 const sql = postgres(url, {
   max: 1,
   connect_timeout: 30,
   prepare: !isTransactionPooler,
   ssl: url.includes("supabase.com") || url.includes("supabase.co") ? "require" : undefined,
 });
-
 try {
   const start = Date.now();
   const rows = await sql`SELECT current_database() AS db, now() AS ts`;

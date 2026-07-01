@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
@@ -14,22 +13,18 @@ export function MilestonesEditor({ initial }: { initial: Milestone[] }) {
   const [items, setItems] = React.useState(initial);
   const [error, setError] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
-
   function update(index: number, patch: Partial<Milestone>) {
     setItems((prev) => prev.map((m, i) => (i === index ? { ...m, ...patch } : m)));
   }
-
   function addItem() {
     setItems((prev) => [
       ...prev,
       { id: `milestone-${prev.length + 1}`, period: "", title: "", description: "" },
     ]);
   }
-
   function remove(index: number) {
     setItems((prev) => prev.filter((_, i) => i !== index));
   }
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -53,7 +48,6 @@ export function MilestonesEditor({ initial }: { initial: Milestone[] }) {
     setError("Failed to save milestones.");
     setSaving(false);
   }
-
   return (
     <form onSubmit={onSubmit} className="grid gap-6">
       <div>

@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
@@ -14,15 +13,12 @@ function slugify(value: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
-
 const field =
   "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 const labelCls = "block text-sm font-medium";
-
 export function PostEditor({ mode, post }: { mode: "create" | "edit"; post?: AdminPost }) {
   const router = useRouter();
   const today = new Date().toISOString().slice(0, 10);
-
   const [title, setTitle] = React.useState(post?.title ?? "");
   const [slug, setSlug] = React.useState(post?.slug ?? "");
   const [slugTouched, setSlugTouched] = React.useState(Boolean(post?.slug));
@@ -34,9 +30,7 @@ export function PostEditor({ mode, post }: { mode: "create" | "edit"; post?: Adm
   const [body, setBody] = React.useState(post?.body ?? "");
   const [error, setError] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
-
   const effectiveSlug = slugTouched ? slug : slugify(title);
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -65,11 +59,12 @@ export function PostEditor({ mode, post }: { mode: "create" | "edit"; post?: Adm
       router.refresh();
       return;
     }
-    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    const data = (await res.json().catch(() => ({}))) as {
+      error?: string;
+    };
     setError(data.error ?? "Failed to save. Check the fields and try again.");
     setSaving(false);
   }
-
   return (
     <form onSubmit={onSubmit} className="grid gap-5">
       <div className="flex items-center justify-between">

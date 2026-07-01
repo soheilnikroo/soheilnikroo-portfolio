@@ -43,14 +43,12 @@ const fallbackProfile: Profile = ProfileSchema.parse({
     },
   ],
 });
-
 function warnDb(error: unknown): void {
   console.warn(
     "[profile] database unavailable — using bundled fallback. Set DATABASE_URL and run `pnpm db:seed`.",
     error instanceof Error ? error.message : error,
   );
 }
-
 export async function getProfile(): Promise<Profile> {
   try {
     const row = await getSiteContentRow("profile");
@@ -61,10 +59,8 @@ export async function getProfile(): Promise<Profile> {
     return fallbackProfile;
   }
 }
-
 export async function saveProfile(data: Profile): Promise<void> {
   const parsed = ProfileSchema.parse(data);
   await upsertSiteContentRow("profile", parsed);
 }
-
 export { fallbackProfile };

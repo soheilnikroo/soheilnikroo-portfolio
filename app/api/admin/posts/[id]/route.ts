@@ -6,8 +6,16 @@ import { PostInputSchema } from "@/lib/schemas";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  request: Request,
+  {
+    params,
+  }: {
+    params: Promise<{
+      id: string;
+    }>;
+  },
+) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   const json = await request.json().catch(() => null);
@@ -30,8 +38,16 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: message }, { status: 409 });
   }
 }
-
-export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _request: Request,
+  {
+    params,
+  }: {
+    params: Promise<{
+      id: string;
+    }>;
+  },
+) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   const ok = await deletePost(id);

@@ -8,7 +8,6 @@ import { ThemeToggle } from "./theme-toggle";
 afterEach(() => {
   document.documentElement.className = "";
 });
-
 describe("ThemeToggle", () => {
   it("cycles the theme onto the document element", async () => {
     render(
@@ -17,8 +16,8 @@ describe("ThemeToggle", () => {
       </ThemeProvider>,
     );
     const button = await screen.findByRole("button");
-    await userEvent.click(button); // system -> light
-    await userEvent.click(button); // light -> dark
+    await userEvent.click(button);
+    await userEvent.click(button);
     await waitFor(() => expect(document.documentElement.classList.contains("dark")).toBe(true));
   });
 });

@@ -8,7 +8,6 @@ export const metadata: Metadata = {
   title: "Admin — Skills",
   robots: { index: false, follow: false },
 };
-
 export default async function AdminSkillsPage() {
   const skills = await getSkillGraph();
   return <SkillsEditor initial={skills} />;

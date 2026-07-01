@@ -48,21 +48,18 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* Semantic spacing -> generates p-section, gap-chapter, etc. (values in :root) */
   --spacing-gutter: var(--gutter);
   --spacing-prose: var(--prose);
   --spacing-content: var(--content);
   --spacing-section: var(--section);
   --spacing-chapter: var(--chapter);
 
-  /* Motion easings -> generates ease-standard, ease-spring, etc. (values in :root) */
   --ease-standard: var(--ease-standard-value);
   --ease-emphasized: var(--ease-emphasized-value);
   --ease-entrance: var(--ease-entrance-value);
   --ease-exit: var(--ease-exit-value);
   --ease-spring: var(--ease-spring-value);
 
-  /* Elevation -> generates shadow-soft, shadow-floating, etc. (values in :root) */
   --shadow-soft: var(--elevation-soft);
   --shadow-raised: var(--elevation-raised);
   --shadow-overlay: var(--elevation-overlay);
@@ -103,14 +100,12 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  /* ---- Spacing values (semantic) ---- */
   --gutter: 1.5rem;
   --prose: 42rem;
   --content: 72rem;
   --section: clamp(4rem, 10vw, 9rem);
   --chapter: clamp(6rem, 14vw, 14rem);
 
-  /* ---- Z-index layers ---- */
   --z-base: 0;
   --z-raised: 10;
   --z-sticky: 100;
@@ -121,7 +116,6 @@
   --z-toast: 600;
   --z-tooltip: 700;
 
-  /* ---- Motion durations (mirrored in lib/design/tokens.ts) ---- */
   --duration-instant: 100ms;
   --duration-fast: 200ms;
   --duration-base: 320ms;
@@ -129,14 +123,12 @@
   --duration-slower: 840ms;
   --duration-slowest: 1200ms;
 
-  /* ---- Motion easings (mirrored in lib/design/tokens.ts) ---- */
   --ease-standard-value: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-emphasized-value: cubic-bezier(0.2, 0, 0, 1);
   --ease-entrance-value: cubic-bezier(0, 0, 0.2, 1);
   --ease-exit-value: cubic-bezier(0.4, 0, 1, 1);
   --ease-spring-value: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* ---- Elevation (theme-aware via --shadow-color) ---- */
   --shadow-color: oklch(0.145 0 0 / 0.1);
   --elevation-soft: 0 1px 2px -1px var(--shadow-color), 0 2px 8px -2px var(--shadow-color);
   --elevation-raised: 0 4px 12px -2px var(--shadow-color), 0 10px 24px -8px var(--shadow-color);
@@ -177,7 +169,6 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 
-  /* Deeper shadow on dark surfaces */
   --shadow-color: oklch(0 0 0 / 0.45);
 }
 
@@ -193,7 +184,6 @@
   }
 }
 
-/* ---- Ambient / cinematic atmosphere (decorative, opt-in audio elsewhere) ---- */
 .ambient-gradient {
   background-image:
     radial-gradient(
@@ -225,7 +215,6 @@
   }
 }
 
-/* Playable + readable world routes share one locked pixel palette. */
 html[data-pixel-world] body {
   background-color: #05040b;
   color: #f8f8fc;
@@ -244,7 +233,6 @@ html.transitioning-theme *::after {
     border-color 0.35s var(--ease-standard-value) !important;
 }
 
-/* ---- Hero pointer-reactive aurora (decorative) ---- */
 .hero-aurora {
   border-radius: 9999px;
   background-image: radial-gradient(
@@ -257,7 +245,6 @@ html.transitioning-theme *::after {
   opacity: 0.8;
 }
 
-/* ---- Hero scroll cue ---- */
 @keyframes hero-scroll-cue {
   0%,
   100% {
@@ -279,7 +266,6 @@ html.transitioning-theme *::after {
   }
 }
 
-/* ---- Animated gradient sheen on the hero name ---- */
 .hero-name {
   background-size: 220% 100%;
   animation: hero-sheen 7s ease-in-out infinite;
@@ -299,7 +285,6 @@ html.transitioning-theme *::after {
   }
 }
 
-/* ---- Hero SN brand monogram mask (fills letterforms with the line shader) ---- */
 .hero-monogram-mask {
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20200'%3E%3Ctext%20x='160'%20y='158'%20font-family='Arial,Helvetica,sans-serif'%20font-weight='900'%20font-size='190'%20text-anchor='middle'%3ESN%3C/text%3E%3C/svg%3E");
   mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20320%20200'%3E%3Ctext%20x='160'%20y='158'%20font-family='Arial,Helvetica,sans-serif'%20font-weight='900'%20font-size='190'%20text-anchor='middle'%3ESN%3C/text%3E%3C/svg%3E");
@@ -311,19 +296,16 @@ html.transitioning-theme *::after {
   mask-size: contain;
 }
 
-/* ---- Custom cursor: hide the native cursor (class added only on fine pointers) ---- */
 .cursor-none,
 .cursor-none * {
   cursor: none !important;
 }
 
-/* ---- Bold SN brand watermark ---- */
 .hero-monogram {
   color: transparent;
   -webkit-text-stroke: 2px color-mix(in oklch, var(--foreground) 32%, transparent);
 }
 
-/* ---- Game scene: vignette + star twinkle ---- */
 .scene-vignette {
   background: radial-gradient(115% 85% at 50% 26%, transparent 42%, rgba(2, 3, 10, 0.6) 100%);
 }
@@ -345,7 +327,6 @@ html.transitioning-theme *::after {
   }
 }
 
-/* ---- SN brand monogram pulse ---- */
 @keyframes sn-pulse {
   0%,
   100% {
@@ -361,7 +342,6 @@ html.transitioning-theme *::after {
   animation: sn-pulse 2.6s ease-in-out infinite;
 }
 
-/* ---- Work scene: rotating conic sheen ---- */
 @keyframes work-sheen {
   to {
     transform: rotate(1turn);
@@ -378,7 +358,6 @@ html.transitioning-theme *::after {
   }
 }
 
-/* ---- SN heartbeat (lub-dub) ---- */
 @keyframes sn-heartbeat {
   0%,
   60%,
@@ -410,7 +389,6 @@ html.transitioning-theme *::after {
   }
 }
 
-/* ---- SN glow halo (pulses with the heartbeat) ---- */
 @keyframes sn-glow {
   0%,
   100% {
@@ -436,7 +414,6 @@ html.transitioning-theme *::after {
   }
 }
 
-/* ---- SN blink ---- */
 @keyframes sn-blink {
   0%,
   100% {
@@ -455,13 +432,11 @@ html.transitioning-theme *::after {
   }
 }
 
-/* ---- About: outlined index numeral ---- */
 .num-outline {
   color: transparent;
   -webkit-text-stroke: 2px color-mix(in oklch, #818cf8 60%, transparent);
 }
 
-/* ---- Contact: radar beacon rings ---- */
 @keyframes radar-ring {
   0% {
     transform: scale(0.4);
@@ -484,7 +459,6 @@ html.transitioning-theme *::after {
   }
 }
 
-/* ---- Blog code blocks (rehype-pretty-code / Shiki) ---- */
 .prose pre {
   overflow-x: auto;
   border-radius: var(--radius-lg);
@@ -510,7 +484,6 @@ html.transitioning-theme *::after {
   color: var(--muted-foreground);
 }
 
-/* ---- React Bits: StarBorder ---- */
 @keyframes star-movement-bottom {
   0% {
     transform: translate(0%, 0%);
@@ -544,7 +517,6 @@ html.transitioning-theme *::after {
   }
 }
 
-/* ---- Contact: breathing focal glow ---- */
 @keyframes contact-glow {
   0%,
   100% {

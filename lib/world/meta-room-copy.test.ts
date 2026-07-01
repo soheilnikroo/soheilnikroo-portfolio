@@ -14,19 +14,16 @@ describe("meta-room-copy", () => {
     { at: 0.62, text: "Email, GitHub, LinkedIn — one tap away." },
     { at: 0.82, text: "Life is a lot like a game. It depends how you play it." },
   ];
-
   it("starts with the room intro once the 3D scene is visible", () => {
     const beats = buildMetaOverlayBeats(contactBeats);
     expect(beats[0]?.title).toBe("This is my room.");
     expect(resolveMetaOverlayBeat(0.36, beats)?.title).toBe("This is my room.");
   });
-
   it("advances through contact beats during the pull-back", () => {
     const beats = buildMetaOverlayBeats(contactBeats);
     expect(resolveMetaOverlayBeat(0.45, beats)?.title).toBe("This is my room.");
     expect(resolveMetaOverlayBeat(0.8, beats)?.title).toContain("Life is a lot like a game");
   });
-
   it("ramps pop-in and CTA opacity with reveal progress", () => {
     const beats = buildMetaOverlayBeats(contactBeats);
     const intro = resolveMetaOverlayBeat(0.36, beats)!;

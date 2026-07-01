@@ -28,20 +28,12 @@ import { drawSkillBadge } from "./skill-badges";
 import { CHAPTER_SCENE_PROFILES, PALETTES, sceneManifest } from "./world-content";
 import { drawTapPointer, vaultLayout, vaultCameraFocusX } from "./writing-vault";
 
-/**
- * Chapter behaviours. Every value below is derived from `local` (0..1 within the
- * chapter) or `global` — never from elapsed time — so each frame is reproducible
- * and scrolling up rewinds it exactly. The canvas carries the gameplay; textual
- * content is revealed in the DOM overlay (see the island), keeping it crawlable.
- */
-
 export interface SkillInfo {
   readonly id: string;
   readonly label: string;
   readonly category: string;
   readonly level: number;
 }
-
 export interface ChapterData {
   readonly projectCount: number;
   readonly skills: readonly SkillInfo[];
@@ -49,23 +41,16 @@ export interface ChapterData {
   readonly scene: LoadedScene;
   readonly props: ReadonlyMap<string, Sprite>;
   readonly grounds: ReadonlyMap<string, Sprite>;
-  /** Per-box open animation 0..1 keyed by project index (tap gameplay). */
   readonly getWorkOpen?: () => ReadonlyMap<number, number>;
 }
-
 function characterScale(height: number): number {
-  // Fixed 270px design height — sprite renders at ~1× on the pixel grid.
   return clamp(Math.round((height * 0.2) / 92), 1, 3);
 }
-
-/** Subtle idle sway and walk bounce — driven by wall-clock time, not scroll. */
 function charBob(clip: ClipName, time: number): number {
   if (clip === "idle") return Math.sin(time / 320) * 2.2;
   if (clip === "walk" || clip === "run") return Math.sin(time / 120) * -1.4;
   return 0;
 }
-
-/** On-screen tap hint for the title gate — pulses until the player moves. */
 function drawTapHint(ctx: CanvasRenderingContext2D, cx: number, gy: number, time: number): void {
   const pulse = 0.55 + 0.45 * Math.sin(time / 280);
   const ax = Math.round(cx + 36 + pulse * 6);
@@ -80,11 +65,9 @@ function drawTapHint(ctx: CanvasRenderingContext2D, cx: number, gy: number, time
   ctx.fillStyle = `rgba(255,255,255,${(0.55 + pulse * 0.35).toFixed(3)})`;
   ctx.fillText("TAP →", Math.round(cx - 18), Math.round(gy - 68));
 }
-
 function prop(data: ChapterData, key: string): Sprite | undefined {
   return data.props.get(key);
 }
-
 function sceneAssets(data: ChapterData, chapterId: string): SceneAssets | undefined {
   if (!data.scene.layers.size) return undefined;
   return {
@@ -93,7 +76,6 @@ function sceneAssets(data: ChapterData, chapterId: string): SceneAssets | undefi
     groundSprite: data.grounds.get(chapterId),
   };
 }
-
 function cityscapeOpts(chapterId: string, extra?: CityscapeOpts): CityscapeOpts {
   const profile = CHAPTER_SCENE_PROFILES[chapterId];
   return {
@@ -102,8 +84,6 @@ function cityscapeOpts(chapterId: string, extra?: CityscapeOpts): CityscapeOpts 
     ...extra,
   };
 }
-
-/** Flat, stepped glow (no blur) so light sources read as pixel art. `rgb` is "r,g,b". */
 function glowCircle(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -123,8 +103,6 @@ function glowCircle(
     ctx.fill();
   }
 }
-
-/** A small mastery spark — a 4-point pixel star, used for the skills reaction. */
 function drawSpark(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -143,8 +121,6 @@ function drawSpark(
   ctx.fillRect(Math.round(x - c / 2), Math.round(y - c / 2), c, c);
   ctx.restore();
 }
-
-/** A Mario-style "?" mystery box — uses the PixelLab crate prop when available. */
 function drawMysteryBox(
   surface: RenderContext["surface"],
   cx: number,
@@ -161,7 +137,6 @@ function drawMysteryBox(
   const bob = builtT >= 0.999 && openT < 0.5 ? Math.sin(time / 320 + seed) * 2 : 0;
   const y = Math.round(bottomY - bob + shake);
   const ctx = surface.ctx;
-
   if (openT > 0.05 && crate) {
     const lift = openT * s * 0.35;
     drawProp(surface, crate, cx, y - lift, s / 48);
@@ -190,7 +165,6 @@ function drawMysteryBox(
     }
     return;
   }
-
   if (crate) {
     drawProp(surface, crate, cx, y, s / 48);
     const boxTop = y - s;
@@ -206,7 +180,6 @@ function drawMysteryBox(
     }
     return;
   }
-
   const x = Math.round(cx - s / 2);
   const boxY = Math.round(bottomY - s - bob);
   ctx.fillStyle = "rgba(0,0,0,0.3)";
@@ -229,8 +202,6 @@ function drawMysteryBox(
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
 }
-
-/** Treasure chest with light beam, lid lift, opening sparkles, and loot burst. */
 function drawChestProp(
   surface: RenderContext["surface"],
   sprite: Sprite,
@@ -246,8 +217,6 @@ function drawChestProp(
   const shake = active && openT < 0.2 ? interactionShake(time, cx, true) : 0;
   const drawY = baseY + shake;
   const x = Math.round(cx - size / 2);
-
-  // Radial burst when chest opens wide
   if (openT > 0.45) {
     const burst = clamp01((openT - 0.45) / 0.55);
     ctx.save();
@@ -265,7 +234,6 @@ function drawChestProp(
     }
     ctx.restore();
   }
-
   if (active && openT > 0.02) {
     const steps = 5;
     const bandH = size / steps;
@@ -283,8 +251,6 @@ function drawChestProp(
       ctx.fillRect(Math.round(sx), Math.round(sy), 2, 2);
     }
   }
-
-  // Floating scroll rises from chest when open
   if (openT > 0.35) {
     const lift = clamp01((openT - 0.35) / 0.65);
     const scrollY = baseY - size - 6 - lift * 22 - Math.sin(time / 280) * 2;
@@ -319,7 +285,6 @@ function drawChestProp(
       );
     }
   }
-
   if (openT > 0.15) {
     ctx.fillStyle = `rgba(212,175,55,${(openT * 0.35).toFixed(3)})`;
     ctx.fillRect(x + 8, drawY - size + 4, size - 16, 6);
@@ -334,8 +299,6 @@ function drawChestProp(
     drawTapMeHint(ctx, cx, drawY - size, time, cx);
   }
 }
-
-/** Vault floor + torch glow — bookshelf prop carries the atmosphere. */
 function drawVaultSet(
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -369,24 +332,22 @@ function drawVaultSet(
   }
   ctx.restore();
 }
-
 function chapterProgress(local: number, start = 0.06, end = 0.92): number {
   return clamp01((local - start) / (end - start));
 }
-
 function rnd(seed: number): number {
   const x = Math.sin(seed * 91.7) * 43758.5453;
   return x - Math.floor(x);
 }
-
-/** A raised platform the character reaches after climbing. */
 function drawLedge(
   surface: RenderContext["surface"],
   x0: number,
   ledgeY: number,
   width: number,
   gy: number,
-  palette: { buildings: string },
+  palette: {
+    buildings: string;
+  },
   plate?: Sprite,
 ): void {
   const ledgeW = Math.round(width - x0);
@@ -401,12 +362,8 @@ function drawLedge(
   ctx.fillStyle = "#b58a52";
   ctx.fillRect(Math.round(x0), Math.round(ledgeY), ledgeW, 6);
 }
-
 export function createChapters(data: ChapterData): ChapterScene[] {
   return [
-    // 1 — About: a long opening level. Title gate → leave home → walk → run →
-    //     jump a gap → climb to a ledge → rest → cinematic summit. The city
-    //     assembles around the journey. Every value is a function of `local`.
     {
       id: "intro",
       title: "Where it began",
@@ -418,8 +375,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         const scale = characterScale(height);
         const ledgeY = Math.round(gy - height * 0.2);
         const ladderX = width * 0.62;
-        // A staircase of rooftops the character bounds up (single-figure jump clip;
-        // the old ladder "climb" sprite contained two figures).
         const stairSteps = 4;
         const stairX0 = ladderX;
         const stairX1 = width * 0.76;
@@ -461,7 +416,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           drawLedge(surface, stairX1, ledgeY, width, gy, PALETTES.dawn);
           ctx2.restore();
         };
-
         const growth = clamp01((local - 0.06) / 0.62);
         const introEmphasis = clamp01(1 - local / 0.55);
         const starGlow = local < 0.35 ? 0 : clamp01(1 - local * 1.1);
@@ -475,7 +429,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           sceneAssets(data, "intro"),
           cityscapeOpts("intro", { intro: introEmphasis, particleScale: 0.3 }),
         );
-
         const homeX = mapRange(local, 0, 0.22, width * 0.34, -width * 0.25);
         const house = prop(data, "intro/childhood-house");
         const houseFade = clamp01((local - 0.06) / 0.08);
@@ -486,7 +439,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           drawProp(surface, house, homeX, gy, 1);
           ctx2.restore();
         }
-
         if (local > 0.32) {
           glowCircle(
             ctx,
@@ -499,14 +451,11 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         if (local > 0.04) {
           applyTint(surface, PALETTES.dawn.tint);
         }
-
         let cx = width * 0.5;
         let baseline = gy;
         let clip: ClipName = "idle";
         let frame = 0;
-
         if (local < 0.08) {
-          // Title gate — stand on a small ledge, right of centre so dialogue doesn't cover him.
           cx = width * 0.66;
           baseline = gy - height * 0.14;
           const ledgeW = 72;
@@ -520,7 +469,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
             ctx.fillRect(Math.round(cx - ledgeW / 2), Math.round(baseline), ledgeW, 4);
           }
         } else if (local < 0.18) {
-          // Still in dialogue beats — keep character elevated and right.
           cx = width * 0.66;
           baseline = gy - height * 0.14;
           const ledgeW = 72;
@@ -534,13 +482,11 @@ export function createChapters(data: ChapterData): ChapterScene[] {
             ctx.fillRect(Math.round(cx - ledgeW / 2), Math.round(baseline), ledgeW, 4);
           }
         } else if (local < 0.28) {
-          // Leave the old neighbourhood.
           const t = clamp01((local - 0.08) / 0.2);
           cx = lerp(width * 0.5, width * 0.43, t);
           clip = "walk";
           frame = loopFrame(t, 6, 5);
         } else if (local < 0.46) {
-          // Run up to a broken road and leap the gap.
           const t = clamp01((local - 0.28) / 0.18);
           const pit = prop(data, "intro/road-pit");
           if (pit) drawProp(surface, pit, width * 0.55, gy, 1);
@@ -556,7 +502,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
             baseline = gy - Math.sin(jt * Math.PI) * height * 0.24;
           }
         } else if (local < 0.62) {
-          // Bound up the staircase of rooftops to the high ledge.
           const t = clamp01((local - 0.46) / 0.16);
           paintStairs(clamp01((local - 0.44) / 0.06));
           const f = t * stairSteps;
@@ -581,7 +526,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           cx = width * 0.88;
           baseline = ledgeY - Math.sin(t * Math.PI) * height * 0.03;
         }
-
         character.draw(surface, {
           x: cx,
           baseline,
@@ -594,8 +538,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         if (local < 0.12) drawTapHint(ctx, cx, gy, time);
       },
     },
-
-    // 2 — Work: a construction site.
     {
       id: "work",
       title: "Building the bridge",
@@ -619,21 +561,18 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         const crane = prop(data, "work/construction-crane");
         if (crane) drawProp(surface, crane, width * 0.14 + 40, gy, 1);
         applyTint(surface, PALETTES.depot.tint);
-
         const n = Math.max(1, data.projectCount);
         const buildT = chapterProgress(local);
         const gapLeft = width * 0.3;
         const gapRight = width * 0.94;
         const deckY = Math.round(gy - height * 0.16);
         const segW = (gapRight - gapLeft) / n;
-
         ctx.fillStyle = PALETTES.depot.buildings;
         ctx.fillRect(0, deckY, Math.round(gapLeft), height - deckY);
         ctx.fillRect(Math.round(gapRight), deckY, width - Math.round(gapRight), height - deckY);
         ctx.fillStyle = "#b58a52";
         ctx.fillRect(0, deckY, Math.round(gapLeft), 6);
         ctx.fillRect(Math.round(gapRight), deckY, width - Math.round(gapRight), 6);
-
         const cur = Math.min(n - 1, Math.floor(buildT * n));
         const girder = prop(data, "work/bridge-girder");
         const crate = prop(data, "work/wooden-crate");
@@ -657,7 +596,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
               ctx.fillRect(Math.round(sx), Math.round(sy), 2, 2);
             }
           }
-          // Each role becomes a "?" mystery box on its span; its card rises above it.
           if (t > 0.45) {
             drawMysteryBox(
               surface,
@@ -672,7 +610,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
             );
           }
         }
-
         const done = clamp01((buildT - (n - 1) / n) / (1 / n));
         const flagX = Math.round(gapRight + (width - gapRight) * 0.4);
         const flagH = Math.round(height * 0.12 * done);
@@ -682,7 +619,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           ctx.fillStyle = "#22d3ee";
           ctx.fillRect(flagX + 3, deckY - flagH, Math.round(width * 0.03), 8);
         }
-
         const segT = buildT * n - cur;
         const building = buildT < 0.98 && segT > 0.02 && segT < 0.98;
         const hop =
@@ -698,8 +634,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         });
       },
     },
-
-    // 3 — Skills: walk a training lane — pedestals with skill slimes along the path.
     {
       id: "skills",
       title: "The gauntlet",
@@ -721,7 +655,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         const metro = prop(data, "skills/metro-sign");
         if (metro) drawProp(surface, metro, width * 0.88, gy, 1);
         applyTint(surface, PALETTES.arena.tint);
-
         const skills = data.skills;
         const n = Math.max(1, skills.length);
         const buildT = chapterProgress(local, 0.04, 0.96);
@@ -729,12 +662,10 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         const t = clamp01(buildT * n - idx);
         const skill = skills[idx];
         const accent = skill ? categoryColor(skill.category) : "#a5b4fc";
-
         const pathStart = width * 0.14;
         const pathEnd = width * 0.86;
         const spacing = n > 1 ? (pathEnd - pathStart) / (n - 1) : 0;
         const pedestalH = Math.round(height * 0.1);
-
         for (let i = 0; i < n; i += 1) {
           const px = n === 1 ? width * 0.5 : pathStart + i * spacing;
           const sliceT = clamp01(buildT * n - i);
@@ -742,7 +673,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           const fade =
             clamp01(sliceT * 4) * clamp01(Math.min(sliceT / 0.05, (1 - sliceT + 1) / 0.08));
           if (sliceT <= 0) continue;
-
           ctx.save();
           ctx.globalAlpha = fade;
           const pedW = Math.round(width * 0.08);
@@ -781,7 +711,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           }
           ctx.restore();
         }
-
         const charX =
           n === 1
             ? width * 0.5
@@ -791,7 +720,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         const clip: ClipName = mastered > 0 ? "jump" : approaching ? "walk" : "idle";
         const scale = characterScale(height);
         const baseline = gy - (mastered > 0 ? Math.sin(mastered * Math.PI) * height * 0.06 : 0);
-
         character.draw(surface, {
           x: charX,
           baseline,
@@ -810,8 +738,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         }
       },
     },
-
-    // 4 — Writing: a vault of chests; each chest is a blog post. ------------------
     {
       id: "writing",
       title: "The vault",
@@ -840,7 +766,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         }
         drawVaultSet(ctx, width, height, gy, local, time);
         applyTint(surface, PALETTES.vault.tint);
-
         const vault = vaultLayout(local, data.postCount, width, height);
         const { postN, totalSlots, rowX0, spacing, resumeCx, resumeOpen, buildT } = vault;
         const postIdx = postN > 0 ? Math.min(postN - 1, Math.floor(buildT * postN)) : 0;
@@ -848,7 +773,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         const t = postN > 0 ? clamp01(buildT * postN - postIdx) : 0;
         const openT = smoothstep(clamp01((t - 0.15) / 0.55));
         const chest = prop(data, "writing/treasure-chest");
-
         for (let slot = 0; slot < totalSlots; slot += 1) {
           const cx = rowX0 + spacing * (slot + 0.5);
           if (slot === 0) {
@@ -869,7 +793,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
             }
             continue;
           }
-
           const i = slot - 1;
           const sliceT = clamp01(buildT * postN - i);
           const isActive = i === postIdx;
@@ -882,7 +805,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
             ctx.fillRect(Math.round(cx - spacing * 0.35), gy - 4, Math.round(spacing * 0.7), 3);
           }
         }
-
         const scale = characterScale(height);
         const activeCx = rowX0 + spacing * (activeSlot + 0.5);
         const charX =
@@ -914,9 +836,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         surface.setCameraFocusX(vaultCameraFocusX(local, data.postCount, width));
       },
     },
-
-    // 5 — Contact: the rooftop. The character arrives, looks out — and then the
-    //     camera pulls all the way back to reveal it was a game on his monitor. --
     {
       id: "contact",
       title: "Rooftop at dusk",
@@ -935,12 +854,8 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           sceneAssets(data, "contact"),
           cityscapeOpts("contact"),
         );
-
-        // Moon (flat stepped glow).
         glowCircle(ctx, width * 0.74, gy * 0.34, Math.max(8, height * 0.06), "255,246,224");
-
         const metaT = clamp01((local - 0.38) / 0.58);
-
         if (local < 0.42) {
           const cafeFade = clamp01((local - 0.08) / 0.12) * clamp01(1 - metaT * 6);
           const cafe = prop(data, "contact/rooftop-cafe");
@@ -951,12 +866,10 @@ export function createChapters(data: ChapterData): ChapterScene[] {
             ctx.restore();
           }
         }
-
         applyTint(surface, PALETTES.rooftop.tint);
         const arriving = local < 0.34;
         const scale = characterScale(height);
         const contactClip = arriving ? "walk" : "idle";
-
         if (metaT < 0.12) {
           character.draw(surface, {
             x: mapRange(local, 0, 0.34, width * 0.2, width * 0.55, true),
@@ -968,10 +881,6 @@ export function createChapters(data: ChapterData): ChapterScene[] {
             bob: charBob(contactClip, time),
           });
         }
-
-        // The meta zoom-out is now owned entirely by the 3D room (the live
-        // canvas is streamed onto the center monitor). This 2D layer simply
-        // keeps rendering the rooftop and is crossfaded out by the React layer.
       },
     },
   ];

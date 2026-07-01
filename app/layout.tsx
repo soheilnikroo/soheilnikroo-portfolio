@@ -18,7 +18,6 @@ import "./globals.css";
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   const url = getSiteUrl();
-
   return {
     metadataBase: new URL(url),
     title: { default: settings.title, template: `%s — ${settings.name}` },
@@ -49,7 +48,6 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: { types: { "application/rss+xml": `${url}/rss.xml` } },
   };
 }
-
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -60,14 +58,12 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: light)", color: "#f5f5f5" },
   ],
 };
-
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const settings = await getSiteSettings();
-
   return (
     <html
       lang="en"

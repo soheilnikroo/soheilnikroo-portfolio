@@ -10,9 +10,8 @@ export type AdminPost = {
   body: string;
   cover: string | null;
   published: boolean;
-  date: string; // YYYY-MM-DD
+  date: string;
 };
-
 export type AdminProject = {
   id: string;
   slug: string;

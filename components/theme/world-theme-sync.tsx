@@ -1,24 +1,16 @@
 "use client";
-
 import { useTheme } from "next-themes";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 
 const WORLD_ROUTES = new Set(["/", "/read"]);
-
-/**
- * Keeps the playable/readable world on a consistent dark pixel palette so theme
- * toggles on other routes don't leave `/read` on a clashing light body shell.
- */
 export function WorldThemeSync(): null {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const savedThemeRef = React.useRef<string | undefined>(undefined);
-
   React.useEffect(() => {
     const root = document.documentElement;
     const isWorld = WORLD_ROUTES.has(pathname);
-
     if (isWorld) {
       if (savedThemeRef.current === undefined) {
         savedThemeRef.current = theme;
@@ -39,6 +31,5 @@ export function WorldThemeSync(): null {
       }
     }
   }, [pathname, theme, setTheme]);
-
   return null;
 }

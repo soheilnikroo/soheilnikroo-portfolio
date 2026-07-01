@@ -7,7 +7,6 @@ import { getAllPostMeta, getProjects } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
 
 export const revalidate = 60;
-
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteConfig();
   const copy = site.pages.work;
@@ -23,14 +22,12 @@ export async function generateMetadata(): Promise<Metadata> {
     },
   };
 }
-
 const STATUS_LABEL: Record<string, string> = {
   live: "LIVE",
   "in-progress": "WIP",
   archived: "ARCHIVED",
   concept: "CONCEPT",
 };
-
 export default async function WorkPage() {
   const [projects, posts, site] = await Promise.all([
     getProjects(),
@@ -38,7 +35,6 @@ export default async function WorkPage() {
     getSiteConfig(),
   ]);
   const copy = site.pages.work;
-
   const breadcrumbLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -47,7 +43,6 @@ export default async function WorkPage() {
       { "@type": "ListItem", position: 2, name: copy.title, item: `${site.url}/work` },
     ],
   };
-
   return (
     <PixelPage>
       <script

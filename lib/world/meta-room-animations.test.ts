@@ -10,12 +10,10 @@ describe("tickRoomAnimations", () => {
     plant.name = "Plant";
     plant.position.set(1, 2, 3);
     room.add(plant);
-
     const bindings = bindRoomAnimations(room);
     tickRoomAnimations(bindings, 0, false);
     const startZ = plant.quaternion.z;
     const startPos = plant.position.clone();
-
     tickRoomAnimations(bindings, 2.5, false);
     expect(plant.quaternion.z).not.toBeCloseTo(startZ, 4);
     expect(plant.position.distanceTo(startPos)).toBeLessThan(0.001);

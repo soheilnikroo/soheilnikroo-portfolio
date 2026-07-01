@@ -4,25 +4,14 @@ import { drawCoverLayer, drawPlacedSprite, drawTiledLayer } from "./scene-layers
 import type { RenderSurface, WorldPalette } from "./types";
 import { groundY } from "./viewport";
 
-/**
- * Atmospheric, animated, palette-driven backdrop. Pure draw functions; the city
- * scrolls with `panX`, and `time` (ms) drives ambient life (cloud drift, drifting
- * fireflies, twinkle) so the world feels alive even between scroll beats. Distant
- * layers fade toward the haze colour for depth. Designed to look hand-crafted
- * without external art; every layer is a local change to swap for tile art later.
- */
-
 function rand(seed: number): number {
   const x = Math.sin(seed * 127.1) * 43758.5453;
   return x - Math.floor(x);
 }
-
 function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
   return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
 }
-
-/** Blend two #rrggbb colours → "rgb(r,g,b)". */
 export function mixHex(a: string, b: string, t: number): string {
   const [ar, ag, ab] = hexToRgb(a);
   const [br, bg, bb] = hexToRgb(b);
@@ -31,15 +20,10 @@ export function mixHex(a: string, b: string, t: number): string {
   const bl = Math.round(ab + (bb - ab) * t);
   return `rgb(${r},${g},${bl})`;
 }
-
 function sample3(top: string, mid: string, horizon: string, t: number): string {
   return t < 0.5 ? mixHex(top, mid, t * 2) : mixHex(mid, horizon, (t - 0.5) * 2);
 }
-
-// 4×4 Bayer matrix (0..15) for ordered dithering of band seams.
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-
-/** Sky: many smooth bands with a 1px dithered seam for a crafted pixel gradient. */
 export function drawSky(surface: RenderSurface, palette: WorldPalette): void {
   const { ctx, width, height } = surface;
   const gy = groundY(height);
@@ -50,7 +34,6 @@ export function drawSky(surface: RenderSurface, palette: WorldPalette): void {
     const y1 = Math.floor((gy * (i + 1)) / bands);
     ctx.fillStyle = sample3(palette.skyTop, palette.skyMid, palette.skyHorizon, t);
     ctx.fillRect(0, y0, width, y1 - y0);
-    // Dither the seam toward the next band.
     if (i < bands - 1) {
       ctx.fillStyle = sample3(
         palette.skyTop,
@@ -64,8 +47,6 @@ export function drawSky(surface: RenderSurface, palette: WorldPalette): void {
     }
   }
 }
-
-/** Soft horizon haze — Tehran smog / dust at the mountain base. */
 function paintHaze(surface: RenderSurface, palette: WorldPalette): void {
   const { ctx, width, height } = surface;
   const gy = groundY(height);
@@ -77,7 +58,6 @@ function paintHaze(surface: RenderSurface, palette: WorldPalette): void {
     ctx.fillStyle = `rgba(${r},${g},${b},${a.toFixed(3)})`;
     ctx.fillRect(0, gy - bandH + i, width, 1);
   }
-  // Warm dusty glow at the horizon line
   const [hr, hg, hb] = hexToRgb(palette.skyHorizon);
   const glowH = Math.floor(gy * 0.08);
   for (let i = 0; i < glowH; i += 1) {
@@ -86,7 +66,6 @@ function paintHaze(surface: RenderSurface, palette: WorldPalette): void {
     ctx.fillRect(0, gy - glowH + i, width, 1);
   }
 }
-
 export function drawStars(surface: RenderSurface, panX: number, intensity: number, time = 0): void {
   if (intensity <= 0) return;
   const { ctx, width, height } = surface;
@@ -105,8 +84,6 @@ export function drawStars(surface: RenderSurface, panX: number, intensity: numbe
   }
   ctx.restore();
 }
-
-/** Drifting volumetric clouds (parallax + slow time drift). */
 function paintClouds(
   surface: RenderSurface,
   panX: number,
@@ -142,7 +119,6 @@ function paintClouds(
   }
   ctx.restore();
 }
-
 export function drawMountains(surface: RenderSurface, panX: number, palette: WorldPalette): void {
   const { ctx, width, height } = surface;
   const gy = groundY(height);
@@ -180,7 +156,6 @@ export function drawMountains(surface: RenderSurface, panX: number, palette: Wor
     ctx.lineTo(width, gy);
     ctx.closePath();
     ctx.fill();
-    // Snow caps on the far range peaks.
     if (rg.snow) {
       ctx.fillStyle = "rgba(255,255,255,0.5)";
       for (const [px, py] of pts) {
@@ -189,8 +164,6 @@ export function drawMountains(surface: RenderSurface, panX: number, palette: Wor
     }
   }
 }
-
-/** Tehran's Milad Tower — skyline landmark. */
 export function drawMiladTower(surface: RenderSurface, panX: number, palette: WorldPalette): void {
   const { ctx, width, height } = surface;
   const gy = groundY(height);
@@ -232,8 +205,6 @@ export function drawMiladTower(surface: RenderSurface, panX: number, palette: Wo
   ctx.fillStyle = "#ff5a5a";
   ctx.fillRect(x - 1, Math.round(topY) - 5, 3, 5);
 }
-
-/** Far, hazy skyline silhouette. */
 function paintSkylineFar(surface: RenderSurface, panX: number, palette: WorldPalette): void {
   const { ctx, width, height } = surface;
   const gy = groundY(height);
@@ -249,7 +220,6 @@ function paintSkylineFar(surface: RenderSurface, panX: number, palette: WorldPal
     ctx.fillRect(x, Math.floor(gy - bh), Math.ceil(bw), Math.ceil(bh));
   }
 }
-
 export function drawBuildings(
   surface: RenderSurface,
   panX: number,
@@ -274,7 +244,6 @@ export function drawBuildings(
     const top = Math.floor(gy - bh);
     ctx.fillStyle = palette.buildings;
     ctx.fillRect(x, top, Math.ceil(bw), Math.ceil(bh));
-    // Rooftop setback / water tower for silhouette variety.
     if (rand(seed * 3.1) > 0.5) {
       const sw = Math.max(6, bw * 0.2);
       ctx.fillRect(Math.floor(x + bw * 0.5 - sw / 2), top - 8, Math.ceil(sw), 8);
@@ -294,21 +263,16 @@ export function drawBuildings(
     }
   }
 }
-
 export function drawGround(surface: RenderSurface, panX: number, palette: WorldPalette): void {
   const { ctx, width, height } = surface;
   const gy = groundY(height);
-  // Body (dirt).
   ctx.fillStyle = palette.ground;
   ctx.fillRect(0, gy, width, height - gy);
-  // Lit walkable top surface — this is the line the character stands on.
   const top = mixHex(palette.ground, palette.windows, 0.3);
   ctx.fillStyle = top;
   ctx.fillRect(0, gy, width, 5);
-  // Darker lip just under the surface → a readable 3D edge.
   ctx.fillStyle = mixHex(palette.ground, "#000000", 0.4);
   ctx.fillRect(0, gy + 5, width, 3);
-  // Grass / rubble tufts sprouting along the edge (scroll 1:1 with the world).
   const tstep = 22;
   const toff = panX % tstep;
   ctx.fillStyle = top;
@@ -319,7 +283,6 @@ export function drawGround(surface: RenderSurface, panX: number, palette: WorldP
     ctx.fillRect(sx, gy - h, 2, h);
     ctx.fillRect(sx + 8, gy - Math.max(1, h - 1), 2, Math.max(1, h - 1));
   }
-  // Vertical paving seams + speckle for texture.
   ctx.fillStyle = "rgba(0,0,0,0.18)";
   const step = 56;
   const off = panX % step;
@@ -333,8 +296,6 @@ export function drawGround(surface: RenderSurface, panX: number, palette: WorldP
     ctx.fillRect(sx, sy, 1, 1);
   }
 }
-
-/** Dark foreground — Tehran's plane trees (chenar) lining the street, for depth. */
 function paintForeground(surface: RenderSurface, panX: number, palette: WorldPalette): void {
   const fg = palette.foreground;
   if (!fg) return;
@@ -358,7 +319,6 @@ function paintForeground(surface: RenderSurface, panX: number, palette: WorldPal
       ctx.fill();
     }
   }
-  // Low bushes hugging the very bottom edge.
   const bstep = 70;
   for (let i = -1; i <= width / bstep + 1; i += 1) {
     const x = Math.floor(i * bstep - (off % bstep));
@@ -368,8 +328,6 @@ function paintForeground(surface: RenderSurface, panX: number, palette: WorldPal
     ctx.fill();
   }
 }
-
-/** Mount Damavand — Iran's iconic snow-capped volcanic peak, far on the horizon. */
 function paintDamavand(surface: RenderSurface, panX: number, palette: WorldPalette): void {
   const { ctx, width, height } = surface;
   const gy = groundY(height);
@@ -385,7 +343,6 @@ function paintDamavand(surface: RenderSurface, panX: number, palette: WorldPalet
   ctx.lineTo(x + halfW, gy);
   ctx.closePath();
   ctx.fill();
-  // Snow cap with a jagged snow line.
   const capY = peakY + (gy - peakY) * 0.2;
   ctx.fillStyle = "rgba(255,255,255,0.55)";
   ctx.beginPath();
@@ -399,8 +356,6 @@ function paintDamavand(surface: RenderSurface, panX: number, palette: WorldPalet
   ctx.closePath();
   ctx.fill();
 }
-
-/** Azadi Tower — Tehran's signature arched monument (silhouette with open arch). */
 function paintAzadi(surface: RenderSurface, panX: number, palette: WorldPalette): void {
   const { ctx, width, height } = surface;
   const gy = groundY(height);
@@ -409,7 +364,6 @@ function paintAzadi(surface: RenderSurface, panX: number, palette: WorldPalette)
   const h = gy * 0.3;
   const top = gy - h;
   ctx.fillStyle = mixHex(palette.buildings, palette.haze ?? palette.skyHorizon, 0.3);
-  // Left + right splayed legs leave a real arch opening between them.
   ctx.beginPath();
   ctx.moveTo(x - w / 2, gy);
   ctx.lineTo(x - w * 0.16, top + h * 0.2);
@@ -424,7 +378,6 @@ function paintAzadi(surface: RenderSurface, panX: number, palette: WorldPalette)
   ctx.lineTo(x + w * 0.18, gy);
   ctx.closePath();
   ctx.fill();
-  // Pointed top span connecting the legs.
   ctx.beginPath();
   ctx.moveTo(x - w * 0.16, top + h * 0.2);
   ctx.lineTo(x, top);
@@ -435,8 +388,6 @@ function paintAzadi(surface: RenderSurface, panX: number, palette: WorldPalette)
   ctx.closePath();
   ctx.fill();
 }
-
-/** A skyline of Persian mosque domes + minarets with turquoise-tiled sheen. */
 function paintDomes(surface: RenderSurface, panX: number, palette: WorldPalette): void {
   const { ctx, width, height } = surface;
   const gy = groundY(height);
@@ -460,15 +411,12 @@ function paintDomes(surface: RenderSurface, panX: number, palette: WorldPalette)
     ctx.fillRect(x - 1, Math.round(top - domeR - 6), 2, 7);
     ctx.fillRect(Math.round(x - baseW * 0.5 - 3), top - 9, 3, bh + 9);
     ctx.fillRect(Math.round(x + baseW * 0.5), top - 9, 3, bh + 9);
-    // Turquoise tiled dome sheen.
     ctx.fillStyle = "rgba(74,200,180,0.45)";
     ctx.beginPath();
     ctx.arc(x, top, domeR * 0.62, Math.PI, 0);
     ctx.fill();
   }
 }
-
-/** Drifting fireflies / embers / motes — the layer that makes it feel alive. */
 function paintParticles(
   surface: RenderSurface,
   panX: number,
@@ -497,10 +445,8 @@ function paintParticles(
   }
   ctx.restore();
 }
-
 function paintVignette(surface: RenderSurface): void {
   const { ctx, width, height } = surface;
-  // Stepped (pixel-friendly) corner darkening, no smooth blur.
   const steps = 6;
   for (let i = 0; i < steps; i += 1) {
     const a = 0.05 * (i / steps);
@@ -512,33 +458,23 @@ function paintVignette(surface: RenderSurface): void {
     ctx.fillRect(width - m - 2, 0, m + 2, height);
   }
 }
-
 export function applyTint(surface: RenderSurface, tint: string): void {
   if (!tint) return;
   const { ctx, width, height } = surface;
   ctx.fillStyle = tint;
   ctx.fillRect(0, 0, width, height);
 }
-
 export interface SceneAssets {
   readonly scene: LoadedScene;
   readonly manifest: SceneManifest;
-  /** Optional chapter-specific ground tile sprite. */
   readonly groundSprite?: Sprite;
 }
-
-/** Landing-chapter tweaks — richer hero backdrop, no starfield, softer foreground. */
 export interface CityscapeOpts {
-  /** 0 = normal, 1 = full intro landing emphasis (fades as the player scrolls). */
   readonly intro?: number;
-  /** Per-layer visibility 0..1 — omit layers not listed for a simpler scene. */
   readonly layerWeights?: Readonly<Partial<Record<string, number>>>;
-  /** Per-landmark visibility 0..1. */
   readonly landmarkWeights?: Readonly<Partial<Record<string, number>>>;
-  /** Scale ambient particles (0 = off). */
   readonly particleScale?: number;
 }
-
 function drawProceduralCity(
   surface: RenderSurface,
   panX: number,
@@ -555,7 +491,6 @@ function drawProceduralCity(
   drawGround(surface, panX, palette);
   paintForeground(surface, panX, palette);
 }
-
 function drawImageCity(
   surface: RenderSurface,
   panX: number,
@@ -571,9 +506,7 @@ function drawImageCity(
   const layerW = opts?.layerWeights;
   const landmarkW = opts?.landmarkWeights;
   const hasProfile = Boolean(layerW || landmarkW);
-
   const tile = (id: string) => scene.layers.get(id);
-
   const layerVis = (id: string): number => {
     if (layerW) return layerW[id] ?? 0;
     return hasProfile ? 0 : 1;
@@ -582,58 +515,46 @@ function drawImageCity(
     if (landmarkW) return landmarkW[id] ?? 0;
     return hasProfile ? 0 : 1;
   };
-
   const hero = tile("intro-hero-dawn");
   const heroOn = hero && intro > 0.06;
   const stackAlpha = heroOn ? Math.max(0, 1 - intro) : 1;
-
   const drawLayer = (id: string, depth: number, extra = 1): void => {
     const sprite = tile(id);
     const vis = layerVis(id) * stackAlpha * extra;
     if (sprite && vis > 0.04) drawTiledLayer(surface, sprite, panX, depth, gy, vis);
   };
-
   drawLayer("alborz-mountains", 0.08);
   drawLayer("tehran-skyline-far", 0.22);
-
   const milad = scene.landmarks.get("milad-tower");
   const miladA = landmarkVis("milad-tower") * stackAlpha;
   if (milad && miladA > 0.04) {
     drawPlacedSprite(surface, milad, 320, gy, panX, 0.06, miladA);
   }
-
   const azadi = scene.landmarks.get("azadi-tower");
   const azadiA = landmarkVis("azadi-tower") * stackAlpha;
   if (azadi && azadiA > 0.04) {
     drawPlacedSprite(surface, azadi, 180, gy, panX, 0.42, azadiA);
   }
-
   const domes = scene.landmarks.get("persian-domes");
   const domesA = landmarkVis("persian-domes") * stackAlpha;
   if (domes && domesA > 0.04) {
     drawPlacedSprite(surface, domes, 260, gy, panX, 0.5, domesA);
   }
-
   drawLayer("tehran-buildings-mid", 0.45, g);
   drawLayer("tehran-shopfronts", 0.72, Math.max(0, (g - 0.15) / 0.85));
   drawLayer("chenar-trees", 1.35);
-
   const ground = assets.groundSprite ?? tile("tehran-ground-tiles");
   const groundVis = layerW ? (layerW["tehran-ground-tiles"] ?? 1) : 1;
   if (ground && stackAlpha * groundVis > 0.06) {
     drawTiledLayer(surface, ground, panX, 1.0, gy, stackAlpha * groundVis);
   }
-
   if (heroOn) {
     drawCoverLayer(surface, hero, gy, Math.min(1, intro));
   }
-
   if (!hero && !tile("alborz-mountains") && !tile("tehran-skyline-far")) {
     drawProceduralCity(surface, panX, palette, growth);
   }
 }
-
-/** Compose the full atmospheric city in one call. */
 export function drawCityscape(
   surface: RenderSurface,
   panX: number,
@@ -648,13 +569,11 @@ export function drawCityscape(
   drawStars(surface, panX, starIntensity, time);
   paintClouds(surface, panX, time, palette);
   paintHaze(surface, palette);
-
   if (assets?.scene.layers.size) {
     drawImageCity(surface, panX, palette, growth, assets, opts);
   } else {
     drawProceduralCity(surface, panX, palette, growth);
   }
-
   paintParticles(surface, panX, time, palette, opts?.particleScale ?? 1);
   paintVignette(surface);
 }

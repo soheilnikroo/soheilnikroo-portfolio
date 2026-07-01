@@ -18,7 +18,6 @@ export async function generateMetadata(): Promise<Metadata> {
     },
   };
 }
-
 export default async function ReadPage() {
   const props = await getWorldPageProps();
   return <WorldNarrative {...props} variant="standalone" />;

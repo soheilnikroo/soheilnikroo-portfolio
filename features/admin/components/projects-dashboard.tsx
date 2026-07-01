@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
@@ -18,7 +17,6 @@ export function ProjectsDashboard({
   const router = useRouter();
   const [projects, setProjects] = React.useState(initialProjects);
   const [busy, setBusy] = React.useState<string | null>(null);
-
   async function onDelete(project: AdminProject) {
     if (!window.confirm(`Delete “${project.data.title}”? This cannot be undone.`)) return;
     setBusy(project.id);
@@ -31,7 +29,6 @@ export function ProjectsDashboard({
       window.alert("Failed to delete project.");
     }
   }
-
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">

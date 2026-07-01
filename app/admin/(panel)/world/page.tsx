@@ -8,7 +8,6 @@ export const metadata: Metadata = {
   title: "Admin — World",
   robots: { index: false, follow: false },
 };
-
 export default async function AdminWorldPage() {
   const world = await getWorldNarrative();
   return <WorldEditor initial={world} />;

@@ -1,33 +1,29 @@
 import * as THREE from "three";
 
-/** Only nodes that get a gentle idle — everything else stays still. */
 const ANIMATED_NODES = ["Plant", "Hour", "Minute"] as const;
-
 export interface ObjectPose {
   readonly position: THREE.Vector3;
   readonly quaternion: THREE.Quaternion;
   readonly scale: THREE.Vector3;
 }
-
 type EmissiveMode = "keyboard" | "led";
-
 interface EmissivePulse {
   readonly material: THREE.MeshStandardMaterial;
   readonly mode: EmissiveMode;
   readonly phase: number;
 }
-
 export interface RoomAnimationBindings {
   readonly nodes: Readonly<Record<string, THREE.Object3D | null>>;
   readonly poses: ReadonlyMap<THREE.Object3D, ObjectPose>;
   readonly emissives: readonly EmissivePulse[];
 }
-
-const EMISSIVE_NODES: ReadonlyArray<{ name: string; mode: EmissiveMode }> = [
+const EMISSIVE_NODES: ReadonlyArray<{
+  name: string;
+  mode: EmissiveMode;
+}> = [
   { name: "keyboard keys", mode: "keyboard" },
   { name: "ChargerStand", mode: "led" },
 ];
-
 function collectEmissives(room: THREE.Object3D): EmissivePulse[] {
   const out: EmissivePulse[] = [];
   EMISSIVE_NODES.forEach((entry, i) => {
@@ -47,11 +43,9 @@ function collectEmissives(room: THREE.Object3D): EmissivePulse[] {
   });
   return out;
 }
-
 export function bindRoomAnimations(room: THREE.Object3D): RoomAnimationBindings {
   const nodes: Record<string, THREE.Object3D | null> = {};
   const poses = new Map<THREE.Object3D, ObjectPose>();
-
   for (const name of ANIMATED_NODES) {
     const obj = room.getObjectByName(name);
     nodes[name] = obj ?? null;
@@ -62,10 +56,8 @@ export function bindRoomAnimations(room: THREE.Object3D): RoomAnimationBindings 
       scale: obj.scale.clone(),
     });
   }
-
   return { nodes, poses, emissives: collectEmissives(room) };
 }
-
 function tickEmissives(
   emissives: readonly EmissivePulse[],
   elapsed: number,
@@ -83,20 +75,16 @@ function tickEmissives(
     }
   }
 }
-
 function poseOf(bindings: RoomAnimationBindings, name: string): ObjectPose | null {
   const obj = bindings.nodes[name];
   if (!obj) return null;
   return bindings.poses.get(obj) ?? null;
 }
-
 function resetPose(obj: THREE.Object3D, pose: ObjectPose): void {
   obj.position.copy(pose.position);
   obj.quaternion.copy(pose.quaternion);
   obj.scale.copy(pose.scale);
 }
-
-/** Subtle living-room motion — clock stays live; plant gets a soft sway. */
 export function tickRoomAnimations(
   bindings: RoomAnimationBindings,
   elapsed: number,
@@ -108,16 +96,12 @@ export function tickRoomAnimations(
   const seconds = now.getSeconds();
   const hourAngle = ((hours + minutes / 60) / 12) * Math.PI * 2;
   const minuteAngle = ((minutes + seconds / 60) / 60) * Math.PI * 2;
-
   const hour = bindings.nodes.Hour;
   const minute = bindings.nodes.Minute;
   if (hour) hour.rotation.z = -hourAngle;
   if (minute) minute.rotation.z = -minuteAngle;
-
   tickEmissives(bindings.emissives, elapsed, reducedMotion);
-
   if (reducedMotion) return;
-
   const plant = bindings.nodes.Plant;
   const plantPose = poseOf(bindings, "Plant");
   if (plant && plantPose) {

@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-/** Frontmatter authored in each content/blog/*.mdx file. */
 export const PostFrontmatterSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
@@ -11,10 +10,7 @@ export const PostFrontmatterSchema = z.object({
   cover: z.string().optional(),
   draft: z.boolean().default(false),
 });
-
 export type PostFrontmatter = z.infer<typeof PostFrontmatterSchema>;
-
-/** Listing-level metadata derived from frontmatter + computed fields. */
 export const PostMetaSchema = PostFrontmatterSchema.extend({
   slug: z
     .string()
@@ -22,10 +18,7 @@ export const PostMetaSchema = PostFrontmatterSchema.extend({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "slug must be kebab-case"),
   readingMinutes: z.number().nonnegative(),
 });
-
 export type PostMeta = z.infer<typeof PostMetaSchema>;
-
-/** Payload accepted by the admin panel when creating/updating a post. */
 export const PostInputSchema = z.object({
   slug: z
     .string()
@@ -40,5 +33,4 @@ export const PostInputSchema = z.object({
   published: z.boolean().default(false),
   date: z.iso.date(),
 });
-
 export type PostInputValues = z.infer<typeof PostInputSchema>;

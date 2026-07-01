@@ -1,15 +1,4 @@
 #!/usr/bin/env node
-/**
- * Bake Tehran-themed pixel-art scene layers and props into public/world/.
- * Palette inspired by Persian architecture: firoozeh turquoise, mesi copper,
- * terracotta brick, berenji gold, lajvard blue, dusty smog horizons.
- *
- * By default only bakes chapter tilesets (not PixelLab scene PNGs).
- * Pass --force-procedural to overwrite public/world/scenes/ (fallback art only).
- *
- * Run: node tooling/pixellab/bake-tehran-scenes.mjs
- */
-
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,8 +9,6 @@ const ROOT = join(__dirname, "../..");
 const SCENES = join(ROOT, "public/world/scenes");
 const OBJECTS = join(ROOT, "public/world/objects");
 const TILESETS = join(ROOT, "public/world/tilesets");
-
-// Persian / Tehran palette
 const C = {
   firoozeh: "#1c9aaa",
   firoozehDark: "#0d6b78",
@@ -44,17 +31,14 @@ const C = {
   metroRed: "#c83030",
   taxiYellow: "#f2c200",
 };
-
 function rand(seed) {
   const x = Math.sin(seed * 127.1) * 43758.5453;
   return x - Math.floor(x);
 }
-
 function hexRgb(hex) {
   const h = hex.replace("#", "");
   return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
 }
-
 function setPx(buf, w, x, y, r, g, b, a = 255) {
   if (x < 0 || y < 0 || x >= w) return;
   const i = (y * w + x) * 4;
@@ -71,7 +55,6 @@ function setPx(buf, w, x, y, r, g, b, a = 255) {
     buf[i + 3] = a;
   }
 }
-
 function fillRect(buf, w, h, x0, y0, rw, rh, color, alpha = 255) {
   const [r, g, b] = hexRgb(color);
   for (let y = y0; y < y0 + rh && y < h; y += 1) {
@@ -80,7 +63,6 @@ function fillRect(buf, w, h, x0, y0, rw, rh, color, alpha = 255) {
     }
   }
 }
-
 function drawOutline(buf, w, h, x0, y0, rw, rh, color = "#000000") {
   const [r, g, b] = hexRgb(color);
   for (let x = x0; x < x0 + rw; x += 1) {
@@ -96,7 +78,6 @@ function drawOutline(buf, w, h, x0, y0, rw, rh, color = "#000000") {
     }
   }
 }
-
 function writePng(path, w, h, rgba) {
   const rowSize = w * 4 + 1;
   const raw = Buffer.alloc(rowSize * h);
@@ -129,7 +110,6 @@ function writePng(path, w, h, rgba) {
     ]),
   );
 }
-
 function crc32(buf) {
   let c = 0xffffffff;
   for (let i = 0; i < buf.length; i += 1) {
@@ -138,8 +118,6 @@ function crc32(buf) {
   }
   return (c ^ 0xffffffff) >>> 0;
 }
-
-/** Soft Alborz silhouettes — sparse, atmospheric, not crowded. */
 function bakeMountains(w, h) {
   const buf = Buffer.alloc(w * h * 4);
   const gy = h - 4;
@@ -168,8 +146,6 @@ function bakeMountains(w, h) {
   }
   return buf;
 }
-
-/** Sparse flat-roof Tehran silhouettes — breathing room between blocks. */
 function bakeSkylineFar(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   const gy = h - 2;
@@ -187,8 +163,6 @@ function bakeSkylineFar(w, h) {
   }
   return buf;
 }
-
-/** Three simple Persian brick facades per tile — turquoise band, warm windows. */
 function bakeBuildingsMid(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   const gy = h - 4;
@@ -208,8 +182,6 @@ function bakeBuildingsMid(w, h) {
   }
   return buf;
 }
-
-/** Minimal street strip — mostly open sidewalk, hint of curb. */
 function bakeShopfronts(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   const gy = h - 6;
@@ -221,7 +193,6 @@ function bakeShopfronts(w, h) {
   fillRect(buf, w, h, 284, gy - 28, 20, 14, C.firoozeh);
   return buf;
 }
-
 function bakeGround(w, h) {
   const buf = Buffer.alloc(w * h * 4);
   fillRect(buf, w, h, 0, 0, w, h, "#4a4438");
@@ -236,8 +207,6 @@ function bakeGround(w, h) {
   fillRect(buf, w, h, 0, 3, w, 2, C.taxiYellow);
   return buf;
 }
-
-/** Single chenar tree silhouette — sparse Valiasr boulevard feel. */
 function bakeChenar(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   const gy = h - 6;
@@ -256,8 +225,6 @@ function bakeChenar(w, h) {
   }
   return buf;
 }
-
-/** Clean Milad Tower silhouette. */
 function bakeMilad(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   const cx = 24;
@@ -271,8 +238,6 @@ function bakeMilad(w, h) {
   fillRect(buf, w, h, cx - 1, 12, 2, 4, "#ff5050");
   return buf;
 }
-
-/** Clean Azadi Tower — open arch, minimal detail. */
 function bakeAzadi(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   const bx = 16;
@@ -287,8 +252,6 @@ function bakeAzadi(w, h) {
   }
   return buf;
 }
-
-/** Single mosque dome — simple, not crowded. */
 function bakeDomes(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   fillRect(buf, w, h, 20, h - 12, 56, 12, C.brick);
@@ -302,8 +265,6 @@ function bakeDomes(w, h) {
   fillRect(buf, w, h, cx + r - 2, h - 28, 3, 16, C.cream);
   return buf;
 }
-
-/** Simple Tehran neighbourhood house. */
 function bakeHouse(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   fillRect(buf, w, h, 8, h - 10, 48, 10, C.cream);
@@ -314,7 +275,6 @@ function bakeHouse(w, h) {
   fillRect(buf, w, h, 40, 14, 8, 8, C.tank);
   return buf;
 }
-
 function bakeCrane(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   fillRect(buf, w, h, 36, 20, 8, h - 30, "#505868");
@@ -323,7 +283,6 @@ function bakeCrane(w, h) {
   drawOutline(buf, w, h, 36, 20, 8, h - 30);
   return buf;
 }
-
 function bakeGirder(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   fillRect(buf, w, h, 0, 4, w, 16, C.mesi);
@@ -331,14 +290,12 @@ function bakeGirder(w, h) {
   drawOutline(buf, w, h, 0, 4, w, 16);
   return buf;
 }
-
 function bakePit(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   fillRect(buf, w, h, 0, 0, w, 6, "#5a5448");
   fillRect(buf, w, h, 4, 6, w - 8, h - 6, C.night);
   return buf;
 }
-
 function bakeChest(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   fillRect(buf, w, h, 4, 12, 40, 24, C.brickDark);
@@ -347,7 +304,6 @@ function bakeChest(w, h) {
   drawOutline(buf, w, h, 4, 8, 40, 28);
   return buf;
 }
-
 function bakeSlime(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   for (let y = 0; y < h; y += 1) {
@@ -361,20 +317,16 @@ function bakeSlime(w, h) {
   setPx(buf, w, 22, 12, 0, 0, 0);
   return buf;
 }
-
 function bakeMetroSign(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   fillRect(buf, w, h, 4, 8, 56, 32, C.metroRed);
   fillRect(buf, w, h, 8, 14, 48, 20, "#1a1420");
-  // Stylised Persian خط M indicator + metro
   fillRect(buf, w, h, 12, 18, 16, 3, "#ffffff");
   fillRect(buf, w, h, 12, 26, 28, 3, C.berenji);
   fillRect(buf, w, h, 40, 18, 8, 12, C.firoozeh);
   drawOutline(buf, w, h, 4, 8, 56, 32);
   return buf;
 }
-
-/** Composite a smaller RGBA strip onto a destination buffer. */
 function blitRgba(dest, destW, destH, src, srcW, srcH, dx, dy, alpha = 1) {
   for (let y = 0; y < srcH; y += 1) {
     const ty = dy + y;
@@ -390,8 +342,6 @@ function blitRgba(dest, destW, destH, src, srcW, srcH, dx, dy, alpha = 1) {
     }
   }
 }
-
-/** Landing-chapter dawn panorama — Damavand, flat-roof Tehran, warm smog horizon. */
 function bakeIntroHero(w, h) {
   const buf = Buffer.alloc(w * h * 4);
   for (let y = 0; y < h; y += 1) {
@@ -399,7 +349,6 @@ function bakeIntroHero(w, h) {
     const top = hexRgb(t < 0.45 ? "#2a1848" : t < 0.72 ? "#8a4868" : "#f0b878");
     for (let x = 0; x < w; x += 1) setPx(buf, w, x, y, ...top);
   }
-  // Dawn sun
   const sunX = Math.round(w * 0.18);
   const sunY = Math.round(h * 0.22);
   for (let dy = -14; dy <= 14; dy += 1) {
@@ -412,14 +361,12 @@ function bakeIntroHero(w, h) {
   blitRgba(buf, w, h, bakeBuildingsMid(512, 160), 512, 160, 0, h - 160, 0.75);
   blitRgba(buf, w, h, bakeMilad(48, 128), 48, 128, Math.round(w * 0.72), h - 128, 0.95);
   blitRgba(buf, w, h, bakeDomes(96, 80), 96, 80, Math.round(w * 0.12), h - 80, 0.9);
-  // Smog band at the horizon
   for (let y = Math.round(h * 0.58); y < Math.round(h * 0.72); y += 1) {
     const a = Math.floor(((y - h * 0.58) / (h * 0.14)) * 90);
     for (let x = 0; x < w; x += 1) setPx(buf, w, x, y, ...hexRgb(C.smogLight), a);
   }
   return buf;
 }
-
 function bakeIntroFloor(w, h) {
   const buf = Buffer.alloc(w * h * 4);
   fillRect(buf, w, h, 0, 0, w, h, "#3a2818");
@@ -432,7 +379,6 @@ function bakeIntroFloor(w, h) {
   }
   return buf;
 }
-
 function bakeWorkGround(w, h) {
   const buf = bakeGround(w, h);
   for (let x = 0; x < w; x += 1) {
@@ -440,7 +386,6 @@ function bakeWorkGround(w, h) {
   }
   return buf;
 }
-
 function bakeSkillsMetro(w, h) {
   const buf = Buffer.alloc(w * h * 4);
   fillRect(buf, w, h, 0, 0, w, h, "#3a3848");
@@ -453,7 +398,6 @@ function bakeSkillsMetro(w, h) {
   fillRect(buf, w, h, 0, h - 6, w, 2, "#f2c200");
   return buf;
 }
-
 function bakeVaultFloor(w, h) {
   const buf = Buffer.alloc(w * h * 4);
   fillRect(buf, w, h, 0, 0, w, h, "#1a3830");
@@ -465,7 +409,6 @@ function bakeVaultFloor(w, h) {
   }
   return buf;
 }
-
 function bakeRooftopGround(w, h) {
   const buf = Buffer.alloc(w * h * 4);
   fillRect(buf, w, h, 0, 0, w, h, "#2a2838");
@@ -475,7 +418,6 @@ function bakeRooftopGround(w, h) {
   fillRect(buf, w, h, 0, 0, w, 3, "#4a4858");
   return buf;
 }
-
 const chapterGrounds = {
   intro: bakeIntroFloor,
   work: bakeWorkGround,
@@ -483,7 +425,6 @@ const chapterGrounds = {
   writing: bakeVaultFloor,
   contact: bakeRooftopGround,
 };
-
 const layers = [
   ["alborz-mountains", 512, 128, bakeMountains],
   ["tehran-skyline-far", 512, 96, bakeSkylineFar],
@@ -495,7 +436,6 @@ const layers = [
   ["azadi-tower", 64, 96, bakeAzadi],
   ["persian-domes", 96, 80, bakeDomes],
 ];
-
 const props = [
   ["intro", "childhood-house", 64, 56, bakeHouse],
   ["work", "construction-crane", 80, 96, bakeCrane],
@@ -505,17 +445,14 @@ const props = [
   ["skills", "skill-slime", 32, 32, bakeSlime],
   ["skills", "metro-sign", 64, 48, bakeMetroSign],
 ];
-
 mkdirSync(SCENES, { recursive: true });
 const forceProcedural = process.argv.includes("--force-procedural");
 const onlyArg = process.argv.find((a) => a.startsWith("--only="));
 const only = onlyArg ? new Set(onlyArg.slice(7).split(",")) : null;
-
 const layerIds = new Set(layers.map(([id]) => id));
 const wantLayers = !only || only.has("scenes") || [...only].some((k) => layerIds.has(k));
 const wantProps = !only || [...only].some((k) => props.some(([ch, id]) => `${ch}/${id}` === k));
 const wantTilesets = !only || [...only].some((k) => k.startsWith("tilesets/"));
-
 if (wantLayers) {
   if (forceProcedural || only) {
     const skipHero =
@@ -542,7 +479,6 @@ if (wantLayers) {
     }
   }
 }
-
 if (forceProcedural || only) {
   if (wantProps) {
     for (const [chapter, id, w, h, fn] of props) {
@@ -554,7 +490,6 @@ if (forceProcedural || only) {
       console.log(`wrote objects/${chapter}/${id}.png`);
     }
   }
-
   if (wantTilesets) {
     for (const ch of ["intro", "work", "skills", "writing", "contact"]) {
       if (only && !only.has(`tilesets/${ch}`)) continue;
@@ -569,5 +504,4 @@ if (forceProcedural || only) {
     "Skipping objects/tilesets — use PixelLab assets. Pass --force-procedural to overwrite.",
   );
 }
-
 console.log("\nDone — baked Tehran scene assets with Persian palette.");

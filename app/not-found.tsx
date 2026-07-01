@@ -10,11 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
     robots: { index: false, follow: false },
   };
 }
-
 export default async function NotFound() {
   const site = await getSiteConfig();
   const copy = site.pages.notFound;
-
   return (
     <section className="flex min-h-[82vh] items-center justify-center bg-[#05040b] px-6 text-center [font-family:var(--font-pixel),ui-monospace,monospace] text-white">
       <div className="w-full max-w-lg rounded-[6px] border-4 border-white/20 bg-[#0d0b16] p-8 shadow-[6px_6px_0_rgba(0,0,0,0.6)]">

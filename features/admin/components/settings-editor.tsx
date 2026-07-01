@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
@@ -30,24 +29,20 @@ function Field({
     </div>
   );
 }
-
 export function SettingsEditor({ initial }: { initial: SiteSettings }) {
   const router = useRouter();
   const [form, setForm] = React.useState(initial);
   const [error, setError] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
-
   function set<K extends keyof SiteSettings>(key: K, value: SiteSettings[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
-
   function setNav(index: number, patch: Partial<NavLink>) {
     setForm((prev) => ({
       ...prev,
       nav: prev.nav.map((link, i) => (i === index ? { ...link, ...patch } : link)),
     }));
   }
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -74,7 +69,6 @@ export function SettingsEditor({ initial }: { initial: SiteSettings }) {
     setError("Failed to save settings.");
     setSaving(false);
   }
-
   return (
     <form onSubmit={onSubmit} className="grid gap-8">
       <div>

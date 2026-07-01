@@ -1,6 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
 
-/** Service-role client for trusted server-side writes. Never import in client code. */
 export function createAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

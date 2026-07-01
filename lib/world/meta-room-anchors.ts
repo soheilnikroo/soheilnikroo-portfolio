@@ -1,36 +1,24 @@
 import * as THREE from "three";
 
-/**
- * A screen surface resolved from the GLB, in world space.
- * `normal` points out of the screen toward the viewer (room interior side), so
- * the camera can be placed dead-on to make the portfolio fill the frame.
- */
 export interface MonitorAnchor {
   readonly focus: THREE.Vector3;
   readonly normal: THREE.Vector3;
   readonly size: THREE.Vector2;
 }
-
 export interface MetaRoomAnchors {
   readonly roomCenter: THREE.Vector3;
-  /** Bounding-sphere radius of the room — used to fit the iso frame without cropping. */
   readonly roomRadius: number;
-  /** World Y of the room floor — used to ground soft contact shadows. */
   readonly floorY: number;
   readonly centerMonitor: MonitorAnchor;
   readonly leftMonitor: MonitorAnchor;
   readonly rightMonitor: MonitorAnchor;
 }
-
-/** Preferred GLB node names per monitor slot — glass mesh first, bezel fallback. */
 export const SCREEN_NODE_CANDIDATES = {
   center: ["wide.002", "wide"],
   left: ["medium.001", "medium"],
   right: ["small.002", "small"],
 } as const;
-
 export type MonitorScreenSlot = keyof typeof SCREEN_NODE_CANDIDATES;
-
 export function resolveScreenNode(
   scene: THREE.Object3D,
   slot: MonitorScreenSlot,
@@ -41,7 +29,6 @@ export function resolveScreenNode(
   }
   return null;
 }
-
 const _box = new THREE.Box3();
 const _localBox = new THREE.Box3();
 const _center = new THREE.Vector3();
@@ -49,7 +36,6 @@ const _size = new THREE.Vector3();
 const _localSize = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
 const _toCenter = new THREE.Vector3();
-
 function defaultAnchor(): MonitorAnchor {
   return {
     focus: new THREE.Vector3(),
@@ -57,19 +43,14 @@ function defaultAnchor(): MonitorAnchor {
     size: new THREE.Vector2(3, 2),
   };
 }
-
-/** Unit vector along the world axis index (0=x,1=y,2=z). */
 function axisVector(index: number): THREE.Vector3 {
   return new THREE.Vector3(index === 0 ? 1 : 0, index === 1 ? 1 : 0, index === 2 ? 1 : 0);
 }
-
 function argMin(x: number, y: number, z: number): number {
   if (x <= y && x <= z) return 0;
   if (y <= x && y <= z) return 1;
   return 2;
 }
-
-/** World-space frame of a GLB screen mesh derived from local geometry (not world AABB). */
 export interface ScreenSurface {
   readonly center: THREE.Vector3;
   readonly quaternion: THREE.Quaternion;
@@ -77,24 +58,19 @@ export interface ScreenSurface {
   readonly height: number;
   readonly depth: number;
 }
-
 const _localCenter = new THREE.Vector3();
 const _worldScale = new THREE.Vector3();
-
 export function screenSurfaceFromNode(node: THREE.Object3D): ScreenSurface | null {
   if (!(node instanceof THREE.Mesh) || !node.geometry) return null;
-
   const geo = node.geometry as THREE.BufferGeometry;
   if (!geo.boundingBox) geo.computeBoundingBox();
   _localBox.copy(geo.boundingBox ?? _localBox.makeEmpty());
   _localBox.getCenter(_localCenter);
   _localBox.getSize(_localSize);
-
   const ax = Math.abs(_localSize.x);
   const ay = Math.abs(_localSize.y);
   const az = Math.abs(_localSize.z);
   const thin = argMin(ax, ay, az);
-
   let width: number;
   let height: number;
   let depth: number;
@@ -111,26 +87,15 @@ export function screenSurfaceFromNode(node: THREE.Object3D): ScreenSurface | nul
     height = Math.min(ay, az);
     depth = ax;
   }
-
   node.updateWorldMatrix(true, false);
   node.matrixWorld.decompose(_center, _quat, _worldScale);
   const center = _localCenter.clone().applyMatrix4(node.matrixWorld);
   node.getWorldQuaternion(_quat);
-
   width *= _worldScale.x;
   height *= _worldScale.y;
   depth *= _worldScale.z;
-
   return { center, quaternion: _quat.clone(), width, height, depth };
 }
-
-/**
- * Resolve a screen mesh into a world-space surface frame.
- *
- * The outward normal is derived from the mesh's *thinnest local axis* (a screen
- * is a flat slab) rotated into world space, then flipped so it faces the room
- * interior. Falling back to the AABB keeps it stable for non-mesh nodes.
- */
 function monitorAnchor(
   scene: THREE.Object3D,
   slot: MonitorScreenSlot,
@@ -138,13 +103,9 @@ function monitorAnchor(
 ): MonitorAnchor {
   const node = resolveScreenNode(scene, slot);
   if (!node) return defaultAnchor();
-
   const surface = screenSurfaceFromNode(node);
   if (!surface) return defaultAnchor();
-
   const focus = surface.center.clone();
-
-  // World outward normal from the screen's thin axis.
   let normal: THREE.Vector3;
   if (node instanceof THREE.Mesh && node.geometry) {
     const geo = node.geometry as THREE.BufferGeometry;
@@ -156,34 +117,22 @@ function monitorAnchor(
   } else {
     normal = new THREE.Vector3(0, 0, 1);
   }
-
-  // Face the room interior (the side a person sits on).
   _toCenter.copy(roomCenter).sub(focus);
   _toCenter.y = 0;
   if (_toCenter.lengthSq() > 1e-6 && normal.dot(_toCenter) < 0) normal.negate();
-  // Camera travel uses a horizontal outward normal so the dolly stays at desk height.
   const flat = new THREE.Vector3(_toCenter.x, 0, _toCenter.z);
   if (flat.lengthSq() > 1e-6) normal.copy(flat.normalize());
   else if (Math.abs(normal.y) > 0.9) normal.set(0, 0, 1);
-
-  // Screen dimensions from local geometry — stable for rotated side monitors.
   const width = surface.width;
   const height = surface.height;
-
   return {
     focus,
     normal: normal.normalize(),
     size: new THREE.Vector2(Math.max(width, 0.4), Math.max(height, 0.3)),
   };
 }
-
-/**
- * Derive camera + monitor anchors from the loaded GLB.
- * Uses the `Room` mesh for framing (ignores exterior floor/mailbox/sky).
- */
 export function computeMetaRoomAnchors(scene: THREE.Object3D): MetaRoomAnchors {
   scene.updateMatrixWorld(true);
-
   const roomMesh = scene.getObjectByName("Room");
   if (roomMesh) {
     _box.setFromObject(roomMesh);
@@ -195,17 +144,14 @@ export function computeMetaRoomAnchors(scene: THREE.Object3D): MetaRoomAnchors {
     });
     if (_box.isEmpty()) _box.setFromObject(scene);
   }
-
   _box.getCenter(_center);
   _box.getSize(_size);
   const roomCenter = _center.clone();
   const roomRadius = 0.5 * _size.length();
   const floorY = _box.min.y;
-
   const centerMonitor = monitorAnchor(scene, "center", roomCenter);
   const leftMonitor = monitorAnchor(scene, "left", roomCenter);
   const rightMonitor = monitorAnchor(scene, "right", roomCenter);
-
   return {
     roomCenter,
     roomRadius: Math.max(roomRadius, 1),
@@ -215,11 +161,6 @@ export function computeMetaRoomAnchors(scene: THREE.Object3D): MetaRoomAnchors {
     rightMonitor,
   };
 }
-
-/**
- * Baked from `public/3d-model/ROOM.glb` — keeps the camera locked on the wide
- * monitor before the GLB finishes parsing (avoids the default Canvas pose under the floor).
- */
 export const FALLBACK_META_ROOM_ANCHORS: MetaRoomAnchors = {
   roomCenter: new THREE.Vector3(-0.36, 14.19, 0.23),
   roomRadius: 23.1,

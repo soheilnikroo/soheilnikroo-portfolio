@@ -1,5 +1,4 @@
 "use client";
-
 import "@/lib/world/three-runtime";
 import { ContactShadows, Html } from "@react-three/drei";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
@@ -25,13 +24,8 @@ import type { RoomAnimationBindings } from "@/lib/world/meta-room-animations";
 import { metaRoomCameraPose } from "@/lib/world/meta-room-camera";
 
 const MODEL_URL = "/3d-model/ROOM.glb";
-
-// Soft grounding shadows via a blurred contact plane (no shadow-map acne risk).
-// Flip to `false` if the floor reads too dark on the real model.
 const SOFT_SHADOWS = true;
-
 useLoader.preload(GLTFLoader, MODEL_URL);
-
 export interface MetaRoomSceneProps {
   readonly progress: number;
   readonly gameFrame: HTMLCanvasElement | null;
@@ -39,8 +33,6 @@ export interface MetaRoomSceneProps {
   readonly interactive?: boolean;
   readonly onReady?: () => void;
 }
-
-// Every mesh in ROOM.glb is a scene-root sibling — these sit outside the room box.
 const EXTERIOR_HIDDEN = [
   "CubeMini",
   "sun",
@@ -50,13 +42,8 @@ const EXTERIOR_HIDDEN = [
   "Fence",
   "WelcomeCarpet",
 ] as const;
-
-/** Hide duplicate glass layers that sit in front of the textured surface. */
 const SCREEN_MESH_HIDDEN = ["wide.001"] as const;
-
-// Slight inset so plates sit inside the physical bezel.
 const SCREEN_INSET = 0.96;
-
 const SCREEN_MAT = {
   emissive: new THREE.Color(0xffffff),
   emissiveIntensity: 1.4,
@@ -65,17 +52,11 @@ const SCREEN_MAT = {
   metalness: 0,
   toneMapped: false,
 } as const;
-
 function prepareScreenTexture(texture: THREE.Texture): THREE.Texture {
   texture.flipY = true;
   texture.needsUpdate = true;
   return texture;
 }
-
-/**
- * Self-lit plate aligned to a GLB screen mesh's world transform.
- * Hides the glass mesh and draws the texture on a plane that matches its size.
- */
 function attachScreenPlate(
   room: THREE.Object3D,
   screen: THREE.Object3D,
@@ -83,9 +64,7 @@ function attachScreenPlate(
 ): THREE.Mesh | null {
   const surface = screenSurfaceFromNode(screen);
   if (!surface) return null;
-
   screen.visible = false;
-
   const geometry = new THREE.PlaneGeometry(
     surface.width * SCREEN_INSET,
     surface.height * SCREEN_INSET,
@@ -110,7 +89,6 @@ function attachScreenPlate(
   plate.translateZ(Math.max(surface.depth * 0.35, 0.008));
   return plate;
 }
-
 function setPlateTexture(plate: THREE.Mesh, texture: THREE.Texture): void {
   const mat = plate.material;
   if (!(mat instanceof THREE.MeshStandardMaterial)) return;
@@ -119,8 +97,6 @@ function setPlateTexture(plate: THREE.Mesh, texture: THREE.Texture): void {
   mat.emissiveMap = texture;
   mat.needsUpdate = true;
 }
-
-// Friendly labels for the objects a visitor can inspect once the room settles.
 const INTERACTIVE: Readonly<Record<string, string>> = {
   Chair: "The chair — still warm",
   Plant: "A little green friend 🌱",
@@ -134,26 +110,21 @@ const INTERACTIVE: Readonly<Record<string, string>> = {
   Frames: "Memories on the wall",
   Printer: "Still jams, occasionally",
 };
-
 interface RoomModelProps {
   readonly gameFrame: HTMLCanvasElement | null;
   readonly reducedMotion: boolean;
   readonly interactive: boolean;
   readonly onAnchors: (anchors: MetaRoomAnchors) => void;
 }
-
 interface Hovered {
   readonly name: string;
   readonly label: string;
   readonly position: THREE.Vector3;
 }
-
 interface ClickPulse {
   readonly t0: number;
   readonly base: THREE.Vector3;
 }
-
-/** Walk up to the named interactive ancestor of a hit mesh. */
 function interactiveRoot(obj: THREE.Object3D | null): THREE.Object3D | null {
   let cur: THREE.Object3D | null = obj;
   while (cur) {
@@ -162,27 +133,19 @@ function interactiveRoot(obj: THREE.Object3D | null): THREE.Object3D | null {
   }
   return null;
 }
-
-/**
- * Warm evening lighting + cool monitor glow. The screens are the brightest
- * thing in the room, so they read as the real light source — cozy, late-night.
- */
 function RoomLighting({ anchors }: { readonly anchors: MetaRoomAnchors }): React.ReactElement {
   const center = anchors.roomCenter;
   const radius = anchors.roomRadius;
   const screen = anchors.centerMonitor;
   const leftScreen = anchors.leftMonitor;
   const rightScreen = anchors.rightMonitor;
-
   return (
     <>
       <color attach="background" args={["#0d0a18"]} />
 
-      {/* Warm, lifted base so the whole room reads clearly — cozy, not pitch-black. */}
       <ambientLight intensity={0.62} color="#6a5a78" />
       <hemisphereLight args={["#8a7ab0", "#2a1d18", 1.0]} />
 
-      {/* Warm key — a desk-lamp pool from the front-right. */}
       <pointLight
         position={[center.x + radius * 0.6, center.y + radius * 0.8, center.z + radius * 0.9]}
         intensity={9}
@@ -190,7 +153,7 @@ function RoomLighting({ anchors }: { readonly anchors: MetaRoomAnchors }): React
         distance={radius * 4.5}
         decay={2}
       />
-      {/* Warm fill bounce from the opposite side. */}
+
       <pointLight
         position={[center.x - radius * 0.85, center.y + radius * 0.45, center.z + radius * 0.5]}
         intensity={4.5}
@@ -198,7 +161,7 @@ function RoomLighting({ anchors }: { readonly anchors: MetaRoomAnchors }): React
         distance={radius * 3.6}
         decay={2}
       />
-      {/* Overhead soft warm fill so ceilings/walls aren't black. */}
+
       <pointLight
         position={[center.x, center.y + radius * 1.1, center.z]}
         intensity={3}
@@ -206,22 +169,19 @@ function RoomLighting({ anchors }: { readonly anchors: MetaRoomAnchors }): React
         distance={radius * 4}
         decay={2}
       />
-      {/* Cool moonlight rim from the window direction. */}
+
       <directionalLight
         position={[center.x - radius * 1.1, center.y + radius * 1.2, center.z - radius * 1.0]}
         intensity={0.9}
         color="#8fa3ff"
       />
 
-      {/* Monitor glow — cool light spilling off each screen into the room. */}
       <ScreenGlow anchor={screen} intensity={4.2} radius={radius} />
       <ScreenGlow anchor={leftScreen} intensity={1.8} radius={radius} tint="#7ee0ff" />
       <ScreenGlow anchor={rightScreen} intensity={1.8} radius={radius} tint="#c4a8ff" />
     </>
   );
 }
-
-/** A subtly-flickering cool light just in front of a screen. */
 function ScreenGlow({
   anchor,
   intensity,
@@ -238,18 +198,15 @@ function ScreenGlow({
     () => anchor.focus.clone().addScaledVector(anchor.normal, Math.max(0.3, anchor.size.y * 0.4)),
     [anchor],
   );
-
   useFrame((state) => {
     const l = ref.current;
     if (!l) return;
-    // gentle CRT-style flicker
     l.intensity =
       intensity *
       (0.9 +
         Math.sin(state.clock.elapsedTime * 7.3) * 0.04 +
         Math.sin(state.clock.elapsedTime * 2.1) * 0.06);
   });
-
   return (
     <pointLight
       ref={ref}
@@ -261,7 +218,6 @@ function ScreenGlow({
     />
   );
 }
-
 function RoomModel({
   gameFrame,
   reducedMotion,
@@ -270,7 +226,6 @@ function RoomModel({
 }: RoomModelProps): React.ReactElement {
   const gltf = useLoader(GLTFLoader, MODEL_URL);
   const room = React.useMemo(() => gltf.scene.clone(true), [gltf]);
-
   const animRef = React.useRef<RoomAnimationBindings | null>(null);
   const anchorsRef = React.useRef<MetaRoomAnchors | null>(null);
   const centerPlateRef = React.useRef<THREE.Mesh | null>(null);
@@ -286,10 +241,8 @@ function RoomModel({
   const frameRef = React.useRef(0);
   const caseLightRef = React.useRef<THREE.PointLight>(null);
   const caseColor = React.useMemo(() => new THREE.Color(), []);
-
   const [hovered, setHovered] = React.useState<Hovered | null>(null);
   const [caseLightPos, setCaseLightPos] = React.useState<[number, number, number] | null>(null);
-
   const disposePlate = React.useCallback((plate: THREE.Mesh | null) => {
     if (!plate) return;
     plate.geometry.dispose();
@@ -298,8 +251,6 @@ function RoomModel({
     else mat.dispose();
     plate.removeFromParent();
   }, []);
-
-  // Hide exterior props, bind idle animations, publish anchors from the real GLB.
   React.useLayoutEffect(() => {
     for (const name of EXTERIOR_HIDDEN) {
       const node = room.getObjectByName(name);
@@ -323,27 +274,22 @@ function RoomModel({
     anchorsRef.current = computed;
     onAnchors(computed);
   }, [room, onAnchors]);
-
   const ensurePlate = React.useCallback(
     (slot: MonitorScreenSlot, texture: THREE.Texture): void => {
       const screen = resolveScreenNode(room, slot);
       if (!screen) return;
-
       prepareScreenTexture(texture);
-
       const plateRef =
         slot === "center" ? centerPlateRef : slot === "left" ? leftPlateRef : rightPlateRef;
       if (plateRef.current) {
         setPlateTexture(plateRef.current, texture);
         return;
       }
-
       const plate = attachScreenPlate(room, screen, texture);
       if (plate) plateRef.current = plate;
     },
     [room],
   );
-
   React.useEffect(() => {
     return () => {
       disposePlate(centerPlateRef.current);
@@ -362,8 +308,6 @@ function RoomModel({
       rightCanvasRef.current = null;
     };
   }, [room, disposePlate]);
-
-  // Side screens (code + music) — built once, after the room graph is ready.
   React.useLayoutEffect(() => {
     leftCanvasRef.current = createSideMonitorCanvas("code", 320, 200);
     rightCanvasRef.current = createSideMonitorCanvas("music", 300, 200);
@@ -374,8 +318,6 @@ function RoomModel({
     ensurePlate("left", lt);
     ensurePlate("right", rt);
   }, [room, ensurePlate]);
-
-  // Center screen — streams the live portfolio canvas.
   React.useEffect(() => {
     centerTexRef.current?.dispose();
     let tex: THREE.CanvasTexture | null = null;
@@ -389,16 +331,11 @@ function RoomModel({
       centerTexRef.current = null;
     };
   }, [gameFrame, room, ensurePlate]);
-
   useFrame((state) => {
     const t = state.clock.elapsedTime;
     clockRef.current = t;
     const frame = (frameRef.current = (frameRef.current + 1) % 600);
-
-    // Throttle texture re-uploads — the live canvas is heavy, so don't push it
-    // every frame (this is the main source of the "model appears" lag).
     if (centerTexRef.current && frame % 3 === 0) centerTexRef.current.needsUpdate = true;
-
     if (!reducedMotion && frame % 3 === 0) {
       if (leftCanvasRef.current && leftTexRef.current) {
         updateSideMonitorCanvas(leftCanvasRef.current, "code", t * 1000);
@@ -409,18 +346,13 @@ function RoomModel({
         rightTexRef.current.needsUpdate = true;
       }
     }
-
     if (animRef.current) tickRoomAnimations(animRef.current, t, reducedMotion);
-
-    // Slowly cycling RGB spill from the PC case (a light, not a recoloured mesh).
     if (caseLightRef.current) {
       const hue = reducedMotion ? 0.58 : (t * 0.04) % 1;
       caseColor.setHSL(hue, 0.85, 0.55);
       caseLightRef.current.color.copy(caseColor);
       caseLightRef.current.intensity = reducedMotion ? 0.7 : 0.7 + Math.sin(t * 0.9) * 0.2;
     }
-
-    // Click "pop" — applied AFTER the idle tick so it always wins.
     if (clickPulses.current.size > 0) {
       for (const [obj, pulse] of clickPulses.current) {
         const dt = t - pulse.t0;
@@ -435,7 +367,6 @@ function RoomModel({
       }
     }
   });
-
   const onMove = React.useCallback(
     (e: { stopPropagation: () => void; object: THREE.Object3D }) => {
       if (!interactive) return;
@@ -457,12 +388,10 @@ function RoomModel({
     },
     [interactive],
   );
-
   const onOut = React.useCallback(() => {
     setHovered(null);
     if (typeof document !== "undefined") document.body.style.cursor = "";
   }, []);
-
   const onClick = React.useCallback(
     (e: { stopPropagation: () => void; object: THREE.Object3D }) => {
       if (!interactive) return;
@@ -478,14 +407,11 @@ function RoomModel({
     },
     [interactive],
   );
-
-  // Clear hover/cursor when interactivity turns off.
   React.useEffect(() => {
     if (interactive) return;
     setHovered(null);
     if (typeof document !== "undefined") document.body.style.cursor = "";
   }, [interactive]);
-
   return (
     <>
       <primitive
@@ -547,7 +473,6 @@ function RoomModel({
     </>
   );
 }
-
 function ScrollCamera({
   progress,
   reducedMotion,
@@ -562,16 +487,12 @@ function ScrollCamera({
   const { camera, size, pointer } = useThree();
   const lookTarget = React.useRef(new THREE.Vector3());
   const posTarget = React.useRef(new THREE.Vector3());
-
   useFrame(() => {
     if (!(camera instanceof THREE.PerspectiveCamera)) return;
-
     const aspect = size.width / Math.max(1, size.height);
     const pose = metaRoomCameraPose(reducedMotion ? 1 : progress, anchors, aspect);
-
     posTarget.current.copy(pose.position);
     if (interactive && !reducedMotion) {
-      // Living-diorama parallax once the room has settled.
       const amp = anchors.roomRadius * 0.05;
       posTarget.current.x += pointer.x * amp;
       posTarget.current.y += pointer.y * amp * 0.6;
@@ -579,16 +500,13 @@ function ScrollCamera({
     } else {
       camera.position.copy(posTarget.current);
     }
-
     camera.fov = pose.fov;
     camera.updateProjectionMatrix();
     lookTarget.current.copy(pose.lookAt);
     camera.lookAt(lookTarget.current);
   });
-
   return null;
 }
-
 function MetaRoomCanvas({
   progress,
   gameFrame,
@@ -608,13 +526,11 @@ function MetaRoomCanvas({
     },
     [onReady],
   );
-
   const initialPose = React.useMemo(
     () => metaRoomCameraPose(0, FALLBACK_META_ROOM_ANCHORS, 16 / 9),
     [],
   );
   const initialCam = initialPose.position;
-
   return (
     <Canvas
       dpr={[1, 1.5]}
@@ -648,7 +564,6 @@ function MetaRoomCanvas({
     </Canvas>
   );
 }
-
 export function MetaRoomScene({
   progress,
   gameFrame,

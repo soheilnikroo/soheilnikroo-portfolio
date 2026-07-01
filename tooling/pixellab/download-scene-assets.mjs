@@ -1,11 +1,4 @@
 #!/usr/bin/env node
-/**
- * Queue + download PixelLab scene assets from asset-manifest.json.
- *
- * Usage:
- *   PIXELLAB_API_TOKEN=... node tooling/pixellab/download-scene-assets.mjs
- *   PIXELLAB_API_TOKEN=... node tooling/pixellab/download-scene-assets.mjs --poll
- */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,21 +8,17 @@ const ROOT = join(__dirname, "../..");
 const MANIFEST = JSON.parse(readFileSync(join(__dirname, "asset-manifest.json"), "utf8"));
 const JOBS_FILE = join(__dirname, ".scene-jobs.json");
 const MCP_URL = "https://api.pixellab.ai/mcp";
-
 const token = process.env.PIXELLAB_API_TOKEN;
 if (!token) {
   console.error("Set PIXELLAB_API_TOKEN");
   process.exit(1);
 }
-
 const STYLE = {
   outline: "single color outline",
   shading: MANIFEST.style.shading,
   detail: MANIFEST.style.detail,
   view: "side",
 };
-
-/** Skip assets already replaced by PixelLab in a prior run. */
 const DONE = new Set([
   "scenes/alborz-mountains",
   "scenes/tehran-buildings-mid",
@@ -40,7 +29,6 @@ const DONE = new Set([
   "scenes/milad-tower",
   "objects/intro/childhood-house",
 ]);
-
 async function callTool(name, args) {
   const res = await fetch(MCP_URL, {
     method: "POST",
@@ -64,19 +52,15 @@ async function callTool(name, args) {
   if (content.startsWith("error:")) throw new Error(content);
   return content;
 }
-
 function loadJobs() {
   if (!existsSync(JOBS_FILE)) return [];
   return JSON.parse(readFileSync(JOBS_FILE, "utf8"));
 }
-
 function saveJobs(jobs) {
   writeFileSync(JOBS_FILE, JSON.stringify(jobs, null, 2));
 }
-
 function buildQueue() {
   const queue = [];
-
   for (const layer of MANIFEST.backgroundLayers ?? []) {
     const key = `scenes/${layer.id}`;
     if (DONE.has(key)) continue;
@@ -92,7 +76,6 @@ function buildQueue() {
       },
     });
   }
-
   for (const lm of MANIFEST.landmarks ?? []) {
     const key = `scenes/${lm.id}`;
     if (DONE.has(key)) continue;
@@ -108,7 +91,6 @@ function buildQueue() {
       },
     });
   }
-
   for (const prop of MANIFEST.chapterProps ?? []) {
     const key = `objects/${prop.chapterId}/${prop.id}`;
     if (DONE.has(key)) continue;
@@ -127,7 +109,6 @@ function buildQueue() {
       },
     });
   }
-
   for (const chapter of MANIFEST.chapters) {
     for (const obj of chapter.sceneObjects) {
       const key = `objects/${chapter.id}/${obj.id}`;
@@ -147,7 +128,6 @@ function buildQueue() {
         },
       });
     }
-
     if (chapter.sidescrollerTileset) {
       queue.push({
         type: "sidescroller_tileset",
@@ -164,8 +144,6 @@ function buildQueue() {
       });
     }
   }
-
-  // Props referenced in world-content that aren't chapter sceneObjects
   const extraProps = [
     {
       label: "objects/skills/skill-slime",
@@ -204,18 +182,14 @@ function buildQueue() {
   for (const item of extraProps) {
     if (!DONE.has(item.label)) queue.push({ type: "map_object", ...item });
   }
-
   return queue;
 }
-
 async function queueAll() {
   const existing = loadJobs();
   const pendingLabels = new Set(existing.filter((j) => !j.done).map((j) => j.label));
   const queue = buildQueue().filter((q) => !pendingLabels.has(q.label));
-
   console.log(`Queueing ${queue.length} assets (${existing.length} jobs on disk)...`);
   const jobs = [...existing];
-
   for (const item of queue) {
     try {
       const tool = item.type === "map_object" ? "create_map_object" : "create_sidescroller_tileset";
@@ -235,41 +209,31 @@ async function queueAll() {
       await new Promise((r) => setTimeout(r, 8000));
     }
   }
-
   saveJobs(jobs);
   console.log(`\nSaved ${jobs.length} jobs to ${JOBS_FILE}`);
 }
-
 async function pollAndDownload() {
   const jobs = loadJobs();
   let changed = false;
-
   for (const job of jobs) {
     if (job.done || job.failed || !job.jobId) continue;
-
     const tool = job.type === "map_object" ? "get_map_object" : "get_sidescroller_tileset";
     const argKey = job.type === "map_object" ? "object_id" : "tileset_id";
-
     try {
       const text = await callTool(tool, { [argKey]: job.jobId });
       const line = text.split("\n")[0];
       console.log(`${job.label}: ${line}`);
-
       if (line.includes("status: completed")) {
         job.done = true;
         job.status = "completed";
         changed = true;
-
         let downloadUrl =
           text.match(/download:\s*(https:\/\/[^\s]+)/)?.[1] ??
           text.match(/https:\/\/api\.pixellab\.ai\/mcp\/[^\s]+/)?.[0];
-
-        // Tilesets expose download_png instead of a direct .png URL.
         if (job.type === "sidescroller_tileset") {
           const tilesetUrl = text.match(/download_png:\s*(https:\/\/[^\s]+)/)?.[1];
           if (tilesetUrl) downloadUrl = tilesetUrl;
         }
-
         if (downloadUrl) {
           const res = await fetch(downloadUrl);
           if (res.ok) {
@@ -289,25 +253,20 @@ async function pollAndDownload() {
       console.warn(`${job.label}:`, e.message);
     }
   }
-
   if (changed) saveJobs(jobs);
-
   const remaining = jobs.filter((j) => !j.done && !j.failed).length;
   console.log(
     remaining ? `\n${remaining} still processing — retry with --poll` : "\nAll jobs complete.",
   );
   return remaining === 0;
 }
-
 async function main() {
   const args = process.argv.slice(2);
   console.log("Balance:", (await callTool("get_balance", {})).replace(/\n/g, " | "));
-
   if (args.includes("--poll")) {
     await pollAndDownload();
     return;
   }
-
   await queueAll();
   console.log("\nPolling (may take several minutes)...");
   for (let i = 0; i < 30; i += 1) {
@@ -316,7 +275,6 @@ async function main() {
     if (done) break;
   }
 }
-
 main().catch((e) => {
   console.error(e);
   process.exit(1);

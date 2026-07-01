@@ -1,13 +1,11 @@
 import { ensureSchema, getSql } from "./sql";
 
 export type SiteContentKey = "profile" | "skills" | "milestones" | "site" | "world";
-
 export type SiteContentRow = {
   key: SiteContentKey;
   data: unknown;
   updated_at: Date;
 };
-
 export async function getSiteContentRow(key: SiteContentKey): Promise<SiteContentRow | null> {
   await ensureSchema();
   const sql = getSql();
@@ -16,7 +14,6 @@ export async function getSiteContentRow(key: SiteContentKey): Promise<SiteConten
   `;
   return rows[0] ?? null;
 }
-
 export async function upsertSiteContentRow(key: SiteContentKey, data: unknown): Promise<void> {
   await ensureSchema({ force: true });
   const sql = getSql();

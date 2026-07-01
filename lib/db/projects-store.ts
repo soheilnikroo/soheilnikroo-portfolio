@@ -11,7 +11,6 @@ export type ProjectRow = {
   created_at: Date;
   updated_at: Date;
 };
-
 export async function listProjectRows(options?: { force?: boolean }): Promise<ProjectRow[]> {
   await ensureSchema(options);
   const sql = getSql();
@@ -20,24 +19,23 @@ export async function listProjectRows(options?: { force?: boolean }): Promise<Pr
   `;
   return [...rows];
 }
-
 export async function getProjectRowById(
   id: string,
-  options?: { force?: boolean },
+  options?: {
+    force?: boolean;
+  },
 ): Promise<ProjectRow | null> {
   await ensureSchema(options);
   const sql = getSql();
   const rows = await sql<ProjectRow[]>`SELECT * FROM projects WHERE id = ${id} LIMIT 1`;
   return rows[0] ?? null;
 }
-
 export async function getProjectRowBySlug(slug: string): Promise<ProjectRow | null> {
   await ensureSchema();
   const sql = getSql();
   const rows = await sql<ProjectRow[]>`SELECT * FROM projects WHERE slug = ${slug} LIMIT 1`;
   return rows[0] ?? null;
 }
-
 export async function createProjectRow(slug: string, data: Project): Promise<ProjectRow> {
   await ensureSchema({ force: true });
   const sql = getSql();
@@ -50,7 +48,6 @@ export async function createProjectRow(slug: string, data: Project): Promise<Pro
   if (!rows[0]) throw new Error("Failed to create project");
   return rows[0];
 }
-
 export async function updateProjectRow(
   id: string,
   slug: string,
@@ -65,14 +62,12 @@ export async function updateProjectRow(
   `;
   return rows[0] ?? null;
 }
-
 export async function deleteProjectRow(id: string): Promise<boolean> {
   await ensureSchema({ force: true });
   const sql = getSql();
   const rows = await sql<ProjectRow[]>`DELETE FROM projects WHERE id = ${id} RETURNING id`;
   return rows.length > 0;
 }
-
 export async function upsertProjectRow(slug: string, data: Project): Promise<void> {
   await ensureSchema({ force: true });
   const existing = await getProjectRowBySlug(slug);

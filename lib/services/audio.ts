@@ -1,6 +1,3 @@
-/**
- * Ambient audio service — HTMLAudio bed + sample cues.
- */
 import {
   musicBed,
   playOneShot,
@@ -12,12 +9,10 @@ import { AUDIO } from "@/lib/audio/paths";
 import type { SfxId } from "@/lib/audio/paths";
 
 export type AmbientCue = "hover" | "select" | "reveal" | "transition";
-
 export interface AmbientAudioOptions {
   bedSrc?: string;
   volume?: number;
 }
-
 export interface AmbientAudioController {
   readonly supported: boolean;
   readonly playing: boolean;
@@ -28,41 +23,33 @@ export interface AmbientAudioController {
   cue(cue: AmbientCue): void;
   dispose(): void;
 }
-
 const clamp01 = (n: number): number => Math.min(1, Math.max(0, n));
-
 const CUE_TO_SFX: Record<AmbientCue, SfxId> = {
   hover: "hover",
   select: "select",
   reveal: "reveal",
   transition: "transition",
 };
-
 const CUE_VOLUME: Record<AmbientCue, number> = {
   hover: 0.35,
   select: 0.55,
   reveal: 0.6,
   transition: 0.5,
 };
-
 class BrowserAmbientAudio implements AmbientAudioController {
   private readonly bedSrc?: string;
   private volume: number;
   private active = false;
-
   constructor(options?: AmbientAudioOptions) {
     this.bedSrc = options?.bedSrc;
     this.volume = clamp01(options?.volume ?? 0.5);
   }
-
   get supported(): boolean {
     return true;
   }
-
   get playing(): boolean {
     return this.active;
   }
-
   async play(): Promise<void> {
     unlockAudioEngine();
     if (!this.bedSrc) return;
@@ -70,12 +57,10 @@ class BrowserAmbientAudio implements AmbientAudioController {
     const ok = await musicBed.play(this.bedSrc);
     this.active = ok;
   }
-
   pause(): void {
     musicBed.stop();
     this.active = false;
   }
-
   async toggle(): Promise<boolean> {
     if (this.active) {
       this.pause();
@@ -84,22 +69,18 @@ class BrowserAmbientAudio implements AmbientAudioController {
     await this.play();
     return true;
   }
-
   setVolume(volume: number): void {
     this.volume = clamp01(volume);
     setAudioMasterVolume(this.volume);
   }
-
   cue(cue: AmbientCue): void {
     unlockAudioEngine();
     playOneShot(AUDIO.sfx[CUE_TO_SFX[cue]], CUE_VOLUME[cue]);
   }
-
   dispose(): void {
     this.pause();
   }
 }
-
 const noopController: AmbientAudioController = {
   supported: false,
   playing: false,
@@ -110,7 +91,6 @@ const noopController: AmbientAudioController = {
   cue: () => {},
   dispose: () => {},
 };
-
 export function createAmbientAudio(options?: AmbientAudioOptions): AmbientAudioController {
   if (typeof window === "undefined") return noopController;
   return new BrowserAmbientAudio(options);

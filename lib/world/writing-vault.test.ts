@@ -12,14 +12,12 @@ describe("vaultLayout", () => {
     expect(layout.resumeCx).toBeLessThan(layout.rowX0 + layout.spacing * 1.5);
     expect(layout.resumeCx).toBeLessThanOrEqual(DESIGN_WIDTH - 44);
   });
-
   it("opens the résumé chest early in the chapter", () => {
     const closed = vaultLayout(0.02, 1).resumeOpen;
     const open = vaultLayout(0.2, 1).resumeOpen;
     expect(open).toBeGreaterThan(closed);
   });
 });
-
 describe("vaultCameraFocusX", () => {
   it("starts on the résumé chest and pans toward blog chests", () => {
     const start = vaultCameraFocusX(0.05, 2);
@@ -27,7 +25,6 @@ describe("vaultCameraFocusX", () => {
     expect(later).toBeGreaterThan(start);
   });
 });
-
 describe("hitResumeChest", () => {
   it("hits the first chest when it is open", () => {
     const local = 0.25;

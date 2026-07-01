@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import * as React from "react";
 
@@ -7,13 +6,14 @@ export default function Error({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
+  error: Error & {
+    digest?: string;
+  };
   reset: () => void;
 }) {
   React.useEffect(() => {
     console.error(error);
   }, [error]);
-
   return (
     <section className="flex min-h-[82vh] items-center justify-center bg-[#05040b] px-6 text-center [font-family:var(--font-pixel),ui-monospace,monospace] text-white">
       <div className="w-full max-w-lg rounded-[6px] border-4 border-rose-400/40 bg-[#0d0b16] p-8 shadow-[6px_6px_0_rgba(0,0,0,0.6)]">

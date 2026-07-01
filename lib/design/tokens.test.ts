@@ -10,7 +10,6 @@ describe("design tokens", () => {
   it("easings are 4-point cubic-beziers", () => {
     expect(easings.standard).toHaveLength(4);
     expect(easing("spring")).toEqual([0.34, 1.56, 0.64, 1]);
-    // returns a mutable copy, not the frozen tuple
     expect(easing("standard")).not.toBe(easings.standard);
   });
   it("cssVar builds custom-property references", () => {

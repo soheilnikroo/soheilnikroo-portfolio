@@ -3,7 +3,6 @@ import { getAllPostMeta, getProfile, getProjects, getSkillGraph } from "@/lib/da
 import { getMilestones } from "@/lib/data/milestones";
 import { getWorldNarrative, trackHeightVh } from "@/lib/data/world-narrative";
 
-/** Shared props for the game island and the readable `/read` page. */
 export async function getWorldPageProps(): Promise<WorldExperienceProps> {
   const [profile, projects, graph, posts, milestoneList, world] = await Promise.all([
     getProfile(),
@@ -13,7 +12,6 @@ export async function getWorldPageProps(): Promise<WorldExperienceProps> {
     getMilestones(),
     getWorldNarrative(),
   ]);
-
   return {
     profileName: profile.name,
     role: profile.role,

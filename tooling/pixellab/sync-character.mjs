@@ -1,11 +1,4 @@
 #!/usr/bin/env node
-/**
- * Copy PixelLab character export frames into public/world/character/.
- *
- * Usage:
- *   node tooling/pixellab/sync-character.mjs
- *   node tooling/pixellab/sync-character.mjs art-bible/pixellab-exports
- */
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,15 +7,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "../..");
 const EXPORT_ROOT = join(ROOT, process.argv[2] ?? "art-bible/pixellab-exports");
 const DST = join(ROOT, "public/world/character");
-
-/** PixelLab export animation key → engine clip folder name. */
 const CLIP_MAP = {
   walking: "walk",
   running: "run",
   front_flip: "jump",
   animating: "idle",
 };
-
 function resolveExportDir(root) {
   const metaPath = join(root, "metadata.json");
   if (existsSync(metaPath)) {
@@ -35,7 +25,6 @@ function resolveExportDir(root) {
   if (match) return join(root, match.name);
   throw new Error(`No character export found under ${root}`);
 }
-
 function findAnimDir(base, name, dir) {
   const direct = join(base, "animations", name, dir);
   if (existsSync(direct)) return direct;
@@ -44,7 +33,6 @@ function findAnimDir(base, name, dir) {
   const match = readdirSync(parent).find((d) => d === dir || d.startsWith(`${dir}-`));
   return match ? join(parent, match) : null;
 }
-
 function copyFrames(srcDir, destDir, count, prefix = "frame_") {
   if (!srcDir || !existsSync(srcDir)) return 0;
   mkdirSync(destDir, { recursive: true });
@@ -59,27 +47,20 @@ function copyFrames(srcDir, destDir, count, prefix = "frame_") {
   }
   return copied;
 }
-
 function copyClip(srcBase, exportKey, clip, dirs, count) {
   for (const dir of dirs) {
     const n = copyFrames(findAnimDir(srcBase, exportKey, dir), join(DST, clip, dir), count);
     console.log(`  ${clip}/${dir}: ${n} frames`);
   }
 }
-
 const SRC = resolveExportDir(EXPORT_ROOT);
 console.log("Source:", SRC);
-
-// Fresh sync — remove stale clips from the old teenage-gamer export.
 if (existsSync(DST)) rmSync(DST, { recursive: true, force: true });
 mkdirSync(DST, { recursive: true });
-
 cpSync(join(SRC, "rotations/east.png"), join(DST, "idle/east.png"));
 cpSync(join(SRC, "rotations/west.png"), join(DST, "idle/west.png"));
-
 const animRoot = join(SRC, "animations");
 const animKeys = existsSync(animRoot) ? readdirSync(animRoot) : [];
-
 for (const key of animKeys) {
   const clip = CLIP_MAP[key];
   if (clip) {
@@ -87,8 +68,6 @@ for (const key of animKeys) {
     copyClip(SRC, key, clip, ["east", "west"], count);
   }
 }
-
-// Pull clip: PixelLab names it animating-<hash> (6 frames).
 const pullKey = animKeys.find((k) => k.startsWith("animating-") && k !== "animating");
 if (pullKey) {
   const count = readdirSync(join(animRoot, pullKey, "east")).filter((f) =>
@@ -99,5 +78,4 @@ if (pullKey) {
   console.warn("  pull: missing — aliasing walk");
   copyClip(SRC, "walking", "pull", ["east", "west"], 6);
 }
-
 console.log("Synced character clips to", DST);

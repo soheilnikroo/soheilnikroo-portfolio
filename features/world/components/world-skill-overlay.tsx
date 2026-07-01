@@ -1,12 +1,10 @@
 "use client";
-
 import { categoryColor } from "@/lib/world/skill-colors";
 
 import type { WorldSkill } from "./world-experience";
 
 export function WorldSkillOverlay({ skill, onClose }: { skill: WorldSkill; onClose: () => void }) {
   const accent = categoryColor(skill.category);
-
   return (
     <div
       className="pointer-events-auto absolute top-1/2 left-1/2 z-30 w-[min(22rem,88vw)] -translate-x-1/2 -translate-y-1/2 rounded-[4px] border-2 bg-[#0d0b16] px-5 py-4 shadow-[5px_5px_0_rgba(0,0,0,0.6)]"

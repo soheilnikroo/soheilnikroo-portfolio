@@ -1,12 +1,10 @@
 "use client";
-
 import { motion, useMotionValue, useSpring } from "motion/react";
 import type * as React from "react";
 
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { cn } from "@/lib/utils";
 
-/** 3D pointer tilt with a subtle tap press. Falls back to a plain div if reduced. */
 export function Tilt({
   children,
   className,
@@ -21,11 +19,9 @@ export function Tilt({
   const ry = useMotionValue(0);
   const srx = useSpring(rx, { stiffness: 150, damping: 15, mass: 0.5 });
   const sry = useSpring(ry, { stiffness: 150, damping: 15, mass: 0.5 });
-
   if (reduced) {
     return <div className={className}>{children}</div>;
   }
-
   return (
     <motion.div
       onPointerMove={(event) => {

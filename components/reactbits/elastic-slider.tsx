@@ -1,24 +1,16 @@
 "use client";
-
 import { animate, motion, useMotionValue, useMotionValueEvent, useTransform } from "motion/react";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-/**
- * React Bits — ElasticSlider.
- * A draggable slider whose track stretches elastically when dragged past its
- * bounds, then springs back. Reports its value (startingValue..maxValue) via onChange.
- */
 const MAX_OVERFLOW = 50;
-
 function decay(value: number, max: number): number {
   if (max === 0) return 0;
   const entry = value / max;
   const sigmoid = 2 * (1 / (1 + Math.exp(-entry)) - 0.5);
   return sigmoid * max;
 }
-
 export type ElasticSliderProps = {
   defaultValue?: number;
   startingValue?: number;
@@ -30,7 +22,6 @@ export type ElasticSliderProps = {
   onChange?: (value: number) => void;
   className?: string;
 };
-
 export function ElasticSlider({
   defaultValue = 50,
   startingValue = 0,
@@ -48,11 +39,9 @@ export function ElasticSlider({
   const clientX = useMotionValue(0);
   const overflow = useMotionValue(0);
   const scale = useMotionValue(1);
-
   React.useEffect(() => {
     setValue(defaultValue);
   }, [defaultValue]);
-
   useMotionValueEvent(clientX, "change", (latest) => {
     const el = sliderRef.current;
     if (!el) return;
@@ -70,7 +59,6 @@ export function ElasticSlider({
     }
     overflow.jump(decay(val, MAX_OVERFLOW));
   });
-
   const commit = (clientXPos: number) => {
     const el = sliderRef.current;
     if (!el) return;
@@ -82,20 +70,16 @@ export function ElasticSlider({
     onChange?.(next);
     clientX.jump(clientXPos);
   };
-
   const handlePointerMove = (e: React.PointerEvent) => {
     if (e.buttons > 0) commit(e.clientX);
   };
-
   const handlePointerDown = (e: React.PointerEvent) => {
     e.currentTarget.setPointerCapture(e.pointerId);
     commit(e.clientX);
   };
-
   const handlePointerUp = () => {
     animate(overflow, 0, { type: "spring", bounce: 0.5 });
   };
-
   const trackScaleX = useTransform(overflow, (latest) => {
     const el = sliderRef.current;
     if (!el) return 1;
@@ -103,11 +87,9 @@ export function ElasticSlider({
     return width > 0 ? 1 + latest / width : 1;
   });
   const trackScaleY = useTransform(overflow, [0, MAX_OVERFLOW], [1, 0.7]);
-
   const total = maxValue - startingValue;
   const rangePct = total === 0 ? 0 : ((value - startingValue) / total) * 100;
   const transformOrigin = region === "left" ? "right" : region === "right" ? "left" : "center";
-
   return (
     <div className={cn("flex items-center gap-2", className)}>
       {leftIcon ? <span className="shrink-0 text-white/55">{leftIcon}</span> : null}

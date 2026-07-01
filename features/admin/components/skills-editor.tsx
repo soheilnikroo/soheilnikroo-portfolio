@@ -1,5 +1,4 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
@@ -14,14 +13,12 @@ export function SkillsEditor({ initial }: { initial: SkillGraph }) {
   const [graph, setGraph] = React.useState(initial);
   const [error, setError] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
-
   function updateNode(index: number, patch: Partial<SkillNode>) {
     setGraph((prev) => ({
       ...prev,
       nodes: prev.nodes.map((n, i) => (i === index ? { ...n, ...patch } : n)),
     }));
   }
-
   function addNode() {
     setGraph((prev) => ({
       ...prev,
@@ -37,7 +34,6 @@ export function SkillsEditor({ initial }: { initial: SkillGraph }) {
       ],
     }));
   }
-
   function removeNode(index: number) {
     const id = graph.nodes[index]?.id;
     setGraph((prev) => ({
@@ -45,7 +41,6 @@ export function SkillsEditor({ initial }: { initial: SkillGraph }) {
       edges: prev.edges.filter((e) => e.source !== id && e.target !== id),
     }));
   }
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -69,7 +64,6 @@ export function SkillsEditor({ initial }: { initial: SkillGraph }) {
     setError("Failed to save skills.");
     setSaving(false);
   }
-
   return (
     <form onSubmit={onSubmit} className="grid gap-6">
       <div>

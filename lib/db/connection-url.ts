@@ -1,4 +1,3 @@
-/** Parse DATABASE_URL for logging and client options (never log the password). */
 export function describeDatabaseUrl(url: string): string {
   try {
     const normalized = url.replace(/^postgresql:/i, "http:");
@@ -11,16 +10,12 @@ export function describeDatabaseUrl(url: string): string {
     return "invalid DATABASE_URL";
   }
 }
-
 export function isSupabaseUrl(url: string): boolean {
   return url.includes("supabase.com") || url.includes("supabase.co");
 }
-
-/** Transaction pooler (6543) cannot use prepared statements. Session pooler (5432) can. */
 export function isTransactionPooler(url: string): boolean {
   return isSupabaseUrl(url) && /:6543(?:\/|$)/.test(url);
 }
-
 export function getPostgresClientOptions(url: string) {
   return {
     max: 10,

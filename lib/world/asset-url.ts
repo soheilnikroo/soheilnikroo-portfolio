@@ -1,4 +1,3 @@
-/** Cache-bust static world art on each deploy without renaming files in public/. */
 export function worldAssetUrl(path: string): string {
   const version = process.env.NEXT_PUBLIC_ASSET_VERSION?.trim();
   if (!version) return path;

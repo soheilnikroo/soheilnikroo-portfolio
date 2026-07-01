@@ -1,11 +1,9 @@
 import { clamp01, groundY } from "@/lib/engine";
 import { DESIGN_HEIGHT, DESIGN_WIDTH } from "@/lib/engine/viewport";
 
-/** Match chapters.ts work chapter pacing. */
 export function chapterProgress(local: number, start = 0.06, end = 0.92): number {
   return clamp01((local - start) / (end - start));
 }
-
 export interface BridgeSpan {
   readonly idx: number;
   readonly cx: number;
@@ -15,7 +13,6 @@ export interface BridgeSpan {
   readonly visible: boolean;
   readonly rise: number;
 }
-
 export interface WorkBridgeLayout {
   readonly n: number;
   readonly gapLeft: number;
@@ -25,7 +22,6 @@ export interface WorkBridgeLayout {
   readonly buildT: number;
   readonly spans: readonly BridgeSpan[];
 }
-
 export function workBridgeLayout(
   local: number,
   projectCount: number,
@@ -39,7 +35,6 @@ export function workBridgeLayout(
   const gapRight = width * 0.94;
   const deckY = Math.round(gy - height * 0.16);
   const segW = (gapRight - gapLeft) / n;
-
   const spans: BridgeSpan[] = [];
   for (let i = 0; i < n; i += 1) {
     const t = clamp01((buildT - i / n) / (1 / n));
@@ -54,14 +49,17 @@ export function workBridgeLayout(
       rise,
     });
   }
-
   return { n, gapLeft, gapRight, deckY, segW, buildT, spans };
 }
-
 export function mysteryBoxBounds(
   span: BridgeSpan,
   time = 0,
-): { cx: number; cy: number; w: number; h: number } {
+): {
+  cx: number;
+  cy: number;
+  w: number;
+  h: number;
+} {
   const s = Math.max(10, Math.round(span.size));
   const bob = span.builtT >= 0.999 ? Math.sin(time / 320 + span.idx) * 2 : 0;
   const boxH = s;
@@ -73,14 +71,15 @@ export function mysteryBoxBounds(
     h: Math.max(44, boxH + 16),
   };
 }
-
-/** Map virtual coords to viewport % for DOM overlay buttons. */
 export function virtualToPercent(
   vx: number,
   vy: number,
   width = DESIGN_WIDTH,
   height = DESIGN_HEIGHT,
-): { xPct: number; yPct: number } {
+): {
+  xPct: number;
+  yPct: number;
+} {
   return {
     xPct: (vx / width) * 100,
     yPct: (vy / height) * 100,

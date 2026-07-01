@@ -8,7 +8,6 @@ export const metadata: Metadata = {
   title: "Admin — Story",
   robots: { index: false, follow: false },
 };
-
 export default async function AdminStoryPage() {
   const milestones = await getMilestones();
   return <MilestonesEditor initial={milestones} />;

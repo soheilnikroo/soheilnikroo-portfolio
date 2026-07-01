@@ -1,6 +1,3 @@
-/**
- * Game SFX — Kenney Interface Sounds (CC0).
- */
 import {
   playOneShot,
   setAudioMasterVolume,
@@ -18,23 +15,18 @@ const VOL = {
   metaSwell: 0.65,
   transition: 0.55,
 } as const;
-
 export function unlockAudio(): void {
   unlockAudioEngine();
 }
-
 export function setMuted(value: boolean): void {
   setAudioMuted(value);
 }
-
 export function setSfxVolume(scale: number): void {
   setAudioMasterVolume(scale);
 }
-
 function play(id: keyof typeof AUDIO.sfx, volume: number): void {
   playOneShot(AUDIO.sfx[id], volume);
 }
-
 export const sfx = {
   click: (): void => play("click", VOL.click),
   step: (): void => play("click", 0.35),

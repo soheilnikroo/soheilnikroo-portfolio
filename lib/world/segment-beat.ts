@@ -1,17 +1,18 @@
-/** Scroll-synced “one beat at a time” focus — peaks mid-segment, fades at edges. */
 export interface SegmentBeat {
   readonly idx: number;
   readonly opacity: number;
   readonly scale: number;
   readonly y: number;
 }
-
 export function segmentBeat(
   local: number,
   count: number,
   zoneStart: number,
   zoneEnd: number,
-  opts?: { readonly fadeIn?: number; readonly fadeOut?: number },
+  opts?: {
+    readonly fadeIn?: number;
+    readonly fadeOut?: number;
+  },
 ): SegmentBeat | null {
   if (count <= 0) return null;
   if (local < zoneStart || local >= zoneEnd) return null;

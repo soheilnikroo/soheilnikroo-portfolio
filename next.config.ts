@@ -8,7 +8,6 @@ const threePatched = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
   "lib/world/three-patched.ts",
 );
-
 const nextConfig: NextConfig = {
   pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
   images: {
@@ -38,7 +37,6 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Cache-Control",
-            // Revalidate after deploys — filenames are stable but content changes.
             value: "public, max-age=86400, stale-while-revalidate=604800",
           },
         ],
@@ -55,9 +53,6 @@ const nextConfig: NextConfig = {
     ];
   },
 };
-
-// Turbopack requires remark/rehype plugins to be referenced by string name
-// (serializable config) because JS functions cannot be passed to the Rust core.
 const withMDX = createMDX({
   extension: /\.mdx?$/,
   options: {
@@ -69,5 +64,4 @@ const withMDX = createMDX({
     ],
   },
 });
-
 export default withMDX(nextConfig);

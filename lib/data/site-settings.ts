@@ -69,14 +69,12 @@ export const fallbackSiteSettings: SiteSettings = SiteSettingsSchema.parse({
     },
   },
 });
-
 function warnDb(error: unknown): void {
   console.warn(
     "[site] database unavailable — using bundled fallback. Set DATABASE_URL and run `pnpm db:seed`.",
     error instanceof Error ? error.message : error,
   );
 }
-
 async function readSiteSettings(): Promise<SiteSettings> {
   try {
     const row = await getSiteContentRow("site");
@@ -87,27 +85,21 @@ async function readSiteSettings(): Promise<SiteSettings> {
     return fallbackSiteSettings;
   }
 }
-
 const getSiteSettingsCached = unstable_cache(readSiteSettings, ["site-settings"], {
   tags: [CONTENT_CACHE_TAG],
   revalidate: 60,
 });
-
 export async function getSiteSettings(): Promise<SiteSettings> {
   if (process.env.NODE_ENV === "test") return readSiteSettings();
   return getSiteSettingsCached();
 }
-
 export async function saveSiteSettings(data: SiteSettings): Promise<void> {
   const parsed = SiteSettingsSchema.parse(data);
   await upsertSiteContentRow("site", parsed);
 }
-
-/** URL stays in env so deploy targets stay configurable. */
 export function getSiteUrl(): string {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "https://soheilnikroo.dev";
 }
-
 export async function getSiteConfig() {
   const settings = await getSiteSettings();
   return { ...settings, url: getSiteUrl() };

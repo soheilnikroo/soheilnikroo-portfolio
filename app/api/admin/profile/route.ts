@@ -7,13 +7,11 @@ import { ProfileSchema } from "@/lib/schemas";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
 export async function GET() {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const profile = await getProfile();
   return NextResponse.json({ profile });
 }
-
 export async function PUT(request: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const json = await request.json().catch(() => null);

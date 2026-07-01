@@ -1,5 +1,4 @@
 "use client";
-
 import { Volume2, VolumeX } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -46,7 +45,6 @@ const MetaRoomScene = dynamic(
     ),
   { ssr: false },
 );
-
 export interface WorldProject {
   readonly slug: string;
   readonly title: string;
@@ -71,7 +69,6 @@ export interface WorldSkill {
   readonly level: number;
   readonly summary: string;
 }
-
 export interface WorldExperienceProps {
   readonly profileName: string;
   readonly role: string;
@@ -86,12 +83,15 @@ export interface WorldExperienceProps {
   readonly socials: readonly WorldSocial[];
   readonly resumeUrl?: string;
   readonly introProse: string;
-  readonly chapterMeta: readonly { id: string; title: string; weight: number }[];
+  readonly chapterMeta: readonly {
+    id: string;
+    title: string;
+    weight: number;
+  }[];
   readonly chapterGoals: Readonly<Record<string, string>>;
   readonly storyBeats: Readonly<Record<string, readonly StoryBeat[]>>;
   readonly trackHeightVh: number;
 }
-
 export function WorldExperience(props: WorldExperienceProps) {
   const {
     profileName,
@@ -126,7 +126,6 @@ export function WorldExperience(props: WorldExperienceProps) {
   const [workAnimTick, setWorkAnimTick] = React.useState(0);
   const [metaSecretRevealed, setMetaSecretRevealed] = React.useState(false);
   const [metaGameFrame, setMetaGameFrame] = React.useState<HTMLCanvasElement | null>(null);
-
   const workOpenRef = React.useRef<Map<number, number>>(new Map());
   const metaFrameRef = React.useRef<HTMLCanvasElement | null>(null);
   const workOpenTargetRef = React.useRef<Map<number, number>>(new Map());
@@ -135,7 +134,6 @@ export function WorldExperience(props: WorldExperienceProps) {
   const lastResumeChestRef = React.useRef(false);
   const lastProgressRef = React.useRef(0);
   const forceRedrawRef = React.useRef<(() => void) | null>(null);
-
   const trackRef = React.useRef<HTMLDivElement>(null);
   const stageRef = React.useRef<HTMLElement>(null);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -147,7 +145,6 @@ export function WorldExperience(props: WorldExperienceProps) {
   const viewportRef = React.useRef<GameViewportRect | null>(null);
   const roomPrefetchedRef = React.useRef(false);
   const [metaRoomReady, setMetaRoomReady] = React.useState(false);
-
   const contactChapterIndex = React.useMemo(
     () =>
       Math.max(
@@ -158,8 +155,6 @@ export function WorldExperience(props: WorldExperienceProps) {
   );
   const contactChapterIndexRef = React.useRef(contactChapterIndex);
   contactChapterIndexRef.current = contactChapterIndex;
-
-  // Warm the HTTP cache + JS chunks as soon as the experience mounts.
   React.useEffect(() => {
     if (roomPrefetchedRef.current) return;
     roomPrefetchedRef.current = true;
@@ -172,15 +167,12 @@ export function WorldExperience(props: WorldExperienceProps) {
     () => ({ name: profileName, role, tagline, summary, location }),
     [profileName, role, tagline, summary, location],
   );
-
   React.useEffect(() => {
     setMounted(true);
     const probe = document.createElement("canvas");
     if (!probe.getContext("2d")) setSupported(false);
   }, []);
-
   const enabled = mounted && !reduced && supported;
-
   React.useEffect(() => {
     setChapterAudioMuted(!soundEnabled);
     if (soundEnabled) {
@@ -188,28 +180,23 @@ export function WorldExperience(props: WorldExperienceProps) {
       unlockChapterAudio();
     }
   }, [soundEnabled]);
-
   React.useEffect(() => {
     setSfxVolume(volume);
     setChapterMusicVolume(volume);
   }, [volume]);
-
   React.useEffect(() => {
     setBedSuppressed(true);
     return () => setBedSuppressed(false);
   }, [setBedSuppressed]);
-
   React.useEffect(() => {
     openedWorkBoxRef.current = openedWorkBox;
   }, [openedWorkBox]);
-
   React.useEffect(() => {
     if (!enabled) return;
     const canvas = canvasRef.current;
     const track = trackRef.current;
     const stageEl = stageRef.current;
     if (!canvas || !track || !stageEl) return;
-
     let disposed = false;
     let timeline: ScrollTimeline | null = null;
     let surface: Canvas2DSurface | null = null;
@@ -226,7 +213,6 @@ export function WorldExperience(props: WorldExperienceProps) {
     let lastChestLootIdx = -1;
     let revealNodes: NodeListOf<HTMLElement> | null = null;
     let fadeNodes: NodeListOf<HTMLElement> | null = null;
-
     const syncGameViewport = (): void => {
       const vp = gameViewportRef.current;
       if (!vp || !surface) return;
@@ -238,7 +224,6 @@ export function WorldExperience(props: WorldExperienceProps) {
       vp.style.height = `${displayHeight}px`;
       viewportRef.current = gameVp;
     };
-
     const sizeNow = (): void => {
       if (!surface) return;
       const rect = stageEl.getBoundingClientRect();
@@ -249,9 +234,8 @@ export function WorldExperience(props: WorldExperienceProps) {
         dpr,
       );
       syncGameViewport();
-      lastRenderedP = -1; // force a redraw at the new size
+      lastRenderedP = -1;
     };
-
     const revealOverlay = (index: number, local: number): void => {
       if (index !== overlayIndex) {
         overlayIndex = index;
@@ -278,7 +262,6 @@ export function WorldExperience(props: WorldExperienceProps) {
           el.style.transform = `translateY(${(-(1 - t) * 10).toFixed(1)}px)`;
         });
       }
-      // Fade contact DOM overlay during meta desk pull-back.
       if (index === 4 && local > 0.38) {
         const block = blockRefs.current[4];
         const metaFade = block?.querySelectorAll<HTMLElement>("[data-meta-fade]");
@@ -289,7 +272,6 @@ export function WorldExperience(props: WorldExperienceProps) {
         });
       }
     };
-
     const lerpWorkOpen = (): boolean => {
       let dirty = false;
       for (const [idx, current] of workOpenRef.current) {
@@ -310,16 +292,13 @@ export function WorldExperience(props: WorldExperienceProps) {
       }
       return dirty;
     };
-
     const syncWritingVault = (active: { index: number; local: number }): void => {
       if (active.index !== 3) {
         lastResumeChestRef.current = false;
         return;
       }
-
       const layout = vaultLayout(active.local, posts.length);
       const { resumeOpen, buildT, postN } = layout;
-
       if (resumeOpen > 0.4 && !lastResumeChestRef.current) {
         lastResumeChestRef.current = true;
         unlockAudio();
@@ -327,9 +306,7 @@ export function WorldExperience(props: WorldExperienceProps) {
       } else if (resumeOpen < 0.15) {
         lastResumeChestRef.current = false;
       }
-
       if (postN === 0) return;
-
       const idx = Math.min(postN - 1, Math.floor(buildT * postN));
       const t = clamp01(buildT * postN - idx);
       const openRaw = clamp01((t - 0.15) / 0.55);
@@ -349,12 +326,10 @@ export function WorldExperience(props: WorldExperienceProps) {
         setChestLoot(null);
       }
     };
-
     const onProgress = (p: number): void => {
       lastProgress = p;
       lastProgressRef.current = p;
       if (!stage) return;
-
       const workAnimDirty = lerpWorkOpen();
       syncWritingVault(stage.resolveActive(p));
       const now = performance.now();
@@ -375,8 +350,6 @@ export function WorldExperience(props: WorldExperienceProps) {
         syncChapterMusic({ chapterIndex: active.index, chapterLocal: active.local });
       }
       if (workAnimDirty) setWorkAnimTick((t) => t + 1);
-
-      // Work chapter: reset opened boxes when scrolling back before they're built.
       if (active.index === 1 && projects.length > 0) {
         const bridge = workBridgeLayout(active.local, projects.length);
         for (const span of bridge.spans) {
@@ -390,8 +363,6 @@ export function WorldExperience(props: WorldExperienceProps) {
           }
         }
       }
-
-      // Meta swell SFX when desk POV begins.
       if (active.index === contactChapterIndexRef.current) {
         const metaT = clamp01((active.local - 0.38) / 0.58);
         if (metaT > 0.15 && !lastMetaSwellRef.current) {
@@ -400,9 +371,6 @@ export function WorldExperience(props: WorldExperienceProps) {
         } else if (metaT < 0.08) {
           lastMetaSwellRef.current = false;
         }
-        // Feed the *live* game canvas straight into the center monitor so the
-        // 2D fullscreen view and the 3D screen show the identical image — the
-        // crossfade between them becomes invisible.
         if (metaT > 0.01) {
           const frame = canvasRef.current;
           if (frame && frame !== metaFrameRef.current) {
@@ -431,7 +399,6 @@ export function WorldExperience(props: WorldExperienceProps) {
           setChestLoot(null);
         }
       }
-      // Which skill station is currently active (chapter index 2).
       if (active.index === 2 && skills.length > 0) {
         const skillN = Math.min(SKILL_SPOTLIGHT_COUNT, skills.length);
         const buildT = chapterProgress(active.local, 0.04, 0.96);
@@ -440,12 +407,8 @@ export function WorldExperience(props: WorldExperienceProps) {
           lastSkillIdx = si;
         }
       }
-
       if (progressRef.current) progressRef.current.style.width = `${(p * 100).toFixed(2)}%`;
-
       revealOverlay(active.index, active.local);
-
-      // Narration: pick the last beat whose threshold we've passed in this chapter.
       const lines = storyBeats[active.id] ?? [];
       let bi = -1;
       for (let i = 0; i < lines.length; i += 1) {
@@ -465,13 +428,11 @@ export function WorldExperience(props: WorldExperienceProps) {
         });
       }
     };
-
     const startAudioOnGesture = (): void => {
       unlockAudio();
       unlockChapterAudio();
       syncChapterMusic({ chapterIndex: lastIndex >= 0 ? lastIndex : 0, chapterLocal: 0 });
     };
-
     const boot = async (): Promise<void> => {
       const [engine, chaptersMod] = await Promise.all([
         import("@/lib/engine"),
@@ -505,15 +466,10 @@ export function WorldExperience(props: WorldExperienceProps) {
       stage = new engine.Stage(surface, character, chapters);
       sizeNow();
       onProgress(lastProgress);
-
       const narrative = document.getElementById("world-narrative");
       if (narrative) narrative.hidden = true;
       const splash = document.getElementById("world-splash");
       if (splash) splash.style.display = "none";
-
-      // maxRate caps how fast the story can play regardless of how hard the user
-      // scrolls — lower = more cinematic. 0.08 ≈ 12.5s minimum for a full flick-
-      // through (was racing through in ~6s). smoothing adds a little weight/glide.
       timeline = new engine.ScrollTimeline({
         track,
         onProgress,
@@ -536,16 +492,12 @@ export function WorldExperience(props: WorldExperienceProps) {
       );
       viewObs.observe(track);
       timeline.start();
-
       forceRedrawRef.current = () => onProgress(lastProgress);
-
       window.addEventListener("pointerdown", startAudioOnGesture, { once: true });
       window.addEventListener("keydown", startAudioOnGesture, { once: true });
       window.addEventListener("wheel", startAudioOnGesture, { once: true, passive: true });
     };
-
     boot();
-
     return () => {
       disposed = true;
       timeline?.stop();
@@ -559,7 +511,6 @@ export function WorldExperience(props: WorldExperienceProps) {
       if (narrative) narrative.hidden = false;
     };
   }, [enabled, projects.length, posts.length, skills, storyProfile, milestones, posts, storyBeats]);
-
   React.useEffect(() => {
     if (!enabled) return;
     const onKey = (e: KeyboardEvent): void => {
@@ -584,9 +535,6 @@ export function WorldExperience(props: WorldExperienceProps) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [enabled, activeIndex]);
-
-  // When the experience can't (or shouldn't) run, reveal the readable page and
-  // drop the dark splash so there is never a blank or flashing screen.
   React.useEffect(() => {
     if (!mounted || enabled) return;
     const narrative = document.getElementById("world-narrative");
@@ -594,19 +542,15 @@ export function WorldExperience(props: WorldExperienceProps) {
     const splash = document.getElementById("world-splash");
     if (splash) splash.style.display = "none";
   }, [mounted, enabled]);
-
   React.useEffect(() => {
     if (activeIndex !== contactChapterIndex || chapterLocal < 0.38 + 0.58 * 0.45) {
       setMetaSecretRevealed(false);
     }
   }, [activeIndex, chapterLocal, contactChapterIndex]);
-
   React.useEffect(() => {
     if (activeIndex !== contactChapterIndex) setMetaRoomReady(false);
   }, [activeIndex, contactChapterIndex]);
-
   if (!enabled) return null;
-
   const activeTitle = chapterMeta[activeIndex]?.title ?? "";
   const activeId = chapterMeta[activeIndex]?.id ?? "intro";
   const chapterGoal = chapterGoals[activeId] ?? "";
@@ -633,21 +577,13 @@ export function WorldExperience(props: WorldExperienceProps) {
   const spotlightSkill = skillBeat ? skillList[skillBeat.idx] : null;
   const metaReveal =
     activeIndex === contactChapterIndex ? clamp01((chapterLocal - 0.38) / 0.58) : 0;
-  // Mount the 3D scene early in the contact chapter so the GLB parses during the
-  // rooftop walk — well before the crossfade at metaReveal ≈ 0.26.
   const metaSceneMounted = activeIndex === contactChapterIndex && chapterLocal > 0.06;
-  // The 3D room mounts and holds tight on the center monitor (progress < ~0.12)
-  // while the 2D canvas crossfades out beneath it — both show the same live
-  // image, so the swap is invisible — then the camera cranes back to isometric.
   const metaRoomProgress = metaRoomReady ? clamp01((metaReveal - 0.3) / 0.7) : 0;
   const metaRoomOpacity = metaRoomReady ? clamp01((metaReveal - 0.26) / 0.1) : 0;
   const metaCanvasOpacity = 1 - clamp01((metaReveal - 0.28) / 0.12);
-  // Cinematic depth/vignette swells through the pull-back, then eases off once settled.
   const metaVignette =
     clamp01((metaReveal - 0.3) / 0.25) * (1 - clamp01((metaReveal - 0.9) / 0.1) * 0.6);
-  // Hand control to the visitor only once the room has fully settled.
   const metaInteractive = metaReveal > 0.94;
-  // How far into the 2D→3D handoff we are (fades the floating quest-line UI).
   const metaHandoff = clamp01((metaReveal - 0.28) / 0.12);
   const metaEasterEggVisible = metaReveal > 0.82;
   const contactBeats = storyBeats.contact ?? [];
@@ -657,7 +593,6 @@ export function WorldExperience(props: WorldExperienceProps) {
       : activeIndex === contactChapterIndex && metaHandoff > 0.15
         ? questLine.opacity * (1 - clamp01(metaHandoff / 0.85))
         : questLine.opacity;
-
   const toggleMute = (): void => {
     unlockAudio();
     unlockChapterAudio();
@@ -667,7 +602,6 @@ export function WorldExperience(props: WorldExperienceProps) {
       syncChapterMusic({ chapterIndex: activeIndex, chapterLocal });
     }
   };
-
   const spawnPing = (clientX: number, clientY: number): void => {
     const layer = pingLayerRef.current;
     if (!layer) return;
@@ -687,7 +621,6 @@ export function WorldExperience(props: WorldExperienceProps) {
     );
     anim.onfinish = () => ping.remove();
   };
-
   const downloadResume = (): void => {
     if (!resumeUrl) return;
     unlockAudio();
@@ -700,9 +633,6 @@ export function WorldExperience(props: WorldExperienceProps) {
       a.rel = "noopener";
       a.click();
     };
-    // Force a true download via a blob when the file is reachable (works
-    // same-origin, or cross-origin when CORS allows). The `download` attribute is
-    // ignored on cross-origin links, so fall back to opening it in a new tab.
     fetch(url)
       .then((r) => (r.ok ? r.blob() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((blob) => {
@@ -717,7 +647,6 @@ export function WorldExperience(props: WorldExperienceProps) {
     setNote("Résumé downloaded");
     window.setTimeout(() => setNote((n) => (n === "Résumé downloaded" ? null : n)), 1600);
   };
-
   const openWorkBox = (idx: number): void => {
     if (!workBridge?.spans[idx]?.visible) return;
     workOpenTargetRef.current.set(idx, 1);
@@ -727,21 +656,17 @@ export function WorldExperience(props: WorldExperienceProps) {
     sfx.boxOpen();
     forceRedrawRef.current?.();
   };
-
   const onStagePointerDown = (e: React.PointerEvent<HTMLDivElement>): void => {
     const target = e.target;
     if (!(target instanceof HTMLElement)) return;
     if (target.closest("a, button, [role='button'], input, textarea")) return;
-
     unlockAudio();
     sfx.click();
     spawnPing(e.clientX, e.clientY);
-
     const track = trackRef.current;
     const stageEl = stageRef.current;
     const viewport = viewportRef.current;
     if (!track || !stageEl || !viewport) return;
-
     void import("@/lib/engine").then(
       ({ classifyTapZone, clientToVirtual, nudgeScrollProgress, SCROLL_NUDGE }) => {
         const virtual = clientToVirtual(
@@ -751,7 +676,6 @@ export function WorldExperience(props: WorldExperienceProps) {
           stageEl.getBoundingClientRect(),
         );
         if (!virtual) return;
-
         if (activeIndex === 1 && workBridge) {
           for (const span of workBridge.spans) {
             if (!span.visible) continue;
@@ -767,7 +691,6 @@ export function WorldExperience(props: WorldExperienceProps) {
             }
           }
         }
-
         if (activeIndex === 3 && resumeUrl) {
           const postN = Math.min(4, Math.max(0, posts.length));
           if (hitResumeChest(virtual.x, virtual.y, chapterLocal, postN, performance.now())) {
@@ -775,7 +698,6 @@ export function WorldExperience(props: WorldExperienceProps) {
             return;
           }
         }
-
         const nudge = activeIndex === 2 ? SKILLS_SCROLL_NUDGE : SCROLL_NUDGE;
         const zone = classifyTapZone(virtual.x, virtual.y);
         if (zone === "forward") {
@@ -790,7 +712,6 @@ export function WorldExperience(props: WorldExperienceProps) {
       },
     );
   };
-
   return (
     <div ref={trackRef} style={{ height: `${scrollTrackHeightVh}vh` }} className="relative">
       <section
@@ -809,9 +730,7 @@ export function WorldExperience(props: WorldExperienceProps) {
           className="absolute inset-0 block h-full w-full"
           style={{ opacity: metaCanvasOpacity }}
         />
-        {/* Mount (and start loading the GLB) early in the contact chapter so the
-            heavy model is parsed before the camera needs to hold on the wide
-            center monitor. Stays invisible until anchors are ready + crossfade. */}
+
         {metaSceneMounted ? (
           <div
             className="absolute inset-0 z-[15]"
@@ -829,7 +748,7 @@ export function WorldExperience(props: WorldExperienceProps) {
               interactive={metaInteractive}
               onReady={() => setMetaRoomReady(true)}
             />
-            {/* Cinematic vignette — fakes shallow depth + frames the shot. */}
+
             <div
               className="pointer-events-none absolute inset-0 z-[16]"
               style={{
@@ -852,14 +771,13 @@ export function WorldExperience(props: WorldExperienceProps) {
             />
           </div>
         ) : null}
-        {/* Click / tap feedback */}
+
         <div
           ref={pingLayerRef}
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 z-[25] overflow-hidden"
         />
 
-        {/* Progress + chapter label */}
         <div aria-hidden="true" className="absolute inset-x-0 top-0 z-20 h-1 bg-white/10">
           <div
             ref={progressRef}
@@ -891,16 +809,13 @@ export function WorldExperience(props: WorldExperienceProps) {
           </Link>
         </div>
 
-        {/* Narration — quest line inside the game frame */}
         <p ref={captionRef} aria-live="polite" style={{ opacity: 0 }} className="sr-only" />
 
-        {/* Game-aligned overlay — matches the letterboxed 480×270 viewport. */}
         <div
           ref={gameViewportRef}
           className="pointer-events-none absolute z-10 overflow-hidden"
           aria-hidden={false}
         >
-          {/* Quest narration — thin line above the billboard */}
           <p
             aria-hidden="true"
             style={{ opacity: questLineOpacity }}
@@ -908,9 +823,8 @@ export function WorldExperience(props: WorldExperienceProps) {
           >
             {questLine.text}
           </p>
-          {/* Overlay blocks — one per chapter; only the active is shown. */}
+
           <div className="pointer-events-none absolute inset-0">
-            {/* 0 — Title gate: speech bubble above the character + scroll prompt; fades on first scroll. */}
             <ChapterBlock index={0} activeIndex={activeIndex} blockRefs={blockRefs}>
               {chapterLocal < 0.14 ? (
                 <GameDialogueBox
@@ -944,9 +858,6 @@ export function WorldExperience(props: WorldExperienceProps) {
               ) : null}
             </ChapterBlock>
 
-            {/* 1 — Work: each role is a "?" mystery box on the bridge; its card rises
-                 above the span that is currently locking in (matches the canvas box
-                 x = 0.3 + (0.64/n)·(idx+0.5), clamped so edge cards stay on screen). */}
             <ChapterBlock index={1} activeIndex={activeIndex} blockRefs={blockRefs}>
               {openedProject && openedOpenT > 0.35 ? (
                 <GameDialogueBox
@@ -970,7 +881,6 @@ export function WorldExperience(props: WorldExperienceProps) {
               ) : null}
             </ChapterBlock>
 
-            {/* 2 — Skills: one skill spotlight; tap for full stats */}
             <ChapterBlock index={2} activeIndex={activeIndex} blockRefs={blockRefs}>
               {spotlightSkill && skillBeat ? (
                 <GameDialogueBox
@@ -999,7 +909,6 @@ export function WorldExperience(props: WorldExperienceProps) {
               ) : null}
             </ChapterBlock>
 
-            {/* 3 — Writing: treasure billboard when a blog chest opens */}
             <ChapterBlock index={3} activeIndex={activeIndex} blockRefs={blockRefs}>
               {chestLoot ? (
                 <GameDialogueBox
@@ -1039,7 +948,6 @@ export function WorldExperience(props: WorldExperienceProps) {
               ) : null}
             </ChapterBlock>
 
-            {/* 4 — Contact: rooftop narration only — socials & résumé live in the 3D room. */}
             <ChapterBlock index={4} activeIndex={activeIndex} blockRefs={blockRefs}>
               {chapterLocal < 0.28 ? (
                 <GameDialogueBox
@@ -1091,7 +999,6 @@ export function WorldExperience(props: WorldExperienceProps) {
           ) : null}
         </output>
 
-        {/* Skill stat card — opens on tap, closes on ✕. */}
         {selectedSkill && activeIndex === 2 ? (
           <WorldSkillOverlay skill={selectedSkill} onClose={() => setSelectedSkill(null)} />
         ) : null}

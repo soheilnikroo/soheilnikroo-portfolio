@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
@@ -19,7 +18,6 @@ export function AdminDashboard({
   const router = useRouter();
   const [posts, setPosts] = React.useState(initialPosts);
   const [busy, setBusy] = React.useState<string | null>(null);
-
   async function onDelete(post: AdminPost) {
     if (!window.confirm(`Delete “${post.title}”? This cannot be undone.`)) return;
     setBusy(post.id);
@@ -32,7 +30,6 @@ export function AdminDashboard({
       window.alert("Failed to delete post.");
     }
   }
-
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">

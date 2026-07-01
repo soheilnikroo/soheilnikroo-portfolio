@@ -7,7 +7,6 @@ import { getAllCategories, getAllPostMeta } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
 
 export const revalidate = 60;
-
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSiteConfig();
   const copy = site.pages.blog;
@@ -23,7 +22,6 @@ export async function generateMetadata(): Promise<Metadata> {
     },
   };
 }
-
 export default async function BlogPage() {
   const [posts, categories, site] = await Promise.all([
     getAllPostMeta(),
@@ -31,7 +29,6 @@ export default async function BlogPage() {
     getSiteConfig(),
   ]);
   const copy = site.pages.blog;
-
   return (
     <PixelPage>
       <Container className="py-section">

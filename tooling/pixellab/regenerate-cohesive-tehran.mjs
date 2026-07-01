@@ -1,13 +1,4 @@
 #!/usr/bin/env node
-/**
- * Regenerate minimal, cohesive Tehran assets via PixelLab MCP.
- * Falls back to procedural bake when no credits remain.
- *
- * Usage:
- *   PIXELLAB_API_TOKEN=... node tooling/pixellab/regenerate-cohesive-tehran.mjs
- *   PIXELLAB_API_TOKEN=... node tooling/pixellab/regenerate-cohesive-tehran.mjs --poll
- *   node tooling/pixellab/regenerate-cohesive-tehran.mjs --procedural-only
- */
 import { execSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -25,10 +16,7 @@ const STYLE = {
   detail: "low detail",
   view: "side",
 };
-
 const token = process.env.PIXELLAB_API_TOKEN;
-
-/** Minimal assets — simple, uncrowded, one mood per chapter. Hero kept from PixelLab. */
 const REGEN_TARGETS = [
   {
     type: "map_object",
@@ -163,7 +151,6 @@ const REGEN_TARGETS = [
     },
   },
 ];
-
 async function callTool(name, args) {
   const res = await fetch(MCP_URL, {
     method: "POST",
@@ -187,16 +174,13 @@ async function callTool(name, args) {
   if (content.startsWith("error:")) throw new Error(content);
   return content;
 }
-
 function loadJobs() {
   if (!existsSync(JOBS_FILE)) return [];
   return JSON.parse(readFileSync(JOBS_FILE, "utf8"));
 }
-
 function saveJobs(jobs) {
   writeFileSync(JOBS_FILE, JSON.stringify(jobs, null, 2));
 }
-
 function runProceduralBake() {
   console.log("\n→ Running minimal Tehran procedural bake...");
   execSync("node tooling/pixellab/bake-tehran-scenes.mjs --force-procedural", {
@@ -204,11 +188,9 @@ function runProceduralBake() {
     stdio: "inherit",
   });
 }
-
 async function queueRegen() {
   const jobs = loadJobs();
   const pending = new Set(jobs.filter((j) => !j.done && !j.failed).map((j) => j.label));
-
   for (const item of REGEN_TARGETS) {
     if (pending.has(item.label)) {
       console.log(`  skip (pending): ${item.label}`);
@@ -233,26 +215,21 @@ async function queueRegen() {
   }
   saveJobs(jobs);
 }
-
 async function pollAndDownload() {
   const jobs = loadJobs();
   let changed = false;
-
   for (const job of jobs) {
     if (job.done || job.failed || !job.jobId) continue;
     const tool = job.type === "map_object" ? "get_map_object" : "get_sidescroller_tileset";
     const argKey = job.type === "map_object" ? "object_id" : "tileset_id";
-
     try {
       const text = await callTool(tool, { [argKey]: job.jobId });
       const line = text.split("\n")[0];
       console.log(`${job.label}: ${line}`);
-
       if (line.includes("status: completed")) {
         job.done = true;
         job.status = "completed";
         changed = true;
-
         let downloadUrl =
           text.match(/download:\s*(https:\/\/[^\s]+)/)?.[1] ??
           text.match(/https:\/\/api\.pixellab\.ai\/mcp\/[^\s]+/)?.[0];
@@ -275,39 +252,31 @@ async function pollAndDownload() {
       console.warn(`${job.label}:`, e.message);
     }
   }
-
   if (changed) saveJobs(jobs);
   return jobs.filter((j) => !j.done && !j.failed).length === 0;
 }
-
 async function main() {
   const args = process.argv.slice(2);
-
   if (args.includes("--procedural-only")) {
     runProceduralBake();
     return;
   }
-
   if (!token) {
     console.log("No PIXELLAB_API_TOKEN — using minimal procedural bake.");
     runProceduralBake();
     return;
   }
-
   const balance = await callTool("get_balance", {});
   console.log("Balance:", balance.replace(/\n/g, " | "));
-
   if (balance.includes("generations_remaining: 0") && balance.includes("credits: $0.00")) {
     console.log("\nNo PixelLab credits — using minimal procedural bake.");
     runProceduralBake();
     return;
   }
-
   if (args.includes("--poll")) {
     if (!(await pollAndDownload())) console.log("\nStill processing — retry with --poll");
     return;
   }
-
   console.log(`\nQueueing ${REGEN_TARGETS.length} minimal Tehran assets...`);
   await queueRegen();
   console.log("\nPolling...");
@@ -316,7 +285,6 @@ async function main() {
     if (await pollAndDownload()) break;
   }
 }
-
 main().catch((e) => {
   console.error(e);
   process.exit(1);

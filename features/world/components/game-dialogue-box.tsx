@@ -177,6 +177,7 @@ export function GameDialogueBox({
               alt=""
               width={68}
               height={68}
+              loading="eager"
               className="absolute -top-1 left-1/2 h-[130%] w-auto max-w-none -translate-x-1/2 object-cover object-[center_15%]"
               style={{ imageRendering: "pixelated" }}
               unoptimized

@@ -474,13 +474,15 @@ function paintParticles(
   panX: number,
   time: number,
   palette: WorldPalette,
+  scale = 1,
 ): void {
   const particle = palette.particle;
-  if (!particle) return;
+  if (!particle || scale <= 0) return;
   const { ctx, width, height } = surface;
   const gy = groundY(height);
+  const count = Math.max(0, Math.floor(36 * scale));
   ctx.save();
-  for (let i = 0; i < 36; i += 1) {
+  for (let i = 0; i < count; i += 1) {
     const depth = 0.2 + (i % 4) * 0.12;
     const baseX = rand(i * 5.1) * width;
     const x = (baseX - panX * depth + Math.sin(time / 1400 + i) * 14) % width;
@@ -529,6 +531,12 @@ export interface SceneAssets {
 export interface CityscapeOpts {
   /** 0 = normal, 1 = full intro landing emphasis (fades as the player scrolls). */
   readonly intro?: number;
+  /** Per-layer visibility 0..1 — omit layers not listed for a simpler scene. */
+  readonly layerWeights?: Readonly<Partial<Record<string, number>>>;
+  /** Per-landmark visibility 0..1. */
+  readonly landmarkWeights?: Readonly<Partial<Record<string, number>>>;
+  /** Scale ambient particles (0 = off). */
+  readonly particleScale?: number;
 }
 
 function drawProceduralCity(
@@ -560,66 +568,69 @@ function drawImageCity(
   const { scene } = assets;
   const intro = opts?.intro ?? 0;
   const g = growth < 0 ? 0 : growth > 1 ? 1 : growth;
+  const layerW = opts?.layerWeights;
+  const landmarkW = opts?.landmarkWeights;
+  const hasProfile = Boolean(layerW || landmarkW);
 
   const tile = (id: string) => scene.layers.get(id);
 
+  const layerVis = (id: string): number => {
+    if (layerW) return layerW[id] ?? 0;
+    return hasProfile ? 0 : 1;
+  };
+  const landmarkVis = (id: string): number => {
+    if (landmarkW) return landmarkW[id] ?? 0;
+    return hasProfile ? 0 : 1;
+  };
+
   const hero = tile("intro-hero-dawn");
   const heroOn = hero && intro > 0.06;
-  // Crossfade parallax in only after the hero panorama fades — keeps the landing clean.
   const stackAlpha = heroOn ? Math.max(0, 1 - intro) : 1;
 
-  const mountains = tile("alborz-mountains");
-  if (mountains && stackAlpha > 0.04) {
-    drawTiledLayer(surface, mountains, panX, 0.08, gy, stackAlpha);
-  }
+  const drawLayer = (id: string, depth: number, extra = 1): void => {
+    const sprite = tile(id);
+    const vis = layerVis(id) * stackAlpha * extra;
+    if (sprite && vis > 0.04) drawTiledLayer(surface, sprite, panX, depth, gy, vis);
+  };
+
+  drawLayer("alborz-mountains", 0.08);
+  drawLayer("tehran-skyline-far", 0.22);
 
   const milad = scene.landmarks.get("milad-tower");
-  if (milad && stackAlpha > 0.35) {
-    drawPlacedSprite(surface, milad, 320, gy, panX, 0.06, stackAlpha);
-  }
-
-  const skyline = tile("tehran-skyline-far");
-  if (skyline && stackAlpha > 0.04) {
-    drawTiledLayer(surface, skyline, panX, 0.22, gy, stackAlpha);
+  const miladA = landmarkVis("milad-tower") * stackAlpha;
+  if (milad && miladA > 0.04) {
+    drawPlacedSprite(surface, milad, 320, gy, panX, 0.06, miladA);
   }
 
   const azadi = scene.landmarks.get("azadi-tower");
-  if (azadi && stackAlpha > 0.4) {
-    drawPlacedSprite(surface, azadi, 180, gy, panX, 0.42, stackAlpha);
+  const azadiA = landmarkVis("azadi-tower") * stackAlpha;
+  if (azadi && azadiA > 0.04) {
+    drawPlacedSprite(surface, azadi, 180, gy, panX, 0.42, azadiA);
   }
 
   const domes = scene.landmarks.get("persian-domes");
-  if (domes && stackAlpha > 0.4) {
-    drawPlacedSprite(surface, domes, 260, gy, panX, 0.5, stackAlpha);
+  const domesA = landmarkVis("persian-domes") * stackAlpha;
+  if (domes && domesA > 0.04) {
+    drawPlacedSprite(surface, domes, 260, gy, panX, 0.5, domesA);
   }
 
-  const mid = tile("tehran-buildings-mid");
-  if (mid && g > 0.02 && stackAlpha > 0.08) {
-    drawTiledLayer(surface, mid, panX, 0.45, gy, stackAlpha * g);
-  }
-
-  const shops = tile("tehran-shopfronts");
-  const shopAlpha = Math.max(0, (g - 0.15) / 0.85) * stackAlpha;
-  if (shops && shopAlpha > 0.04) {
-    drawTiledLayer(surface, shops, panX, 0.72, gy, shopAlpha);
-  }
+  drawLayer("tehran-buildings-mid", 0.45, g);
+  drawLayer("tehran-shopfronts", 0.72, Math.max(0, (g - 0.15) / 0.85));
+  drawLayer("chenar-trees", 1.35);
 
   const ground = assets.groundSprite ?? tile("tehran-ground-tiles");
-  if (ground && stackAlpha > 0.06) {
-    drawTiledLayer(surface, ground, panX, 1.0, gy, stackAlpha);
+  const groundVis = layerW ? (layerW["tehran-ground-tiles"] ?? 1) : 1;
+  if (ground && stackAlpha * groundVis > 0.06) {
+    drawTiledLayer(surface, ground, panX, 1.0, gy, stackAlpha * groundVis);
   }
 
-  const chenar = tile("chenar-trees");
-  if (chenar && stackAlpha > 0.06) {
-    drawTiledLayer(surface, chenar, panX, 1.35, gy, stackAlpha);
-  }
-
-  // Hero draws last so parallax/landmarks never bleed over the landing panorama.
   if (heroOn) {
     drawCoverLayer(surface, hero, gy, Math.min(1, intro));
   }
 
-  if (!hero && !mountains && !skyline) drawProceduralCity(surface, panX, palette, growth);
+  if (!hero && !tile("alborz-mountains") && !tile("tehran-skyline-far")) {
+    drawProceduralCity(surface, panX, palette, growth);
+  }
 }
 
 /** Compose the full atmospheric city in one call. */
@@ -644,6 +655,6 @@ export function drawCityscape(
     drawProceduralCity(surface, panX, palette, growth);
   }
 
-  paintParticles(surface, panX, time, palette);
+  paintParticles(surface, panX, time, palette, opts?.particleScale ?? 1);
   paintVignette(surface);
 }

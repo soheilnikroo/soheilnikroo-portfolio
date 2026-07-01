@@ -26,6 +26,35 @@ export const characterManifest: CharacterManifest = {
   },
 };
 
+/** Which parallax layers + landmarks appear per chapter (0 = hidden, 1 = full). Keeps scenes simple. */
+export interface ChapterSceneProfile {
+  readonly layers: Readonly<Partial<Record<string, number>>>;
+  readonly landmarks: Readonly<Partial<Record<string, number>>>;
+}
+
+export const CHAPTER_SCENE_PROFILES: Record<string, ChapterSceneProfile> = {
+  intro: {
+    layers: { "alborz-mountains": 0.42, "tehran-skyline-far": 0.28 },
+    landmarks: {},
+  },
+  work: {
+    layers: { "alborz-mountains": 0.48, "tehran-skyline-far": 0.52, "tehran-buildings-mid": 0.42 },
+    landmarks: { "azadi-tower": 0.32 },
+  },
+  skills: {
+    layers: { "tehran-skyline-far": 0.38, "tehran-buildings-mid": 0.28 },
+    landmarks: {},
+  },
+  writing: {
+    layers: { "alborz-mountains": 0.32, "tehran-skyline-far": 0.44, "tehran-buildings-mid": 0.22 },
+    landmarks: { "persian-domes": 0.38 },
+  },
+  contact: {
+    layers: { "alborz-mountains": 0.28, "tehran-skyline-far": 0.5 },
+    landmarks: { "milad-tower": 0.88 },
+  },
+};
+
 /** Parallax background layers + Tehran landmarks (authored pixel art). */
 export const sceneManifest: SceneManifest = {
   layers: [
@@ -33,7 +62,7 @@ export const sceneManifest: SceneManifest = {
       id: "intro-hero-dawn",
       src: "/world/scenes/intro-hero-dawn.png",
       depth: 0.12,
-      tiled: true,
+      tiled: false,
       anchor: "ground",
     },
     {

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Regenerate weak / incoherent PixelLab assets with unified Tehran style prompts.
- * Falls back to procedural bake when no PixelLab credits remain.
+ * Regenerate minimal, cohesive Tehran assets via PixelLab MCP.
+ * Falls back to procedural bake when no credits remain.
  *
  * Usage:
  *   PIXELLAB_API_TOKEN=... node tooling/pixellab/regenerate-cohesive-tehran.mjs
@@ -19,52 +19,81 @@ const MANIFEST = JSON.parse(readFileSync(join(__dirname, "asset-manifest.json"),
 const JOBS_FILE = join(__dirname, ".regen-jobs.json");
 const MCP_URL = "https://api.pixellab.ai/mcp";
 const PREFIX = MANIFEST.style.stylePrefix ?? "";
+const STYLE = {
+  outline: MANIFEST.style.outline,
+  shading: MANIFEST.style.shading,
+  detail: "low detail",
+  view: "side",
+};
 
 const token = process.env.PIXELLAB_API_TOKEN;
 
-/** Assets that broke coherence — isolated objects instead of tile strips, wrong vibe. */
+/** Minimal assets — simple, uncrowded, one mood per chapter. Hero kept from PixelLab. */
 const REGEN_TARGETS = [
-  // intro-hero-dawn intentionally omitted — keep PixelLab panorama for landing beauty
+  {
+    type: "map_object",
+    label: "scenes/alborz-mountains",
+    dest: join(ROOT, "public/world/scenes/alborz-mountains.png"),
+    args: {
+      description: `${PREFIX} seamless horizontal tile: soft Alborz mountain silhouettes, subtle Damavand snow peak, dusty smog band, lots of empty sky, minimal`,
+      width: 512,
+      height: 128,
+      ...STYLE,
+    },
+  },
+  {
+    type: "map_object",
+    label: "scenes/tehran-skyline-far",
+    dest: join(ROOT, "public/world/scenes/tehran-skyline-far.png"),
+    args: {
+      description: `${PREFIX} seamless horizontal tile: sparse distant Tehran flat-roof silhouettes, few water tanks, hazy atmospheric perspective, minimal not crowded`,
+      width: 512,
+      height: 96,
+      ...STYLE,
+    },
+  },
   {
     type: "map_object",
     label: "scenes/tehran-buildings-mid",
     dest: join(ROOT, "public/world/scenes/tehran-buildings-mid.png"),
     args: {
-      description: `${PREFIX} seamless horizontal tile strip: Tehran Persian brick mid-rise facades, firoozeh turquoise tile frieze, terracotta awnings, lit windows`,
+      description: `${PREFIX} seamless horizontal tile: only 3 Persian brick building silhouettes with turquoise frieze band, warm lit windows, wide gaps between buildings, minimal`,
       width: 512,
       height: 160,
-      view: "side",
-      outline: MANIFEST.style.outline,
-      shading: MANIFEST.style.shading,
-      detail: MANIFEST.style.detail,
+      ...STYLE,
     },
   },
   {
     type: "map_object",
-    label: "scenes/tehran-shopfronts",
-    dest: join(ROOT, "public/world/scenes/tehran-shopfronts.png"),
+    label: "scenes/milad-tower",
+    dest: join(ROOT, "public/world/scenes/milad-tower.png"),
     args: {
-      description: `${PREFIX} seamless horizontal tile strip: Tehran bazaar shopfronts, red metro entrance, Persian tile above doors, cobblestone sidewalk, taxi yellow curb`,
-      width: 512,
+      description: `${PREFIX} Milad Tower Tehran clean silhouette, observation pod, minimal detail, side view game sprite`,
+      width: 48,
       height: 128,
-      view: "side",
-      outline: MANIFEST.style.outline,
-      shading: MANIFEST.style.shading,
-      detail: MANIFEST.style.detail,
+      ...STYLE,
     },
   },
   {
     type: "map_object",
-    label: "scenes/chenar-trees",
-    dest: join(ROOT, "public/world/scenes/chenar-trees.png"),
+    label: "scenes/azadi-tower",
+    dest: join(ROOT, "public/world/scenes/azadi-tower.png"),
     args: {
-      description: `${PREFIX} seamless horizontal tile strip: Valiasr boulevard chenar plane trees, tall columnar canopies, Tehran street foreground`,
-      width: 256,
-      height: 128,
-      view: "side",
-      outline: MANIFEST.style.outline,
-      shading: MANIFEST.style.shading,
-      detail: MANIFEST.style.detail,
+      description: `${PREFIX} Azadi Tower Tehran white arched monument, simple clean silhouette, minimal detail`,
+      width: 64,
+      height: 96,
+      ...STYLE,
+    },
+  },
+  {
+    type: "map_object",
+    label: "scenes/persian-domes",
+    dest: join(ROOT, "public/world/scenes/persian-domes.png"),
+    args: {
+      description: `${PREFIX} single firoozeh turquoise mosque dome with minaret, simple not crowded, side view`,
+      width: 96,
+      height: 80,
+      ...STYLE,
     },
   },
   {
@@ -72,13 +101,10 @@ const REGEN_TARGETS = [
     label: "objects/intro/childhood-house",
     dest: join(ROOT, "public/world/objects/intro/childhood-house.png"),
     args: {
-      description: `${PREFIX} small Tehran neighbourhood house, flat roof, water tank ab-khan, satellite dish, firoozeh tile band, warm dawn light, full side view game prop`,
+      description: `${PREFIX} small Tehran neighbourhood house, flat roof, one water tank, warm dawn window glow, simple side view prop`,
       width: 64,
       height: 56,
-      view: "side",
-      outline: MANIFEST.style.outline,
-      shading: MANIFEST.style.shading,
-      detail: MANIFEST.style.detail,
+      ...STYLE,
     },
   },
   {
@@ -86,12 +112,21 @@ const REGEN_TARGETS = [
     label: "tilesets/intro/ground",
     dest: join(ROOT, "public/world/tilesets/intro/ground.png"),
     args: {
-      lower_description: "dark wooden bedroom floor planks with faint dawn light",
-      transition_description: "dust motes and warm morning glow",
+      lower_description: "simple dark wooden bedroom floor planks, warm dawn light",
+      transition_description: "soft dust motes, minimal",
       tile_size: MANIFEST.style.tileSize,
-      outline: MANIFEST.style.outline,
-      shading: MANIFEST.style.shading,
-      detail: MANIFEST.style.detail,
+      ...STYLE,
+    },
+  },
+  {
+    type: "sidescroller_tileset",
+    label: "tilesets/work/ground",
+    dest: join(ROOT, "public/world/tilesets/work/ground.png"),
+    args: {
+      lower_description: "simple Tehran cobblestone street, morning light",
+      transition_description: "light smog mist, minimal",
+      tile_size: MANIFEST.style.tileSize,
+      ...STYLE,
     },
   },
   {
@@ -99,12 +134,32 @@ const REGEN_TARGETS = [
     label: "tilesets/skills/ground",
     dest: join(ROOT, "public/world/tilesets/skills/ground.png"),
     args: {
-      lower_description: "Tehran metro platform floor tiles with yellow safety line",
-      transition_description: "red metro stripe and fluorescent glow",
+      lower_description: "clean Tehran metro platform tiles, yellow safety line",
+      transition_description: "subtle red metro stripe",
       tile_size: MANIFEST.style.tileSize,
-      outline: MANIFEST.style.outline,
-      shading: MANIFEST.style.shading,
-      detail: MANIFEST.style.detail,
+      ...STYLE,
+    },
+  },
+  {
+    type: "sidescroller_tileset",
+    label: "tilesets/writing/ground",
+    dest: join(ROOT, "public/world/tilesets/writing/ground.png"),
+    args: {
+      lower_description: "warm stone library floor, evening light",
+      transition_description: "soft amber glow, minimal",
+      tile_size: MANIFEST.style.tileSize,
+      ...STYLE,
+    },
+  },
+  {
+    type: "sidescroller_tileset",
+    label: "tilesets/contact/ground",
+    dest: join(ROOT, "public/world/tilesets/contact/ground.png"),
+    args: {
+      lower_description: "simple rooftop concrete tiles, night",
+      transition_description: "distant city glow haze, minimal",
+      tile_size: MANIFEST.style.tileSize,
+      ...STYLE,
     },
   },
 ];
@@ -143,7 +198,7 @@ function saveJobs(jobs) {
 }
 
 function runProceduralBake() {
-  console.log("\n→ Running procedural Tehran bake (--force-procedural)...");
+  console.log("\n→ Running minimal Tehran procedural bake...");
   execSync("node tooling/pixellab/bake-tehran-scenes.mjs --force-procedural", {
     cwd: ROOT,
     stdio: "inherit",
@@ -234,7 +289,7 @@ async function main() {
   }
 
   if (!token) {
-    console.log("No PIXELLAB_API_TOKEN — using procedural Tehran bake.");
+    console.log("No PIXELLAB_API_TOKEN — using minimal procedural bake.");
     runProceduralBake();
     return;
   }
@@ -243,18 +298,17 @@ async function main() {
   console.log("Balance:", balance.replace(/\n/g, " | "));
 
   if (balance.includes("generations_remaining: 0") && balance.includes("credits: $0.00")) {
-    console.log("\nNo PixelLab credits — falling back to procedural Tehran bake.");
+    console.log("\nNo PixelLab credits — using minimal procedural bake.");
     runProceduralBake();
     return;
   }
 
   if (args.includes("--poll")) {
-    const done = await pollAndDownload();
-    if (!done) console.log("\nStill processing — retry with --poll");
+    if (!(await pollAndDownload())) console.log("\nStill processing — retry with --poll");
     return;
   }
 
-  console.log(`\nQueueing ${REGEN_TARGETS.length} cohesive Tehran assets...`);
+  console.log(`\nQueueing ${REGEN_TARGETS.length} minimal Tehran assets...`);
   await queueRegen();
   console.log("\nPolling...");
   for (let i = 0; i < 24; i += 1) {

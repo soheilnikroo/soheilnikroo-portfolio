@@ -153,6 +153,12 @@
           }
         ]
       }
+    },
+    {
+      "files": ["lib/world/three-patched.ts"],
+      "rules": {
+        "import/export": "off"
+      }
     }
   ]
 }

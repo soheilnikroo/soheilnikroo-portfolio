@@ -97,17 +97,6 @@ function drawOutline(buf, w, h, x0, y0, rw, rh, color = "#000000") {
   }
 }
 
-/** Simple 8×8 Persian geometric tile motif. */
-function paintTileMotif(buf, w, h, x0, y0, color) {
-  const [r, g, b] = hexRgb(color);
-  for (let dy = 0; dy < 8; dy += 1) {
-    for (let dx = 0; dx < 8; dx += 1) {
-      const on = (dx === dy || dx + dy === 7 || dx === 3 || dy === 3) && (dx + dy) % 2 === 0;
-      if (on) setPx(buf, w, x0 + dx, y0 + dy, r, g, b);
-    }
-  }
-}
-
 function writePng(path, w, h, rgba) {
   const rowSize = w * 4 + 1;
   const raw = Buffer.alloc(rowSize * h);
@@ -150,148 +139,86 @@ function crc32(buf) {
   return (c ^ 0xffffffff) >>> 0;
 }
 
-/** Alborz range + Damavand snow cap + dusty Tehran smog band at base. */
+/** Soft Alborz silhouettes — sparse, atmospheric, not crowded. */
 function bakeMountains(w, h) {
   const buf = Buffer.alloc(w * h * 4);
-  const gy = h - 6;
+  const gy = h - 4;
   for (let x = 0; x < w; x += 1) {
-    const seed = Math.floor(x / 12);
-    const ridge = gy - Math.floor(28 + rand(seed) * 38 + Math.sin(x / 64) * 14);
-    for (let y = ridge; y < h; y += 1) {
-      const t = (y - ridge) / (h - ridge);
-      const col = t < 0.12 ? C.alborzSnow : t < 0.35 ? C.alborz : "#3a4258";
+    const ridge =
+      gy -
+      Math.floor(
+        22 + Math.sin(x / 90) * 10 + Math.sin(x / 37 + 1.2) * 6 + rand(Math.floor(x / 20)) * 8,
+      );
+    for (let y = Math.max(0, ridge); y < h; y += 1) {
+      const t = (y - ridge) / Math.max(1, h - ridge);
+      const col = t < 0.08 ? C.alborzSnow : t < 0.28 ? "#5a6478" : "#4a5068";
       setPx(buf, w, x, y, ...hexRgb(col));
     }
-    // Damavand — dominant snow cone
-    const dx = Math.abs(x - w * 0.38);
-    if (dx < 48) {
-      const peak = gy - 100 + (dx * dx) / 18;
-      for (let y = Math.floor(peak); y < gy - 22; y += 1) {
-        const snowLine = peak + 14 + Math.sin(x / 3) * 2;
-        setPx(buf, w, x, y, ...hexRgb(y < snowLine ? C.alborzSnow : C.alborz));
+    const dx = Math.abs(x - w * 0.4);
+    if (dx < 36) {
+      const peak = gy - 72 + (dx * dx) / 14;
+      for (let y = Math.floor(peak); y < gy - 16; y += 1) {
+        setPx(buf, w, x, y, ...hexRgb(y < peak + 10 ? C.alborzSnow : "#5a6478"));
       }
     }
   }
-  // Smog band — characteristic Tehran morning haze over mountains
-  for (let y = gy - 28; y < gy - 8; y += 1) {
-    const a = (y - (gy - 28)) / 20;
-    for (let x = 0; x < w; x += 1) {
-      setPx(buf, w, x, y, ...hexRgb(C.smog), Math.floor(a * 140));
-    }
+  for (let y = gy - 18; y < gy - 6; y += 1) {
+    const a = Math.floor(((y - (gy - 18)) / 12) * 100);
+    for (let x = 0; x < w; x += 1) setPx(buf, w, x, y, ...hexRgb(C.smogLight), a);
   }
   return buf;
 }
 
-/** Flat Tehran rooftops: water tanks, satellite dishes, low parapets. */
+/** Sparse flat-roof Tehran silhouettes — breathing room between blocks. */
 function bakeSkylineFar(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   const gy = h - 2;
-  const step = 28;
-  for (let i = 0; i <= w / step + 1; i += 1) {
-    const x = i * step;
-    const seed = i;
-    const bh = 14 + Math.floor(rand(seed) * 22);
-    const bw = step - 2;
-    fillRect(buf, w, h, x + 1, gy - bh, bw, bh, C.roof);
-    // Parapet wall on flat roof
-    fillRect(buf, w, h, x + 1, gy - bh - 3, bw, 3, C.brickDark);
-    // Water tank (ab-khan) — iconic Tehran rooftop
-    if (rand(seed * 2) > 0.35) {
-      const tx = x + 4 + Math.floor(rand(seed * 3) * (bw - 10));
-      fillRect(buf, w, h, tx, gy - bh - 10, 8, 8, C.tank);
-      fillRect(buf, w, h, tx + 1, gy - bh - 12, 6, 2, C.tank);
-    }
-    // Satellite dish
-    if (rand(seed * 5) > 0.55) {
-      const sx = x + bw - 10;
-      fillRect(buf, w, h, sx, gy - bh - 6, 2, 6, "#4a4a58");
-      for (let d = -4; d <= 4; d += 1) {
-        setPx(buf, w, sx + d, gy - bh - 7, ...hexRgb("#6a7080"));
-      }
-    }
-    // Small AC unit
-    if (rand(seed * 7) > 0.7) {
-      fillRect(buf, w, h, x + 10, gy - bh - 5, 6, 4, "#505868");
-    }
+  const blocks = [
+    [0, 18],
+    [96, 24],
+    [200, 14],
+    [320, 28],
+    [420, 16],
+  ];
+  for (const [bx, bh] of blocks) {
+    fillRect(buf, w, h, bx + 2, gy - bh, 72, bh, "#6a5858");
+    fillRect(buf, w, h, bx + 2, gy - bh - 2, 72, 2, C.brickDark);
+    if (rand(bx) > 0.4) fillRect(buf, w, h, bx + 48, gy - bh - 8, 6, 6, C.tank);
   }
   return buf;
 }
 
-/** Persian brick mid-rise facades, turquoise tile bands, mashrabiya windows. */
+/** Three simple Persian brick facades per tile — turquoise band, warm windows. */
 function bakeBuildingsMid(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   const gy = h - 4;
-  const step = 44;
-  for (let i = 0; i <= w / step + 1; i += 1) {
-    const x = i * step;
-    const seed = i;
-    const bh = 48 + Math.floor(rand(seed) * 72);
-    const bw = step - 4;
-    const brick = rand(seed) > 0.45 ? C.brick : C.brickDark;
-    fillRect(buf, w, h, x + 2, gy - bh, bw, bh, brick);
-    drawOutline(buf, w, h, x + 2, gy - bh, bw, bh, "#2a1810");
-    // Turquoise tile frieze (Persian architecture)
-    fillRect(buf, w, h, x + 2, gy - bh + 6, bw, 4, C.firoozeh);
-    for (let tx = x + 4; tx < x + bw; tx += 8) {
-      paintTileMotif(buf, w, h, tx, gy - bh + 14, C.firoozehDark);
-    }
-    // Lit windows — warm berenji + cool firoozeh
-    const cols = Math.floor(bw / 11);
-    const rows = Math.floor((bh - 24) / 14);
-    for (let c = 0; c < cols; c += 1) {
-      for (let r = 0; r < rows; r += 1) {
-        if (rand(seed + c * 7 + r * 13) > 0.5) {
-          const lit = rand(seed + c + r) > 0.65 ? C.berenji : C.firoozeh;
-          fillRect(buf, w, h, x + 5 + c * 11, gy - bh + 26 + r * 14, 5, 7, lit);
-          fillRect(buf, w, h, x + 5 + c * 11, gy - bh + 26 + r * 14, 5, 1, "#1a1010");
-        }
+  const facades = [
+    [24, 64],
+    [180, 88],
+    [340, 56],
+  ];
+  for (const [fx, fh] of facades) {
+    fillRect(buf, w, h, fx, gy - fh, 88, fh, C.brick);
+    fillRect(buf, w, h, fx, gy - fh + 8, 88, 3, C.firoozeh);
+    for (let wy = gy - fh + 24; wy < gy - 14; wy += 18) {
+      for (let wx = fx + 12; wx < fx + 72; wx += 20) {
+        if (rand(wx + wy) > 0.35) fillRect(buf, w, h, wx, wy, 6, 8, C.berenji);
       }
-    }
-    // Shop awning (terracotta)
-    if (rand(seed * 5) > 0.5) {
-      fillRect(buf, w, h, x + 2, gy - 10, bw, 5, C.terracotta);
     }
   }
   return buf;
 }
 
-/** Street level: bazaar shops, metro entrance, cobblestone, taxi stripe. */
+/** Minimal street strip — mostly open sidewalk, hint of curb. */
 function bakeShopfronts(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
-  const gy = h - 8;
-  const step = 56;
-  for (let i = 0; i <= w / step + 1; i += 1) {
-    const x = i * step;
-    const seed = i;
-    const bh = 32 + Math.floor(rand(seed) * 24);
-    fillRect(buf, w, h, x + 2, gy - bh, step - 4, bh, C.brickDark);
-    drawOutline(buf, w, h, x + 2, gy - bh, step - 4, bh);
-    // Shop window with warm interior
-    fillRect(buf, w, h, x + 6, gy - bh + 10, step - 16, 16, "#1a1420");
-    fillRect(buf, w, h, x + 8, gy - bh + 12, step - 20, 12, "#3a2818");
-    // Persian tile above door
-    for (let tx = x + 8; tx < x + step - 12; tx += 8) {
-      paintTileMotif(buf, w, h, tx, gy - bh + 2, C.firoozeh);
-    }
-    // Tehran Metro entrance (every 3rd shop)
-    if (i % 3 === 1) {
-      fillRect(buf, w, h, x + step - 18, gy - bh, 14, bh, C.metroRed);
-      fillRect(buf, w, h, x + step - 16, gy - bh + 8, 10, 4, "#ffffff");
-      fillRect(buf, w, h, x + step - 16, gy - bh + 14, 10, 3, C.berenji);
-    }
-    // Terracotta awning
-    fillRect(buf, w, h, x + 4, gy - bh - 4, step - 8, 4, C.terracotta);
-  }
-  // Sidewalk + cobblestone street
-  fillRect(buf, w, h, 0, gy, w, 4, "#5a5048");
-  fillRect(buf, w, h, 0, gy + 4, w, h - gy - 4, "#4a4438");
-  for (let x = 0; x < w; x += 8) {
-    for (let y = gy + 4; y < h; y += 8) {
-      if (rand(x + y) > 0.4) setPx(buf, w, x, y, ...hexRgb(rand(x) > 0.5 ? "#3a3830" : "#524c40"));
-    }
-  }
-  // Taxi yellow curb stripe
-  fillRect(buf, w, h, 0, gy + 2, w, 2, C.taxiYellow);
+  const gy = h - 6;
+  fillRect(buf, w, h, 0, gy, w, h - gy, "#4a4438");
+  fillRect(buf, w, h, 0, gy, w, 2, C.taxiYellow);
+  fillRect(buf, w, h, 64, gy - 28, 48, 28, C.brickDark);
+  fillRect(buf, w, h, 68, gy - 24, 16, 12, "#ffd890");
+  fillRect(buf, w, h, 280, gy - 32, 56, 32, C.brickDark);
+  fillRect(buf, w, h, 284, gy - 28, 20, 14, C.firoozeh);
   return buf;
 }
 
@@ -310,28 +237,19 @@ function bakeGround(w, h) {
   return buf;
 }
 
-/** Chenar plane trees lining Valiasr-style boulevard. */
+/** Single chenar tree silhouette — sparse Valiasr boulevard feel. */
 function bakeChenar(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   const gy = h - 6;
-  const step = 72;
-  for (let i = 0; i <= w / step + 1; i += 1) {
-    const x = i * step + 36;
-    const seed = i;
-    const th = 44 + Math.floor(rand(seed) * 36);
-    const trunkTop = gy - th;
-    fillRect(buf, w, h, x - 2, trunkTop, 4, th, "#3a2818");
-    // Patchy chenar canopy — tall, columnar habit
-    for (let layer = 0; layer < 4; layer += 1) {
-      const cy = trunkTop - 8 - layer * 10;
-      const rx = 14 + layer * 3;
-      const ry = 8 + Math.floor(rand(seed + layer) * 4);
-      for (let dy = -ry; dy <= ry; dy += 1) {
+  const trees = [64, 192];
+  for (const x of trees) {
+    fillRect(buf, w, h, x - 2, gy - 48, 4, 48, "#3a2818");
+    for (let layer = 0; layer < 3; layer += 1) {
+      const cy = gy - 52 - layer * 12;
+      const rx = 12 + layer * 4;
+      for (let dy = -8; dy <= 8; dy += 1) {
         for (let dx = -rx; dx <= rx; dx += 1) {
-          if ((dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1) {
-            const col = rand(seed + dx + dy) > 0.3 ? C.chenar : C.chenarDark;
-            setPx(buf, w, x + dx, cy + dy, ...hexRgb(col));
-          }
+          if (dx * dx + dy * dy * 2 < rx * rx) setPx(buf, w, x + dx, cy + dy, ...hexRgb(C.chenar));
         }
       }
     }
@@ -339,100 +257,61 @@ function bakeChenar(w, h) {
   return buf;
 }
 
-/** Milad Tower — Tehran's iconic communications tower. */
+/** Clean Milad Tower silhouette. */
 function bakeMilad(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
   const cx = 24;
-  // Tapered shaft
-  for (let y = 18; y < h - 8; y += 1) {
-    const t = (y - 18) / (h - 26);
-    const halfW = Math.max(2, Math.round(4 - t * 1.5));
-    fillRect(buf, w, h, cx - halfW, y, halfW * 2, 1, "#c8ccd8");
+  for (let y = 24; y < h - 6; y += 1) {
+    const halfW = Math.max(2, 4 - Math.floor((y - 24) / 40));
+    fillRect(buf, w, h, cx - halfW, y, halfW * 2, 1, "#b8bcc8");
   }
-  // Observation pod (hex-ish)
-  fillRect(buf, w, h, cx - 16, 44, 32, 14, "#a8acb8");
-  fillRect(buf, w, h, cx - 12, 40, 24, 6, "#9098a8");
-  // Pod windows
-  for (let i = 0; i < 6; i += 1) {
-    fillRect(buf, w, h, cx - 14 + i * 5, 46, 3, 5, C.firoozeh);
-  }
-  // Head structure
-  fillRect(buf, w, h, cx - 4, 14, 8, 28, "#b0b4c0");
-  // Aviation warning light
-  fillRect(buf, w, h, cx - 1, 10, 3, 5, "#ff4040");
-  drawOutline(buf, w, h, cx - 16, 40, 32, 18);
+  fillRect(buf, w, h, cx - 14, 48, 28, 12, "#989aa8");
+  for (let i = 0; i < 5; i += 1) fillRect(buf, w, h, cx - 12 + i * 5, 50, 3, 4, C.firoozeh);
+  fillRect(buf, w, h, cx - 2, 16, 4, 32, "#a8acb8");
+  fillRect(buf, w, h, cx - 1, 12, 2, 4, "#ff5050");
   return buf;
 }
 
-/** Azadi Tower — marble monument with open arch. */
+/** Clean Azadi Tower — open arch, minimal detail. */
 function bakeAzadi(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
-  const bx = 14;
-  const bw = 36;
-  const bh = h - 18;
-  // Base platform
-  fillRect(buf, w, h, bx - 4, h - 14, bw + 8, 14, C.cream);
-  // Main body — tapered with central arch void
-  fillRect(buf, w, h, bx, 28, bw, bh - 28, C.cream);
-  drawOutline(buf, w, h, bx, 28, bw, bh - 28, "#a09888");
-  // Arch opening (Azadi's signature)
-  fillRect(buf, w, h, bx + 12, h - 50, 12, 34, C.night);
-  // Upper arch curve
-  for (let dy = -10; dy <= 0; dy += 1) {
-    const span = Math.floor(Math.sqrt(100 - dy * dy));
-    for (let dx = -span; dx <= span; dx += 1) {
-      setPx(buf, w, bx + 18 + dx, h - 50 + dy, ...hexRgb(C.cream));
-      if (Math.abs(dx) === span) setPx(buf, w, bx + 18 + dx, h - 50 + dy, ...hexRgb("#a09888"));
-    }
+  const bx = 16;
+  const bw = 32;
+  fillRect(buf, w, h, bx - 2, h - 12, bw + 4, 12, C.cream);
+  fillRect(buf, w, h, bx, 32, bw, h - 44, C.cream);
+  fillRect(buf, w, h, bx + 10, h - 48, 12, 28, C.night);
+  for (let dy = -8; dy <= 0; dy += 1) {
+    const span = Math.floor(Math.sqrt(64 - dy * dy));
+    for (let dx = -span; dx <= span; dx += 1)
+      setPx(buf, w, bx + 16 + dx, h - 48 + dy, ...hexRgb(C.cream));
   }
-  // Lattice detail lines (simplified)
-  fillRect(buf, w, h, bx + 4, 36, 2, bh - 40, "#c8c0b0");
-  fillRect(buf, w, h, bx + bw - 6, 36, 2, bh - 40, "#c8c0b0");
   return buf;
 }
 
-/** Mosque domes with firoozeh turquoise tiles + minarets. */
+/** Single mosque dome — simple, not crowded. */
 function bakeDomes(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
-  fillRect(buf, w, h, 8, h - 14, 80, 14, C.brick);
-  const domes = [
-    [24, 20],
-    [52, 24],
-    [76, 16],
-  ];
-  for (const [dx, r] of domes) {
-    for (let dy = -r; dy <= 0; dy += 1) {
-      const span = Math.floor(Math.sqrt(r * r - dy * dy));
-      const stripe = Math.floor(dy / 3) % 2 === 0 ? C.firoozeh : C.firoozehDark;
-      fillRect(buf, w, h, dx - span, h - 14 + dy - r, span * 2, 1, stripe);
-    }
-    // Gold finial
-    fillRect(buf, w, h, dx - 1, h - 14 - r - 6, 2, 6, C.berenji);
-    // Minaret
-    fillRect(buf, w, h, dx + r - 4, h - 36, 4, 22, C.cream);
-    fillRect(buf, w, h, dx + r - 3, h - 40, 2, 5, C.berenji);
+  fillRect(buf, w, h, 20, h - 12, 56, 12, C.brick);
+  const cx = 48;
+  const r = 18;
+  for (let dy = -r; dy <= 0; dy += 1) {
+    const span = Math.floor(Math.sqrt(r * r - dy * dy));
+    fillRect(buf, w, h, cx - span, h - 12 + dy - r, span * 2, 1, C.firoozeh);
   }
+  fillRect(buf, w, h, cx - 1, h - 12 - r - 5, 2, 5, C.berenji);
+  fillRect(buf, w, h, cx + r - 2, h - 28, 3, 16, C.cream);
   return buf;
 }
 
-/** Traditional Tehran neighbourhood house — flat roof, tank, dish. */
+/** Simple Tehran neighbourhood house. */
 function bakeHouse(w, h) {
   const buf = Buffer.alloc(w * h * 4, 0);
-  fillRect(buf, w, h, 6, h - 12, 52, 12, C.cream);
-  fillRect(buf, w, h, 8, 22, 48, h - 34, C.brick);
-  drawOutline(buf, w, h, 8, 22, 48, h - 34);
-  fillRect(buf, w, h, 8, 22, 48, 4, C.firoozeh);
-  // Door
-  fillRect(buf, w, h, 26, h - 28, 12, 16, "#3a2818");
-  // Window with warm light
-  fillRect(buf, w, h, 14, 34, 10, 10, "#1a1828");
-  fillRect(buf, w, h, 15, 35, 8, 8, "#d4a050");
-  // Rooftop water tank
-  fillRect(buf, w, h, 38, 12, 10, 10, C.tank);
-  fillRect(buf, w, h, 40, 10, 6, 2, C.tank);
-  // Satellite dish
-  fillRect(buf, w, h, 18, 14, 2, 5, "#505860");
-  for (let d = -3; d <= 3; d += 1) setPx(buf, w, 19 + d, 12, ...hexRgb("#707880"));
+  fillRect(buf, w, h, 8, h - 10, 48, 10, C.cream);
+  fillRect(buf, w, h, 10, 24, 44, h - 34, C.brick);
+  fillRect(buf, w, h, 10, 24, 44, 3, C.firoozeh);
+  fillRect(buf, w, h, 28, h - 26, 10, 14, "#3a2818");
+  fillRect(buf, w, h, 16, 36, 8, 8, "#ffd890");
+  fillRect(buf, w, h, 40, 14, 8, 8, C.tank);
   return buf;
 }
 

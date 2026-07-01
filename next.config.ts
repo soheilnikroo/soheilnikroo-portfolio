@@ -1,5 +1,13 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import createMDX from "@next/mdx";
 import type { NextConfig } from "next";
+
+const threePatched = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "lib/world/three-patched.ts",
+);
 
 const nextConfig: NextConfig = {
   pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
@@ -8,6 +16,19 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     viewTransition: true,
+  },
+  turbopack: {
+    resolveAlias: {
+      three: "./lib/world/three-patched.ts",
+    },
+  },
+  webpack: (config) => {
+    config.resolve ??= {};
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      three: threePatched,
+    };
+    return config;
   },
   async headers() {
     return [

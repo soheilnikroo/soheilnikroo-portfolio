@@ -12,13 +12,20 @@ import {
   oneShotFrame,
   smoothstep,
 } from "@/lib/engine";
-import type { ChapterScene, ClipName, LoadedScene, RenderContext, SceneAssets } from "@/lib/engine";
+import type {
+  ChapterScene,
+  CityscapeOpts,
+  ClipName,
+  LoadedScene,
+  RenderContext,
+  SceneAssets,
+} from "@/lib/engine";
 import type { Sprite } from "@/lib/engine/assets";
 import { categoryColor } from "@/lib/world/skill-colors";
 
 import { drawTapMeHint, interactionShake } from "./canvas-hints";
 import { drawSkillBadge } from "./skill-badges";
-import { PALETTES, sceneManifest } from "./world-content";
+import { CHAPTER_SCENE_PROFILES, PALETTES, sceneManifest } from "./world-content";
 import { drawTapPointer, vaultLayout, vaultCameraFocusX } from "./writing-vault";
 
 /**
@@ -84,6 +91,15 @@ function sceneAssets(data: ChapterData, chapterId: string): SceneAssets | undefi
     scene: data.scene,
     manifest: sceneManifest,
     groundSprite: data.grounds.get(chapterId),
+  };
+}
+
+function cityscapeOpts(chapterId: string, extra?: CityscapeOpts): CityscapeOpts {
+  const profile = CHAPTER_SCENE_PROFILES[chapterId];
+  return {
+    layerWeights: profile?.layers,
+    landmarkWeights: profile?.landmarks,
+    ...extra,
   };
 }
 
@@ -457,7 +473,7 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           growth,
           time,
           sceneAssets(data, "intro"),
-          { intro: introEmphasis },
+          cityscapeOpts("intro", { intro: introEmphasis, particleScale: 0.3 }),
         );
 
         const homeX = mapRange(local, 0, 0.22, width * 0.34, -width * 0.25);
@@ -588,7 +604,16 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         const { surface, character, width, height, local, time } = rc;
         const ctx = surface.ctx;
         const gy = groundY(height);
-        drawCityscape(surface, 200, PALETTES.depot, 0, 1, time, sceneAssets(data, "work"));
+        drawCityscape(
+          surface,
+          200,
+          PALETTES.depot,
+          0,
+          1,
+          time,
+          sceneAssets(data, "work"),
+          cityscapeOpts("work"),
+        );
         const workBuilding = prop(data, "work/work-building");
         if (workBuilding) drawProp(surface, workBuilding, width * 0.78, gy, 1.2);
         const crane = prop(data, "work/construction-crane");
@@ -691,6 +716,7 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           1,
           time,
           sceneAssets(data, "skills"),
+          cityscapeOpts("skills"),
         );
         const metro = prop(data, "skills/metro-sign");
         if (metro) drawProp(surface, metro, width * 0.88, gy, 1);
@@ -802,6 +828,7 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           1,
           time,
           sceneAssets(data, "writing"),
+          cityscapeOpts("writing"),
         );
         const bookshelf = prop(data, "writing/bookshelf");
         const shelfFade = clamp01((local - 0.02) / 0.14);
@@ -906,6 +933,7 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           1,
           time,
           sceneAssets(data, "contact"),
+          cityscapeOpts("contact"),
         );
 
         // Moon (flat stepped glow).

@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 import * as React from "react";
 
+import { runThemeTransition } from "@/lib/theme/view-transition";
 import { cn } from "@/lib/utils";
 
 type ThemeChoice = "system" | "light" | "dark";
@@ -37,12 +38,11 @@ export function ThemeToggle({ className }: { className?: string }) {
       className={cn(className)}
       aria-label={`Theme: ${label}. Activate to switch to ${META[next].label.toLowerCase()}.`}
       title={`Theme: ${label}`}
-      onClick={() => {
-        document.documentElement.classList.add("transitioning-theme");
-        setTheme(next);
-        window.setTimeout(() => {
-          document.documentElement.classList.remove("transitioning-theme");
-        }, 380);
+      onClick={(event) => {
+        runThemeTransition(() => setTheme(next), {
+          x: event.clientX,
+          y: event.clientY,
+        });
       }}
     >
       <Icon className="size-4" aria-hidden="true" />

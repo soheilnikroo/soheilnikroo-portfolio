@@ -7,17 +7,15 @@ import * as React from "react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { SoundToggle } from "@/features/ambient";
 import type { NavLink } from "@/lib/schemas";
+import { PIXEL_FONT, PIXEL_ICON_BTN } from "@/lib/world/world-theme";
 
 import { Container } from "./container";
 
-const PIXEL_ICON_BTN =
-  "inline-flex size-10 items-center justify-center rounded-[3px] border-2 border-white/60 bg-[#0d0b16] text-white/85 shadow-[2px_2px_0_rgba(0,0,0,0.5)] transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none disabled:opacity-40";
-
 function navLinkClass(active: boolean): string {
-  return `block rounded-[3px] border-2 px-3 py-2.5 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none ${
+  return `block rounded-[3px] border-2 px-3 py-2.5 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-pixel-border focus-visible:outline-none ${
     active
-      ? "border-amber-400/60 bg-amber-900/30 text-amber-100"
-      : "border-transparent text-white/70 hover:border-white/30 hover:text-white"
+      ? "border-amber-500/60 bg-amber-100/80 text-amber-900 dark:border-amber-400/60 dark:bg-amber-900/30 dark:text-amber-100"
+      : "border-transparent text-pixel-fg-muted hover:border-pixel-border/40 hover:text-pixel-fg"
   }`;
 }
 
@@ -46,11 +44,13 @@ export function SiteHeader({ nav, brand }: { nav: readonly NavLink[]; brand: str
   if (pathname === "/") return null;
 
   return (
-    <header className="sticky top-0 z-[var(--z-nav)] border-b-2 border-white/15 bg-[#0d0b16]/95 [font-family:var(--font-pixel),ui-monospace,monospace] text-white">
+    <header
+      className={`sticky top-0 z-[var(--z-nav)] border-b-2 border-pixel-border/30 bg-pixel-panel/95 text-pixel-fg ${PIXEL_FONT}`}
+    >
       <Container className="flex h-14 items-center justify-between gap-4">
         <Link
           href="/"
-          className="text-sm font-bold tracking-wide text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+          className="text-sm font-bold tracking-wide text-pixel-fg focus-visible:ring-2 focus-visible:ring-pixel-border focus-visible:outline-none"
         >
           {brand}
         </Link>
@@ -88,7 +88,7 @@ export function SiteHeader({ nav, brand }: { nav: readonly NavLink[]; brand: str
             )}
           </button>
           <SoundToggle className={PIXEL_ICON_BTN} />
-          {pathname !== "/read" ? <ThemeToggle className={PIXEL_ICON_BTN} /> : null}
+          <ThemeToggle className={PIXEL_ICON_BTN} />
         </div>
       </Container>
 
@@ -96,7 +96,7 @@ export function SiteHeader({ nav, brand }: { nav: readonly NavLink[]; brand: str
         <nav
           id={menuId}
           aria-label="Mobile"
-          className="border-t-2 border-white/10 bg-[#0d0b16] px-gutter py-3 sm:hidden"
+          className="border-t-2 border-pixel-border/25 bg-pixel-panel px-gutter py-3 sm:hidden"
         >
           <ul className="space-y-1">
             {nav.map((link) => {

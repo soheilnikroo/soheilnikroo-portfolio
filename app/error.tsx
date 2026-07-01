@@ -2,6 +2,15 @@
 import Link from "next/link";
 import * as React from "react";
 
+import {
+  PIXEL_CARD,
+  PIXEL_FONT,
+  PIXEL_GHOST_BTN,
+  PIXEL_HEADING_SHADOW,
+  PIXEL_PRIMARY_BTN,
+  WORLD_SHELL,
+} from "@/lib/world/world-theme";
+
 export default function Error({
   error,
   reset,
@@ -15,28 +24,29 @@ export default function Error({
     console.error(error);
   }, [error]);
   return (
-    <section className="flex min-h-[82vh] items-center justify-center bg-[#05040b] px-6 text-center [font-family:var(--font-pixel),ui-monospace,monospace] text-white">
-      <div className="w-full max-w-lg rounded-[6px] border-4 border-rose-400/40 bg-[#0d0b16] p-8 shadow-[6px_6px_0_rgba(0,0,0,0.6)]">
-        <p className="text-xs tracking-[0.3em] text-rose-300/80 uppercase">System crash</p>
-        <h1 className="mt-3 text-3xl font-black [text-shadow:3px_3px_0_#000] sm:text-5xl">
+    <section
+      className={`flex min-h-[82vh] items-center justify-center px-6 text-center ${WORLD_SHELL}`}
+    >
+      <div
+        className={`w-full max-w-lg border-4 border-rose-500/40 p-8 ${PIXEL_CARD} ${PIXEL_FONT}`}
+      >
+        <p className="text-xs tracking-[0.3em] text-rose-600/80 uppercase dark:text-rose-300/80">
+          System crash
+        </p>
+        <h1 className={`mt-3 text-3xl font-black sm:text-5xl ${PIXEL_HEADING_SHADOW}`}>
           ! GLITCH !
         </h1>
-        <p className="mx-auto mt-4 max-w-[44ch] text-sm text-white/60">
+        <p className="mx-auto mt-4 max-w-[44ch] text-sm text-pixel-fg-muted">
           Something broke while rendering this screen. Retry the level, or warp home.
         </p>
-        {error.digest ? <p className="mt-3 text-xs text-white/40">ref: {error.digest}</p> : null}
+        {error.digest ? (
+          <p className="mt-3 text-xs text-pixel-fg-muted/70">ref: {error.digest}</p>
+        ) : null}
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-          <button
-            type="button"
-            onClick={reset}
-            className="rounded-[3px] border-2 border-black bg-[#6366f1] px-5 py-2.5 text-sm text-white shadow-[3px_3px_0_#000] transition-transform hover:-translate-y-0.5"
-          >
+          <button type="button" onClick={reset} className={PIXEL_PRIMARY_BTN}>
             ↻ Retry
           </button>
-          <Link
-            href="/"
-            className="rounded-[3px] border-2 border-white/30 px-5 py-2.5 text-sm text-white/80 shadow-[3px_3px_0_rgba(0,0,0,0.5)] transition-colors hover:border-white/60"
-          >
+          <Link href="/" className={PIXEL_GHOST_BTN}>
             Back to start
           </Link>
         </div>

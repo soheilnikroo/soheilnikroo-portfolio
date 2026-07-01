@@ -7,6 +7,12 @@ import { Container } from "@/components/layout/container";
 import { PixelPage } from "@/components/layout/pixel-page";
 import { site } from "@/lib/config/site";
 import { getProjectBySlug, getProjects } from "@/lib/data";
+import {
+  PIXEL_CARD,
+  PIXEL_GHOST_BTN,
+  PIXEL_HEADING_SHADOW,
+  PIXEL_PRIMARY_BTN,
+} from "@/lib/world/world-theme";
 
 export const revalidate = 300;
 export async function generateStaticParams() {
@@ -89,12 +95,15 @@ export default async function ProjectPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       <PixelPage>
         <Container className="py-section">
-          <Link href="/work" className="text-sm text-white/60 transition-colors hover:text-white">
+          <Link
+            href="/work"
+            className="text-sm text-pixel-fg-muted transition-colors hover:text-pixel-fg"
+          >
             ← Projects
           </Link>
 
           <header className="mt-6 max-w-3xl">
-            <div className="flex flex-wrap items-center gap-2 text-[11px] text-white/55">
+            <div className="flex flex-wrap items-center gap-2 text-[11px] text-pixel-fg-muted">
               <span>{project.role}</span>
               <span>·</span>
               <span>{project.year}</span>
@@ -105,15 +114,15 @@ export default async function ProjectPage({
                 {project.status}
               </span>
             </div>
-            <h1 className="mt-3 text-4xl font-black [text-shadow:3px_3px_0_#000] sm:text-6xl">
+            <h1 className={`mt-3 text-4xl font-black sm:text-6xl ${PIXEL_HEADING_SHADOW}`}>
               {project.title}
             </h1>
-            <p className="mt-3 text-lg text-white/70">{project.summary}</p>
+            <p className="mt-3 text-lg text-pixel-fg-muted">{project.summary}</p>
             <div className="mt-4 flex flex-wrap gap-1.5">
               {project.tech.map((t) => (
                 <span
                   key={t}
-                  className="rounded-[2px] border border-white/15 px-2 py-0.5 text-xs text-white/65"
+                  className="rounded-[2px] border border-pixel-border/30 px-2 py-0.5 text-xs text-pixel-fg-muted"
                 >
                   {t}
                 </span>
@@ -125,7 +134,7 @@ export default async function ProjectPage({
                   href={project.links.live}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-[3px] border-2 border-black bg-[#6366f1] px-4 py-2 text-sm text-white shadow-[3px_3px_0_#000] transition-transform hover:-translate-y-0.5"
+                  className={`${PIXEL_PRIMARY_BTN} px-4 py-2`}
                 >
                   Visit live ↗
                 </a>
@@ -135,7 +144,7 @@ export default async function ProjectPage({
                   href={project.links.repo}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-[3px] border-2 border-white/30 px-4 py-2 text-sm text-white/80 transition-colors hover:border-white/60"
+                  className={`${PIXEL_GHOST_BTN} px-4 py-2`}
                 >
                   Source ↗
                 </a>
@@ -145,7 +154,7 @@ export default async function ProjectPage({
                   href={project.links.caseStudy}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-[3px] border-2 border-white/30 px-4 py-2 text-sm text-white/80 transition-colors hover:border-white/60"
+                  className={`${PIXEL_GHOST_BTN} px-4 py-2`}
                 >
                   Case study ↗
                 </a>
@@ -154,13 +163,15 @@ export default async function ProjectPage({
           </header>
 
           <section className="mt-10">
-            <h2 className="text-xs tracking-[0.3em] text-amber-300/80 uppercase">Screens</h2>
+            <h2 className="text-xs tracking-[0.3em] text-amber-700/80 uppercase dark:text-amber-300/80">
+              Screens
+            </h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {shots.map((src, i) =>
                 src ? (
                   <div
                     key={src}
-                    className="relative aspect-video overflow-hidden rounded-[4px] border-2 border-white/15"
+                    className="relative aspect-video overflow-hidden rounded-[4px] border-2 border-pixel-border/30"
                   >
                     <Image
                       src={src}
@@ -173,7 +184,7 @@ export default async function ProjectPage({
                 ) : (
                   <div
                     key={i}
-                    className="flex aspect-video items-center justify-center rounded-[4px] border-2 border-dashed border-white/20 bg-[#0d0b16] px-4 text-center text-xs leading-relaxed text-white/40"
+                    className="flex aspect-video items-center justify-center rounded-[4px] border-2 border-dashed border-pixel-border/40 bg-pixel-panel px-4 text-center text-xs leading-relaxed text-pixel-fg-muted/70"
                   >
                     Drop a screenshot in
                     <br />
@@ -186,20 +197,20 @@ export default async function ProjectPage({
 
           <section className="mt-12 grid gap-6 sm:grid-cols-2">
             {BEATS.map((b) => (
-              <div key={b.key} className="rounded-[4px] border-2 border-white/12 bg-[#0d0b16] p-5">
+              <div key={b.key} className={`p-5 ${PIXEL_CARD}`}>
                 <h3 className="text-xs tracking-[0.24em] uppercase" style={{ color: accent }}>
                   {b.label}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-white/75">
+                <p className="mt-2 text-sm leading-relaxed text-pixel-fg-muted">
                   {project.narrative[b.key]}
                 </p>
               </div>
             ))}
           </section>
 
-          <nav className="mt-14 flex items-center justify-between gap-4 border-t-2 border-white/12 pt-6 text-sm">
+          <nav className="mt-14 flex items-center justify-between gap-4 border-t-2 border-pixel-border/30 pt-6 text-sm">
             {prev ? (
-              <Link href={`/work/${prev.slug}`} className="text-white/70 hover:text-white">
+              <Link href={`/work/${prev.slug}`} className="text-pixel-fg-muted hover:text-pixel-fg">
                 ← {prev.title}
               </Link>
             ) : (
@@ -208,7 +219,7 @@ export default async function ProjectPage({
             {next ? (
               <Link
                 href={`/work/${next.slug}`}
-                className="text-right text-white/70 hover:text-white"
+                className="text-right text-pixel-fg-muted hover:text-pixel-fg"
               >
                 {next.title} →
               </Link>

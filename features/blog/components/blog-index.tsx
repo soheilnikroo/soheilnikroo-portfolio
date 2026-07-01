@@ -5,6 +5,7 @@ import * as React from "react";
 import type { PostMeta } from "@/lib/schemas";
 import { formatDate } from "@/lib/services/date";
 import { cn } from "@/lib/utils";
+import { PIXEL_CARD } from "@/lib/world/world-theme";
 
 import { filterPosts } from "../use-cases/filter-posts";
 
@@ -17,10 +18,10 @@ export function BlogIndex({ posts, categories }: { posts: PostMeta[]; categories
   );
   const chipClass = (on: boolean) =>
     cn(
-      "rounded-[3px] border-2 px-3 py-1 text-xs transition-colors focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none",
+      "rounded-[3px] border-2 px-3 py-1 text-xs transition-colors focus-visible:ring-2 focus-visible:ring-pixel-border focus-visible:outline-none",
       on
-        ? "border-emerald-400/60 bg-emerald-900/40 text-emerald-100"
-        : "border-white/20 bg-[#0d0b16] text-white/65 hover:border-white/35",
+        ? "border-emerald-500/60 bg-emerald-100/80 text-emerald-900 dark:border-emerald-400/60 dark:bg-emerald-900/40 dark:text-emerald-100"
+        : "border-pixel-border/35 bg-pixel-panel text-pixel-fg-muted hover:border-pixel-border/55",
     );
   return (
     <div>
@@ -31,7 +32,7 @@ export function BlogIndex({ posts, categories }: { posts: PostMeta[]; categories
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search writing…"
           aria-label="Search writing"
-          className="w-full max-w-xs rounded-[3px] border-2 border-white/20 bg-[#0d0b16] px-3 py-2 text-sm text-white outline-none placeholder:text-white/40 focus-visible:border-emerald-400/50 focus-visible:ring-2 focus-visible:ring-emerald-400/30"
+          className="w-full max-w-xs rounded-[3px] border-2 border-pixel-border/35 bg-pixel-panel px-3 py-2 text-sm text-pixel-fg outline-none placeholder:text-pixel-fg-muted/70 focus-visible:border-emerald-500/50 focus-visible:ring-2 focus-visible:ring-emerald-500/30 dark:focus-visible:border-emerald-400/50 dark:focus-visible:ring-emerald-400/30"
         />
         <div className="flex flex-wrap gap-2">
           <button
@@ -59,27 +60,30 @@ export function BlogIndex({ posts, categories }: { posts: PostMeta[]; categories
           <li key={post.slug}>
             <Link
               href={`/blog/${post.slug}`}
-              className="group block rounded-[4px] border-2 border-white/12 bg-[#0d0b16] p-5 shadow-[3px_3px_0_rgba(0,0,0,0.5)] transition-transform hover:-translate-y-0.5 hover:border-emerald-300/40 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+              className={cn(
+                PIXEL_CARD,
+                "group block p-5 transition-transform hover:-translate-y-0.5 hover:border-emerald-500/40 focus-visible:ring-2 focus-visible:ring-pixel-border focus-visible:outline-none dark:hover:border-emerald-300/40",
+              )}
             >
-              <div className="flex flex-wrap items-center gap-3 text-[10px] text-white/50">
-                <span className="rounded-[2px] border border-emerald-500/40 px-1.5 py-0.5 text-emerald-200/90">
+              <div className="flex flex-wrap items-center gap-3 text-[10px] text-pixel-fg-muted">
+                <span className="rounded-[2px] border border-emerald-500/40 px-1.5 py-0.5 text-emerald-700 dark:text-emerald-200/90">
                   {post.category}
                 </span>
                 <span>{formatDate(post.date)}</span>
                 <span>· {post.readingMinutes} min read</span>
               </div>
-              <h2 className="mt-2 text-xl font-bold text-white group-hover:text-emerald-50">
+              <h2 className="mt-2 text-xl font-bold text-pixel-fg group-hover:text-emerald-800 dark:group-hover:text-emerald-50">
                 {post.title}
               </h2>
-              <p className="mt-2 line-clamp-2 text-sm text-white/60">{post.description}</p>
-              <span className="mt-3 inline-block text-sm text-emerald-200/90 transition-transform group-hover:translate-x-0.5">
+              <p className="mt-2 line-clamp-2 text-sm text-pixel-fg-muted">{post.description}</p>
+              <span className="mt-3 inline-block text-sm text-emerald-700 transition-transform group-hover:translate-x-0.5 dark:text-emerald-200/90">
                 Open chest →
               </span>
             </Link>
           </li>
         ))}
         {filtered.length === 0 ? (
-          <li className="rounded-[4px] border-2 border-dashed border-white/20 bg-[#0d0b16] p-10 text-center text-white/50">
+          <li className="rounded-[4px] border-2 border-dashed border-pixel-border/40 bg-pixel-panel p-10 text-center text-pixel-fg-muted">
             No posts match your search.
           </li>
         ) : null}

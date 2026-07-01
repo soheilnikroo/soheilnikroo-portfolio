@@ -6,6 +6,7 @@ import { SiteFooter, SiteFooterGate, SiteHeader } from "@/components/layout";
 import { MotionConfigProvider, ScrollProgressProvider } from "@/components/motion";
 import { RouteTransition } from "@/components/motion/route-transition";
 import { ClickSpark } from "@/components/reactbits/click-spark";
+import { ThemeMetaSync } from "@/components/theme/theme-meta-sync";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { WorldThemeSync } from "@/components/theme/world-theme-sync";
 import { CustomCursor } from "@/components/visual/custom-cursor";
@@ -57,8 +58,8 @@ export const viewport: Viewport = {
   viewportFit: "cover",
   colorScheme: "dark light",
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#05040b" },
-    { media: "(prefers-color-scheme: light)", color: "#f5f5f5" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0918" },
+    { media: "(prefers-color-scheme: light)", color: "#f3f0fa" },
   ],
 };
 export default async function RootLayout({
@@ -74,8 +75,9 @@ export default async function RootLayout({
       className={`${GeistSans.variable} ${GeistMono.variable} ${pixelFont.variable} h-full antialiased`}
     >
       <body className="min-h-full" suppressHydrationWarning>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <WorldThemeSync />
+          <ThemeMetaSync />
           <MotionConfigProvider>
             <ScrollProgressProvider>
               <AmbientProvider bedSrc="/audio/ambient/site-bed.ogg">

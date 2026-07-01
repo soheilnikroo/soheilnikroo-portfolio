@@ -13,6 +13,7 @@ import { site } from "@/lib/config/site";
 import { getAllPostMeta, getPostMetaBySlug, getPostSource } from "@/lib/data";
 import { formatDate } from "@/lib/services/date";
 import { extractToc } from "@/lib/services/toc";
+import { PIXEL_CARD, PIXEL_HEADING_SHADOW } from "@/lib/world/world-theme";
 
 export const revalidate = 300;
 
@@ -64,7 +65,10 @@ export default async function PostPage({
         rehypePlugins: [
           rehypeSlug,
           [rehypeAutolinkHeadings, { behavior: "wrap" }],
-          [prettyCode, { theme: "github-dark", keepBackground: true }],
+          [
+            prettyCode,
+            { theme: { dark: "github-dark", light: "github-light" }, keepBackground: true },
+          ],
         ],
       },
     },
@@ -90,7 +94,7 @@ export default async function PostPage({
       <Container className="py-section">
         <Link
           href="/blog"
-          className="text-sm text-white/60 transition-colors hover:text-emerald-200"
+          className="text-sm text-pixel-fg-muted transition-colors hover:text-emerald-700 dark:hover:text-emerald-200"
         >
           ← Writing
         </Link>
@@ -98,8 +102,8 @@ export default async function PostPage({
         <article className="mt-8 grid gap-12 lg:grid-cols-[1fr_200px]">
           <div className="min-w-0">
             {toc.length > 0 ? (
-              <details className="mb-6 rounded-[4px] border-2 border-white/12 bg-[#0d0b16] p-4 lg:hidden">
-                <summary className="cursor-pointer text-[10px] tracking-[0.24em] text-emerald-300/80 uppercase">
+              <details className={`mb-6 p-4 lg:hidden ${PIXEL_CARD}`}>
+                <summary className="cursor-pointer text-[10px] tracking-[0.24em] text-emerald-700/80 uppercase dark:text-emerald-300/80">
                   On this page
                 </summary>
                 <ul className="mt-3 space-y-2 text-sm">
@@ -107,7 +111,7 @@ export default async function PostPage({
                     <li key={item.id} className={item.depth === 3 ? "pl-3" : ""}>
                       <a
                         href={`#${item.id}`}
-                        className="text-white/55 transition-colors hover:text-emerald-200"
+                        className="text-pixel-fg-muted transition-colors hover:text-emerald-700 dark:hover:text-emerald-200"
                       >
                         {item.text}
                       </a>
@@ -117,30 +121,27 @@ export default async function PostPage({
               </details>
             ) : null}
             <header className="max-w-[var(--prose)]">
-              <div className="flex flex-wrap items-center gap-3 text-[10px] text-white/50">
-                <span className="rounded-[2px] border border-emerald-500/40 px-1.5 py-0.5 text-emerald-200/90">
+              <div className="flex flex-wrap items-center gap-3 text-[10px] text-pixel-fg-muted">
+                <span className="rounded-[2px] border border-emerald-500/40 px-1.5 py-0.5 text-emerald-700 dark:text-emerald-200/90">
                   {meta.category}
                 </span>
                 <span>{formatDate(meta.date)}</span>
                 <span>· {meta.readingMinutes} min read</span>
               </div>
-              <h1 className="mt-4 text-4xl font-black [text-shadow:3px_3px_0_#000] sm:text-5xl">
+              <h1 className={`mt-4 text-4xl font-black sm:text-5xl ${PIXEL_HEADING_SHADOW}`}>
                 {meta.title}
               </h1>
-              <p className="mt-4 text-lg text-pretty text-white/65">{meta.description}</p>
+              <p className="mt-4 text-lg text-pretty text-pixel-fg-muted">{meta.description}</p>
             </header>
-            <div className="prose mt-10 max-w-none prose-invert prose-headings:font-bold prose-a:text-emerald-300 prose-pre:border-2 prose-pre:border-white/10">
+            <div className="prose mt-10 max-w-none dark:prose-invert prose-headings:font-bold prose-a:text-emerald-700 dark:prose-a:text-emerald-300 prose-pre:border-2 prose-pre:border-pixel-border/25">
               {content}
             </div>
           </div>
 
           {toc.length > 0 ? (
             <aside className="hidden lg:block">
-              <nav
-                aria-label="On this page"
-                className="sticky top-24 rounded-[4px] border-2 border-white/12 bg-[#0d0b16] p-4"
-              >
-                <p className="mb-3 text-[10px] tracking-[0.24em] text-emerald-300/80 uppercase">
+              <nav aria-label="On this page" className={`sticky top-24 p-4 ${PIXEL_CARD}`}>
+                <p className="mb-3 text-[10px] tracking-[0.24em] text-emerald-700/80 uppercase dark:text-emerald-300/80">
                   On this page
                 </p>
                 <ul className="space-y-2 text-sm">
@@ -148,7 +149,7 @@ export default async function PostPage({
                     <li key={item.id} className={item.depth === 3 ? "pl-3" : ""}>
                       <a
                         href={`#${item.id}`}
-                        className="text-white/55 transition-colors hover:text-emerald-200"
+                        className="text-pixel-fg-muted transition-colors hover:text-emerald-700 dark:hover:text-emerald-200"
                       >
                         {item.text}
                       </a>

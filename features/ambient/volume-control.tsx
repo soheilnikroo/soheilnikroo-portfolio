@@ -50,7 +50,7 @@ export function VolumeControl({ className }: { className?: string }) {
         {soundActive ? (
           <button
             type="button"
-            className="rounded-[3px] border-2 border-white/30 px-2 py-1 text-[10px] tracking-[0.18em] text-white/70 uppercase sm:hidden"
+            className="rounded-[3px] border-2 border-pixel-border/40 px-2 py-1 text-[10px] tracking-[0.18em] text-pixel-fg-muted uppercase sm:hidden"
             aria-expanded={mobileSliderOpen}
             aria-label={mobileSliderOpen ? "Hide volume slider" : "Show volume slider"}
             onClick={() => setMobileSliderOpen((open) => !open)}

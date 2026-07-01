@@ -1,7 +1,8 @@
 import postgres from "postgres";
 
 import { describeDatabaseUrl, getPostgresClientOptions } from "./connection-url";
-import { type DbConnectOptions, withConnectTimeout } from "./resilience";
+import type { DbConnectOptions } from "./resilience";
+import { withConnectTimeout } from "./resilience";
 import { runMigrations } from "./schema";
 
 type Sql = ReturnType<typeof postgres>;

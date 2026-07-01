@@ -211,7 +211,7 @@ export function GameDialogueBox({
                 )}
               </h2>
               {hook ? (
-                <p className="mt-1 text-xs leading-relaxed text-white/85 sm:mt-1.5 sm:text-base">
+                <p className="mt-1 text-sm leading-relaxed font-medium text-white/95 [text-shadow:1px_1px_0_#000] sm:mt-1.5 sm:text-base sm:leading-[1.7]">
                   {showHook
                     ? renderHighlightedBody(
                         displayed.slice(title.length).slice(0, hook.length) ||
@@ -222,7 +222,7 @@ export function GameDialogueBox({
               ) : null}
               {body ? (
                 <p
-                  className={`mt-1 text-xs leading-snug text-white/80 sm:text-base ${gate ? "line-clamp-2 sm:line-clamp-2" : compact ? "line-clamp-2 sm:line-clamp-2" : "line-clamp-3 sm:line-clamp-3"}`}
+                  className={`mt-1.5 text-sm leading-relaxed font-medium text-white/95 [text-shadow:1px_1px_0_#000] sm:mt-2 sm:text-base sm:leading-[1.7] ${gate ? "line-clamp-2 sm:line-clamp-2" : compact ? "line-clamp-2 sm:line-clamp-2" : "line-clamp-3 sm:line-clamp-3"}`}
                 >
                   {showBody
                     ? renderHighlightedBody(

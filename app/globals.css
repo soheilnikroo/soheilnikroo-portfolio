@@ -146,7 +146,7 @@
   --pixel-shell: oklch(0.97 0.012 280);
   --pixel-panel: oklch(0.93 0.022 280);
   --pixel-fg: oklch(0.22 0.045 280);
-  --pixel-fg-muted: oklch(0.48 0.03 280);
+  --pixel-fg-muted: oklch(0.38 0.04 280);
   --pixel-border: oklch(0.72 0.05 280);
   --pixel-shadow: oklch(0.22 0.045 280 / 0.28);
   --pixel-text-shadow: oklch(0.72 0.05 280 / 0.45);
@@ -192,7 +192,7 @@
   --pixel-shell: oklch(0.08 0.022 280);
   --pixel-panel: oklch(0.13 0.028 280);
   --pixel-fg: oklch(0.97 0.005 280);
-  --pixel-fg-muted: oklch(0.72 0.02 280);
+  --pixel-fg-muted: oklch(0.78 0.02 280);
   --pixel-border: oklch(0.97 0.005 280 / 55%);
   --pixel-shadow: oklch(0 0 0 / 0.5);
   --pixel-text-shadow: oklch(0 0 0 / 0.85);
@@ -270,7 +270,7 @@ html[data-pixel-world] {
   --pixel-shell: oklch(0.08 0.022 280);
   --pixel-panel: oklch(0.13 0.028 280);
   --pixel-fg: oklch(0.97 0.005 280);
-  --pixel-fg-muted: oklch(0.72 0.02 280);
+  --pixel-fg-muted: oklch(0.78 0.02 280);
   --pixel-border: oklch(0.97 0.005 280 / 55%);
   --pixel-shadow: oklch(0 0 0 / 0.5);
   --pixel-text-shadow: oklch(0 0 0 / 0.85);

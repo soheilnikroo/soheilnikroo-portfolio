@@ -2,7 +2,12 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { pixelFont } from "@/lib/world/pixel-font";
-import { CHAPTER_ACCENTS, WORLD_SHELL } from "@/lib/world/world-theme";
+import {
+  CHAPTER_ACCENTS,
+  PIXEL_READABLE_BODY,
+  PIXEL_READABLE_ON_DARK,
+  WORLD_SHELL,
+} from "@/lib/world/world-theme";
 
 import type { WorldExperienceProps } from "./world-experience";
 
@@ -29,10 +34,10 @@ function ChapterPanel({
         <p className={`text-xs font-bold tracking-[0.18em] uppercase ${accent.kicker}`}>
           {accent.label}
         </p>
-        <h2 id={`${id}-title`} className="mt-2 text-lg font-bold text-white sm:text-xl">
+        <h2 id={`${id}-title`} className={`mt-2 text-xl font-bold sm:text-2xl ${accent.heading}`}>
           {goal}
         </h2>
-        <div className="mt-4 space-y-3 text-sm leading-relaxed">{children}</div>
+        <div className={`mt-4 space-y-3 ${PIXEL_READABLE_BODY}`}>{children}</div>
       </div>
     </section>
   );
@@ -92,7 +97,7 @@ export function WorldNarrative({
           </div>
           <h1 className="mt-4 text-2xl font-bold text-white sm:text-3xl">{profileName}</h1>
           <p className="mt-1 text-sm text-indigo-200/90">{role}</p>
-          <p className="mt-4 text-sm leading-relaxed text-white/75">{introProse}</p>
+          <p className={`mt-4 ${PIXEL_READABLE_ON_DARK}`}>{introProse}</p>
         </header>
 
         <div className="space-y-6">

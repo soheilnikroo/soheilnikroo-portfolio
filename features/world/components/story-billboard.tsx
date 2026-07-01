@@ -109,12 +109,14 @@ export function StoryBillboard({
           {title}
         </h2>
         {body && !compact ? (
-          <p className="mx-auto mt-2.5 max-w-[20rem] text-sm leading-relaxed text-white/75 sm:text-base">
+          <p className="mx-auto mt-2.5 max-w-[20rem] text-sm leading-[1.7] font-medium text-white/95 [text-shadow:1px_1px_0_#000] sm:text-base">
             {body}
           </p>
         ) : null}
         {body && compact ? (
-          <p className="mx-auto mt-1 line-clamp-2 text-xs leading-relaxed text-white/65">{body}</p>
+          <p className="mx-auto mt-1 line-clamp-2 text-sm leading-relaxed font-medium text-white/90 [text-shadow:1px_1px_0_#000]">
+            {body}
+          </p>
         ) : null}
         {action ? <div className={compact ? "mt-2.5" : "mt-4"}>{action}</div> : null}
         {dotCount !== undefined && dotCount > 1 ? (

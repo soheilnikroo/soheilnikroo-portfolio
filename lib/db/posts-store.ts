@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import type { DbConnectOptions } from "./resilience";
 import { ensureSchema, getSql } from "./sql";
 import { normalizeTextArray, sqlTextArray } from "./text-array";
 
@@ -33,9 +34,7 @@ function normalizePostRow(row: PostRow): PostRow {
 }
 export async function listPostRows(
   includeDrafts = false,
-  options?: {
-    force?: boolean;
-  },
+  options?: DbConnectOptions,
 ): Promise<PostRow[]> {
   await ensureSchema(options);
   const sql = getSql();
@@ -52,9 +51,7 @@ export async function getPostRowBySlug(slug: string): Promise<PostRow | null> {
 }
 export async function getPostRowById(
   id: string,
-  options?: {
-    force?: boolean;
-  },
+  options?: DbConnectOptions,
 ): Promise<PostRow | null> {
   await ensureSchema(options);
   const sql = getSql();

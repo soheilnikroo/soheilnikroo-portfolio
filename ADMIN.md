@@ -46,7 +46,7 @@ If logs show `CONNECT_TIMEOUT` or `DATABASE_CONNECT_TIMEOUT` on Liara:
 5. Redeploy after changing env vars: `liara deploy --app soheilnikroo`
 6. Run `pnpm db:seed` locally with the same URL to verify.
 
-Liara runs in **Germany**; Supabase is in **Tokyo** (`ap-northeast-1`) — first connections can be slow. The app retries admin connections up to 4 times.
+Liara **builds in Germany** (`liara.json`) but **runs in Iran** — Supabase is in Tokyo. The pooler URL can work during build (slowly) yet fail at runtime. Prefer a **Liara Postgres** database on the private network for production, or accept bundled fallbacks on the public site until connectivity is fixed.
 
 The public site falls back to bundled content when the database is unreachable, but **admin requires a live connection**.
 

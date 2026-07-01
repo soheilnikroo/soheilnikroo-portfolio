@@ -1,3 +1,5 @@
+import { isNextProductionBuild } from "./request-context";
+
 const CIRCUIT_COOLDOWN_MS = 30_000;
 let circuitOpenUntil = 0;
 let failureStreak = 0;
@@ -21,13 +23,30 @@ export function resetDbCircuit(): void {
 export type DbConnectOptions = {
   /** Admin writes bypass the circuit breaker and use a longer timeout. */
   force?: boolean;
+  /** Fail fast (admin UI reads, build-time SSG). */
+  quick?: boolean;
 };
 
-const READ_CONNECT_TIMEOUT_MS = 35_000;
+const QUICK_CONNECT_TIMEOUT_MS = 30_000;
+const READ_CONNECT_TIMEOUT_MS = process.env.NODE_ENV === "production" ? 60_000 : 35_000;
+const BUILD_CONNECT_TIMEOUT_MS = 10_000;
 const ADMIN_CONNECT_TIMEOUT_MS = 90_000;
+const READ_ATTEMPTS = process.env.NODE_ENV === "production" ? 2 : 1;
+const BUILD_ATTEMPTS = 1;
+const ADMIN_ATTEMPTS = 4;
 
 export function connectTimeoutMs(options?: DbConnectOptions): number {
-  return options?.force ? ADMIN_CONNECT_TIMEOUT_MS : READ_CONNECT_TIMEOUT_MS;
+  if (options?.quick) return QUICK_CONNECT_TIMEOUT_MS;
+  if (options?.force) return ADMIN_CONNECT_TIMEOUT_MS;
+  if (isNextProductionBuild()) return BUILD_CONNECT_TIMEOUT_MS;
+  return READ_CONNECT_TIMEOUT_MS;
+}
+
+function connectAttempts(options?: DbConnectOptions): number {
+  if (options?.quick) return 1;
+  if (options?.force) return ADMIN_ATTEMPTS;
+  if (isNextProductionBuild()) return BUILD_ATTEMPTS;
+  return READ_ATTEMPTS;
 }
 
 function sleep(ms: number): Promise<void> {
@@ -38,12 +57,13 @@ export async function withConnectTimeout<T>(
   operation: () => Promise<T>,
   options?: DbConnectOptions,
 ): Promise<T> {
-  if (!options?.force && isDbCircuitOpen()) {
+  const bypassCircuit = options?.force === true || options?.quick === true;
+  if (!bypassCircuit && isDbCircuitOpen()) {
     throw new Error("DATABASE_CIRCUIT_OPEN");
   }
 
   const timeoutMs = connectTimeoutMs(options);
-  const attempts = options?.force ? 4 : 1;
+  const attempts = connectAttempts(options);
   let lastError: unknown;
 
   for (let attempt = 0; attempt < attempts; attempt += 1) {
@@ -67,6 +87,6 @@ export async function withConnectTimeout<T>(
     }
   }
 
-  if (!options?.force) openDbCircuit();
+  if (!bypassCircuit) openDbCircuit();
   throw lastError;
 }

@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { isSameOriginRequest } from "@/lib/auth/origin";
 import { ADMIN_API_PREFIX, isAdminPagePath, isProtectedAdminPath } from "@/lib/auth/paths";
@@ -19,6 +18,9 @@ function withAdminNoIndex(response: NextResponse): NextResponse {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", pathname);
+  const requestWithPath = new NextRequest(request.url, { headers: requestHeaders });
 
   if (
     pathname.startsWith(ADMIN_API_PREFIX) &&
@@ -40,9 +42,9 @@ export async function proxy(request: NextRequest) {
 
   let response: NextResponse;
   if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
-    response = await updateSession(request);
+    response = await updateSession(requestWithPath);
   } else {
-    response = NextResponse.next({ request });
+    response = NextResponse.next({ request: requestWithPath });
   }
 
   if (isAdminPagePath(pathname)) {

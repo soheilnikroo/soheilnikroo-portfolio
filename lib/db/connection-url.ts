@@ -23,6 +23,7 @@ export function getPostgresClientOptions(url: string) {
     connect_timeout: 60,
     prepare: !isTransactionPooler(url),
     ssl: isSupabaseUrl(url) ? ("require" as const) : undefined,
+    onnotice: () => {},
     connection: {
       application_name: "soheilnikroo",
     },

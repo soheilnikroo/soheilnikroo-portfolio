@@ -1,6 +1,7 @@
 import postgres from "postgres";
 
 import { describeDatabaseUrl, getPostgresClientOptions } from "./connection-url";
+import { resolveDbConnectOptions } from "./request-context";
 import type { DbConnectOptions } from "./resilience";
 import { withConnectTimeout } from "./resilience";
 import { runMigrations } from "./schema";
@@ -55,14 +56,14 @@ async function migrate(options?: DbConnectOptions): Promise<void> {
 }
 
 /** Ensures tables exist. Admin (`force`) always retries; public reads memoize success only. */
-export function ensureSchema(options?: DbConnectOptions): Promise<void> {
-  const force = options?.force === true;
+export async function ensureSchema(options?: DbConnectOptions): Promise<void> {
+  const resolved = await resolveDbConnectOptions(options);
+  const force = resolved.force === true;
 
-  // Admin writes must not cache a rejected promise — Liara cross-region connects can be slow/flaky.
-  if (force) return migrate({ force: true });
+  if (force) return migrate(resolved);
 
   if (!globalThis.__portfolioSchemaReady) {
-    globalThis.__portfolioSchemaReady = migrate().catch((error) => {
+    globalThis.__portfolioSchemaReady = migrate(resolved).catch((error) => {
       globalThis.__portfolioSchemaReady = undefined;
       throw error;
     });

@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import type { Project } from "@/lib/schemas";
 
+import type { DbConnectOptions } from "./resilience";
 import { ensureSchema, getSql } from "./sql";
 
 export type ProjectRow = {
@@ -11,7 +12,7 @@ export type ProjectRow = {
   created_at: Date;
   updated_at: Date;
 };
-export async function listProjectRows(options?: { force?: boolean }): Promise<ProjectRow[]> {
+export async function listProjectRows(options?: DbConnectOptions): Promise<ProjectRow[]> {
   await ensureSchema(options);
   const sql = getSql();
   const rows = await sql<ProjectRow[]>`
@@ -21,9 +22,7 @@ export async function listProjectRows(options?: { force?: boolean }): Promise<Pr
 }
 export async function getProjectRowById(
   id: string,
-  options?: {
-    force?: boolean;
-  },
+  options?: DbConnectOptions,
 ): Promise<ProjectRow | null> {
   await ensureSchema(options);
   const sql = getSql();

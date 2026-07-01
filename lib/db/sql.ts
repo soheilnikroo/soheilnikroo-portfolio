@@ -1,5 +1,7 @@
 import postgres from "postgres";
 
+import { describeDatabaseUrl, getPostgresClientOptions } from "./connection-url";
+import { type DbConnectOptions, withConnectTimeout } from "./resilience";
 import { runMigrations } from "./schema";
 
 type Sql = ReturnType<typeof postgres>;
@@ -7,6 +9,14 @@ type Sql = ReturnType<typeof postgres>;
 declare global {
   var __portfolioSql: Sql | undefined;
   var __portfolioSchemaReady: Promise<void> | undefined;
+  var __portfolioSchemaForceReady: Promise<void> | undefined;
+  var __portfolioDbTargetLogged: boolean | undefined;
+}
+
+function logDatabaseTarget(url: string): void {
+  if (globalThis.__portfolioDbTargetLogged) return;
+  globalThis.__portfolioDbTargetLogged = true;
+  console.info(`[db] target ${describeDatabaseUrl(url)}`);
 }
 
 /** Lazily-created Postgres client (pooled). Safe to import at build time —
@@ -17,21 +27,26 @@ export function getSql(): Sql {
   if (!url) {
     throw new Error("DATABASE_URL is not set. Copy .env.example to .env and fill it in.");
   }
-  const client = postgres(url, {
-    max: 10,
-    idle_timeout: 20,
-    connect_timeout: 8,
-    prepare: false,
-    ssl: url.includes("supabase.com") || url.includes("supabase.co") ? "require" : undefined,
-  });
+  logDatabaseTarget(url);
+  const client = postgres(url, getPostgresClientOptions(url));
   globalThis.__portfolioSql = client;
   return client;
 }
 
-/** Ensures the posts table exists. Memoized so it runs at most once per process. */
-export function ensureSchema(): Promise<void> {
+/** Ensures tables exist. Memoized per process; public reads use a short timeout. */
+export function ensureSchema(options?: DbConnectOptions): Promise<void> {
+  const force = options?.force === true;
+  if (force) {
+    if (!globalThis.__portfolioSchemaForceReady) {
+      globalThis.__portfolioSchemaForceReady = withConnectTimeout(() => runMigrations(getSql()), {
+        force: true,
+      });
+    }
+    return globalThis.__portfolioSchemaForceReady;
+  }
+
   if (!globalThis.__portfolioSchemaReady) {
-    globalThis.__portfolioSchemaReady = runMigrations(getSql());
+    globalThis.__portfolioSchemaReady = withConnectTimeout(() => runMigrations(getSql()));
   }
   return globalThis.__portfolioSchemaReady;
 }

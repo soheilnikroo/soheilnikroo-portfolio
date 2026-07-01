@@ -49,8 +49,10 @@ export function AdminDashboard({
 
       {dbError ? (
         <div className="mt-6 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-          Cannot reach the database. Set <code>DATABASE_URL</code> in <code>.env</code> and run{" "}
-          <code>pnpm db:seed</code>. See <code>ADMIN.md</code>.
+          Cannot reach the database. In Liara, set <code>DATABASE_URL</code> (Supabase pooler, port{" "}
+          <code>5432</code> or <code>6543</code>), <code>ADMIN_PASSWORD</code>, and{" "}
+          <code>SESSION_SECRET</code> in the app environment, then run <code>pnpm db:seed</code>{" "}
+          locally or from CI. See <code>ADMIN.md</code>.
         </div>
       ) : null}
 

@@ -119,11 +119,11 @@ function toDbInput(input: PostInputValues): PostInput {
 }
 
 export async function listAllPostRows(includeDrafts = false): Promise<PostRow[]> {
-  return listPostRows(includeDrafts);
+  return listPostRows(includeDrafts, { force: true });
 }
 
 export async function getPostById(id: string): Promise<PostRow | null> {
-  return getPostRowById(id);
+  return getPostRowById(id, { force: true });
 }
 
 export async function createPost(input: PostInputValues): Promise<PostRow> {

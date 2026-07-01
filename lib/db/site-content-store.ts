@@ -18,7 +18,7 @@ export async function getSiteContentRow(key: SiteContentKey): Promise<SiteConten
 }
 
 export async function upsertSiteContentRow(key: SiteContentKey, data: unknown): Promise<void> {
-  await ensureSchema();
+  await ensureSchema({ force: true });
   const sql = getSql();
   await sql`
     INSERT INTO site_content (key, data)

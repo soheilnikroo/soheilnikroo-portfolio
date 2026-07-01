@@ -129,11 +129,11 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
 }
 
 export async function listAllProjectRows(): Promise<ProjectRow[]> {
-  return listProjectRows();
+  return listProjectRows({ force: true });
 }
 
 export async function getProjectRow(id: string): Promise<ProjectRow | null> {
-  return getProjectRowById(id);
+  return getProjectRowById(id, { force: true });
 }
 
 export async function createProject(data: Project): Promise<ProjectRow> {

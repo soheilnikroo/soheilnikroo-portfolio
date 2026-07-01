@@ -16,7 +16,11 @@ if (!url) {
 const sql = postgres(url, {
   max: 1,
   prepare: false,
+  connect_timeout: 25,
   ssl: url.includes("supabase.com") || url.includes("supabase.co") ? "require" : undefined,
+  connection: {
+    application_name: "soheilnikroo-seed",
+  },
 });
 const root = process.cwd();
 const blogDir = path.join(root, "content", "blog");
@@ -25,6 +29,20 @@ const seedDir = path.join(root, "content", "seed");
 async function readJson(name) {
   const raw = await fs.readFile(path.join(seedDir, name), "utf8");
   return JSON.parse(raw);
+}
+
+function normalizeTags(tags) {
+  if (Array.isArray(tags)) return tags.map(String);
+  if (typeof tags === "string" && tags.trim()) return tags.split(",").map((t) => t.trim());
+  return [];
+}
+
+/** Bind text[] for Supabase transaction pooler (prepare: false). */
+function pgTextArrayLiteral(values) {
+  if (values.length === 0) return "{}";
+  return `{${values
+    .map((value) => `"${String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`)
+    .join(",")}}`;
 }
 
 async function ensureSchema() {
@@ -64,16 +82,17 @@ async function seedBlogPosts() {
     const raw = await fs.readFile(path.join(blogDir, file), "utf8");
     const { data, content } = matter(raw);
     const slug = file.replace(/\.mdx$/u, "");
+    const tags = normalizeTags(data.tags);
     await sql`
       INSERT INTO posts (id, slug, title, description, category, tags, body, cover, published, date)
       VALUES (
         ${randomUUID()}, ${slug}, ${data.title}, ${data.description}, ${data.category},
-        ${sql.array(data.tags ?? [])}, ${content}, ${data.cover ?? null},
+        ${pgTextArrayLiteral(tags)}::text[], ${content}, ${data.cover ?? null},
         ${!(data.draft ?? false)}, ${data.date ? new Date(data.date) : new Date()}
       )
       ON CONFLICT (slug) DO UPDATE SET
         title = EXCLUDED.title, description = EXCLUDED.description, category = EXCLUDED.category,
-        tags = EXCLUDED.tags, body = EXCLUDED.body, cover = EXCLUDED.cover,
+        tags = ${pgTextArrayLiteral(tags)}::text[], body = EXCLUDED.body, cover = EXCLUDED.cover,
         published = EXCLUDED.published, date = EXCLUDED.date, updated_at = now()
     `;
     console.log("seeded post", slug);

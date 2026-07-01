@@ -1,5 +1,7 @@
 import type { CharacterManifest, SceneManifest, WorldPalette } from "@/lib/engine";
 
+import { worldAssetUrl } from "./asset-url";
+
 /**
  * Static configuration for the scroll-linked journey. Pure data — only *types* are
  * imported from the engine, so this module adds no engine code to the route bundle.
@@ -10,8 +12,8 @@ const RUN = [0, 1, 2, 3] as const;
 const JUMP = [0, 1, 2, 3, 4, 5] as const;
 const IDLE = [0, 1, 2, 3] as const;
 const dir = (clip: string, frames: readonly number[]) => ({
-  east: frames.map((i) => `/world/character/${clip}/east/${i}.png`),
-  west: frames.map((i) => `/world/character/${clip}/west/${i}.png`),
+  east: frames.map((i) => worldAssetUrl(`/world/character/${clip}/east/${i}.png`)),
+  west: frames.map((i) => worldAssetUrl(`/world/character/${clip}/west/${i}.png`)),
 });
 
 export const characterManifest: CharacterManifest = {
@@ -60,49 +62,49 @@ export const sceneManifest: SceneManifest = {
   layers: [
     {
       id: "intro-hero-dawn",
-      src: "/world/scenes/intro-hero-dawn.png",
+      src: worldAssetUrl("/world/scenes/intro-hero-dawn.png"),
       depth: 0.12,
       tiled: false,
       anchor: "ground",
     },
     {
       id: "alborz-mountains",
-      src: "/world/scenes/alborz-mountains.png",
+      src: worldAssetUrl("/world/scenes/alborz-mountains.png"),
       depth: 0.08,
       tiled: true,
       anchor: "ground",
     },
     {
       id: "tehran-skyline-far",
-      src: "/world/scenes/tehran-skyline-far.png",
+      src: worldAssetUrl("/world/scenes/tehran-skyline-far.png"),
       depth: 0.22,
       tiled: true,
       anchor: "ground",
     },
     {
       id: "tehran-buildings-mid",
-      src: "/world/scenes/tehran-buildings-mid.png",
+      src: worldAssetUrl("/world/scenes/tehran-buildings-mid.png"),
       depth: 0.45,
       tiled: true,
       anchor: "ground",
     },
     {
       id: "tehran-shopfronts",
-      src: "/world/scenes/tehran-shopfronts.png",
+      src: worldAssetUrl("/world/scenes/tehran-shopfronts.png"),
       depth: 0.72,
       tiled: true,
       anchor: "ground",
     },
     {
       id: "tehran-ground-tiles",
-      src: "/world/scenes/tehran-ground-tiles.png",
+      src: worldAssetUrl("/world/scenes/tehran-ground-tiles.png"),
       depth: 1.0,
       tiled: true,
       anchor: "ground",
     },
     {
       id: "chenar-trees",
-      src: "/world/scenes/chenar-trees.png",
+      src: worldAssetUrl("/world/scenes/chenar-trees.png"),
       depth: 1.35,
       tiled: true,
       anchor: "ground",
@@ -111,19 +113,19 @@ export const sceneManifest: SceneManifest = {
   landmarks: [
     {
       id: "milad-tower",
-      src: "/world/scenes/milad-tower.png",
+      src: worldAssetUrl("/world/scenes/milad-tower.png"),
       worldX: 320,
       depth: 0.06,
     },
     {
       id: "azadi-tower",
-      src: "/world/scenes/azadi-tower.png",
+      src: worldAssetUrl("/world/scenes/azadi-tower.png"),
       worldX: 180,
       depth: 0.42,
     },
     {
       id: "persian-domes",
-      src: "/world/scenes/persian-domes.png",
+      src: worldAssetUrl("/world/scenes/persian-domes.png"),
       worldX: 260,
       depth: 0.5,
     },
@@ -132,28 +134,28 @@ export const sceneManifest: SceneManifest = {
 
 /** Chapter prop sprite paths keyed as `chapterId/propId`. */
 export const propPaths: Record<string, string> = {
-  "intro/childhood-house": "/world/objects/intro/childhood-house.png",
-  "intro/road-pit": "/world/objects/intro/road-pit.png",
-  "intro/crt-monitor": "/world/objects/intro/crt-monitor.png",
-  "intro/bedroom-window": "/world/objects/intro/bedroom-window.png",
-  "work/construction-crane": "/world/objects/work/construction-crane.png",
-  "work/bridge-girder": "/world/objects/work/bridge-girder.png",
-  "work/wooden-crate": "/world/objects/work/wooden-crate.png",
-  "work/work-building": "/world/objects/work/work-building.png",
-  "skills/skill-slime": "/world/objects/skills/skill-slime.png",
-  "skills/metro-sign": "/world/objects/skills/metro-sign.png",
-  "writing/treasure-chest": "/world/objects/writing/treasure-chest.png",
-  "writing/bookshelf": "/world/objects/writing/bookshelf.png",
-  "contact/rooftop-cafe": "/world/objects/contact/rooftop-cafe.png",
+  "intro/childhood-house": worldAssetUrl("/world/objects/intro/childhood-house.png"),
+  "intro/road-pit": worldAssetUrl("/world/objects/intro/road-pit.png"),
+  "intro/crt-monitor": worldAssetUrl("/world/objects/intro/crt-monitor.png"),
+  "intro/bedroom-window": worldAssetUrl("/world/objects/intro/bedroom-window.png"),
+  "work/construction-crane": worldAssetUrl("/world/objects/work/construction-crane.png"),
+  "work/bridge-girder": worldAssetUrl("/world/objects/work/bridge-girder.png"),
+  "work/wooden-crate": worldAssetUrl("/world/objects/work/wooden-crate.png"),
+  "work/work-building": worldAssetUrl("/world/objects/work/work-building.png"),
+  "skills/skill-slime": worldAssetUrl("/world/objects/skills/skill-slime.png"),
+  "skills/metro-sign": worldAssetUrl("/world/objects/skills/metro-sign.png"),
+  "writing/treasure-chest": worldAssetUrl("/world/objects/writing/treasure-chest.png"),
+  "writing/bookshelf": worldAssetUrl("/world/objects/writing/bookshelf.png"),
+  "contact/rooftop-cafe": worldAssetUrl("/world/objects/contact/rooftop-cafe.png"),
 };
 
 /** Per-chapter ground tile overrides (swapped in drawCityscape). */
 export const chapterGroundTiles: Record<string, string> = {
-  intro: "/world/tilesets/intro/ground.png",
-  work: "/world/tilesets/work/ground.png",
-  skills: "/world/tilesets/skills/ground.png",
-  writing: "/world/tilesets/writing/ground.png",
-  contact: "/world/tilesets/contact/ground.png",
+  intro: worldAssetUrl("/world/tilesets/intro/ground.png"),
+  work: worldAssetUrl("/world/tilesets/work/ground.png"),
+  skills: worldAssetUrl("/world/tilesets/skills/ground.png"),
+  writing: worldAssetUrl("/world/tilesets/writing/ground.png"),
+  contact: worldAssetUrl("/world/tilesets/contact/ground.png"),
 };
 
 /** Distinct colour worlds per chapter — drives the procedural backdrop + mood wash. */

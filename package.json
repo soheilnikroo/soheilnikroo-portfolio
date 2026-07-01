@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "NEXT_PUBLIC_ASSET_VERSION=${NEXT_PUBLIC_ASSET_VERSION:-${GITHUB_SHA:-$(git rev-parse --short HEAD 2>/dev/null || date +%s)}} next build",
     "start": "next start",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
@@ -19,6 +19,7 @@
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
     "db:seed": "node --env-file=.env scripts/seed.mjs",
+    "db:ping": "node --env-file=.env scripts/db-ping.mjs",
     "assets:optimize": "node scripts/optimize-audio.mjs"
   },
   "dependencies": {

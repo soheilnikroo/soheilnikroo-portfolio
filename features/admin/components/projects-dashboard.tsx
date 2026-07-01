@@ -48,8 +48,8 @@ export function ProjectsDashboard({
 
       {dbError ? (
         <div className="mt-6 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-          Cannot reach the database. Set <code>DATABASE_URL</code> and run <code>pnpm db:seed</code>
-          .
+          Cannot reach the database. Set <code>DATABASE_URL</code> on Liara (Supabase pooler, try
+          port <code>5432</code>) and run <code>pnpm db:seed</code>. See <code>ADMIN.md</code>.
         </div>
       ) : null}
 

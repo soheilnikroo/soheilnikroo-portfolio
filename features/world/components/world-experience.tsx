@@ -159,12 +159,13 @@ export function WorldExperience(props: WorldExperienceProps) {
   const contactChapterIndexRef = React.useRef(contactChapterIndex);
   contactChapterIndexRef.current = contactChapterIndex;
 
-  // Warm the HTTP cache + JS chunk as soon as the experience mounts so the 4.4 MB
-  // GLB is parsed before the rooftop meta zoom — avoids the "loading lag" hitch.
+  // Warm the HTTP cache + JS chunks as soon as the experience mounts.
   React.useEffect(() => {
     if (roomPrefetchedRef.current) return;
     roomPrefetchedRef.current = true;
     void fetch("/3d-model/ROOM.glb").catch(() => {});
+    void import("@/lib/engine");
+    void import("@/lib/world/chapters");
     void import("@/lib/world/three-runtime").then(() => import("./meta-room-scene"));
   }, []);
   const storyProfile = React.useMemo<StoryProfile>(
@@ -503,6 +504,12 @@ export function WorldExperience(props: WorldExperienceProps) {
       });
       stage = new engine.Stage(surface, character, chapters);
       sizeNow();
+      onProgress(lastProgress);
+
+      const narrative = document.getElementById("world-narrative");
+      if (narrative) narrative.hidden = true;
+      const splash = document.getElementById("world-splash");
+      if (splash) splash.style.display = "none";
 
       // maxRate caps how fast the story can play regardless of how hard the user
       // scrolls — lower = more cinematic. 0.08 ≈ 12.5s minimum for a full flick-
@@ -531,11 +538,6 @@ export function WorldExperience(props: WorldExperienceProps) {
       timeline.start();
 
       forceRedrawRef.current = () => onProgress(lastProgress);
-
-      const narrative = document.getElementById("world-narrative");
-      if (narrative) narrative.hidden = true;
-      const splash = document.getElementById("world-splash");
-      if (splash) splash.style.display = "none";
 
       window.addEventListener("pointerdown", startAudioOnGesture, { once: true });
       window.addEventListener("keydown", startAudioOnGesture, { once: true });

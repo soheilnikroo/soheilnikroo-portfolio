@@ -3,12 +3,7 @@
   "entry": ["app/**/*.{ts,tsx}", "scripts/**/*.{mjs,mts}"],
   "project": ["**/*.{ts,tsx,mjs,mts}"],
   "ignore": ["tooling/**"],
-  "ignoreFiles": [
-    "lib/supabase/client.ts",
-    "lib/supabase/server.ts",
-    "lib/supabase/admin.ts",
-    "lib/world/three-patched.ts"
-  ],
+  "ignoreFiles": ["lib/world/three-patched.ts"],
   "ignoreBinaries": ["ffmpeg"],
   "ignoreDependencies": [
     "@tailwindcss/typography",

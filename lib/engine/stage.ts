@@ -2,7 +2,6 @@ import type { Character } from "./character";
 import { clamp01, smoothstep } from "./math";
 import { TRANSITION_STYLES, drawTransition } from "./transitions";
 import type { RenderSurface } from "./types";
-import { DESIGN_WIDTH } from "./viewport";
 
 export interface RenderContext {
   readonly surface: RenderSurface;
@@ -67,8 +66,8 @@ export class Stage {
     const active = this.resolveActive(global);
     const chapter = this.chapters[active.index];
     if (!chapter) return active;
+    this.surface.resetCameraFocusOverride();
     this.surface.clear();
-    this.surface.setCameraFocusX(DESIGN_WIDTH / 2);
     chapter.draw({
       surface: this.surface,
       character: this.character,
@@ -78,6 +77,9 @@ export class Stage {
       local: active.local,
       time: performance.now(),
     });
+    if (!this.surface.isCameraFocusOverridden()) {
+      this.surface.focusCameraOn(this.character.getCameraFocusX());
+    }
     this.drawTransition(active.index, active.local);
     this.surface.present();
     return active;

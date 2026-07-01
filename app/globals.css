@@ -100,7 +100,7 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  --gutter: 1.5rem;
+  --gutter: clamp(1rem, 4vw, 1.5rem);
   --prose: 42rem;
   --content: 72rem;
   --section: clamp(4rem, 10vw, 9rem);
@@ -213,6 +213,10 @@
   .ambient-gradient {
     will-change: auto;
   }
+}
+
+html {
+  overscroll-behavior-y: none;
 }
 
 html[data-pixel-world] body {

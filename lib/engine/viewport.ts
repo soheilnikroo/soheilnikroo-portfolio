@@ -66,7 +66,9 @@ export function computeGameViewport(
 }
 export function applyCameraFocus(viewport: GameViewportRect, focusX: number): GameViewportRect {
   if (viewport.srcW >= DESIGN_WIDTH) return viewport;
-  const idealSrcX = focusX - viewport.srcW / 2;
+  const half = viewport.srcW / 2;
+  const paddedFocus = clamp(focusX, half, DESIGN_WIDTH - half);
+  const idealSrcX = paddedFocus - half;
   const srcX = Math.floor(clamp(idealSrcX, 0, DESIGN_WIDTH - viewport.srcW));
   return { ...viewport, srcX };
 }

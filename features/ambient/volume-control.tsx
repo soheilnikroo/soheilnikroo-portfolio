@@ -1,6 +1,7 @@
 "use client";
 import { Volume2, VolumeX } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import * as React from "react";
 
 import { ElasticSlider } from "@/components/reactbits/elastic-slider";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ export function VolumeControl({ className }: { className?: string }) {
     setVolume,
     cue,
   } = useAmbient();
+  const [mobileSliderOpen, setMobileSliderOpen] = React.useState(false);
   const disabledByMotion = reducedMotion && !soundActive;
   const label = unsupported
     ? "Ambient sound is not supported in this browser"
@@ -40,10 +42,22 @@ export function VolumeControl({ className }: { className?: string }) {
           onClick={() => {
             toggleSound();
             cue("select");
+            if (soundActive) setMobileSliderOpen(false);
           }}
         >
           {soundActive ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
         </Button>
+        {soundActive ? (
+          <button
+            type="button"
+            className="rounded-[3px] border-2 border-white/30 px-2 py-1 text-[10px] tracking-[0.18em] text-white/70 uppercase sm:hidden"
+            aria-expanded={mobileSliderOpen}
+            aria-label={mobileSliderOpen ? "Hide volume slider" : "Show volume slider"}
+            onClick={() => setMobileSliderOpen((open) => !open)}
+          >
+            Vol
+          </button>
+        ) : null}
         <AnimatePresence initial={false}>
           {soundActive ? (
             <motion.div
@@ -65,6 +79,26 @@ export function VolumeControl({ className }: { className?: string }) {
           ) : null}
         </AnimatePresence>
       </div>
+      <AnimatePresence initial={false}>
+        {soundActive && mobileSliderOpen ? (
+          <motion.div
+            key="mobile-volume-slider"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ type: "spring", stiffness: 240, damping: 26 }}
+            className="overflow-hidden pt-2 sm:hidden"
+          >
+            <ElasticSlider
+              className="w-full max-w-48"
+              defaultValue={Math.round(volume * 100)}
+              startingValue={0}
+              maxValue={100}
+              onChange={(v) => setVolume(v / 100)}
+            />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

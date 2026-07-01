@@ -39,8 +39,12 @@ export {
 export {
   classifyTapZone,
   clientToVirtual,
+  createTapTracker,
+  isTapGesture,
   nudgeScrollProgress,
   SCROLL_NUDGE,
+  TAP_MAX_DURATION_MS,
+  TAP_MOVE_THRESHOLD_PX,
 } from "./gameplay-input";
 export type { TapZone } from "./gameplay-input";
 export type { Direction, RenderSurface, Vec2, WorldPalette } from "./types";

@@ -28,6 +28,7 @@ export class Canvas2DSurface implements RenderSurface {
   private readonly view: CanvasRenderingContext2D;
   private readonly buffer: HTMLCanvasElement;
   private cameraFocusX = DESIGN_WIDTH / 2;
+  private cameraFocusOverridden = false;
   constructor(canvas: HTMLCanvasElement) {
     const view = canvas.getContext("2d", { alpha: false });
     if (!view) throw new Error("Canvas2D is not supported in this browser.");
@@ -64,7 +65,17 @@ export class Canvas2DSurface implements RenderSurface {
   clear(): void {
     this.ctx.clearRect(0, 0, this.width, this.height);
   }
+  resetCameraFocusOverride(): void {
+    this.cameraFocusOverridden = false;
+  }
+  isCameraFocusOverridden(): boolean {
+    return this.cameraFocusOverridden;
+  }
   setCameraFocusX(x: number): void {
+    this.cameraFocusX = x;
+    this.cameraFocusOverridden = true;
+  }
+  focusCameraOn(x: number): void {
     this.cameraFocusX = x;
   }
   getGameViewport(): GameViewportRect {

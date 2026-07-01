@@ -25,6 +25,7 @@ import { categoryColor } from "@/lib/world/skill-colors";
 
 import { drawTapMeHint, interactionShake } from "./canvas-hints";
 import { drawSkillBadge } from "./skill-badges";
+import { workCameraFocusX, workChapterBuildT } from "./work-bridge";
 import { CHAPTER_SCENE_PROFILES, PALETTES, sceneManifest } from "./world-content";
 import { drawTapPointer, vaultLayout, vaultCameraFocusX } from "./writing-vault";
 
@@ -562,7 +563,7 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         if (crane) drawProp(surface, crane, width * 0.14 + 40, gy, 1);
         applyTint(surface, PALETTES.depot.tint);
         const n = Math.max(1, data.projectCount);
-        const buildT = chapterProgress(local);
+        const buildT = workChapterBuildT(local);
         const gapLeft = width * 0.3;
         const gapRight = width * 0.94;
         const deckY = Math.round(gy - height * 0.16);
@@ -623,8 +624,9 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         const building = buildT < 0.98 && segT > 0.02 && segT < 0.98;
         const hop =
           buildT > 0.94 ? Math.sin(((buildT - 0.94) / 0.06) * Math.PI) * (height * 0.07) : 0;
+        const charX = gapLeft - width * 0.05;
         character.draw(surface, {
-          x: gapLeft - width * 0.05,
+          x: charX,
           baseline: deckY - hop,
           scale: characterScale(height),
           clip: building ? "pull" : "idle",
@@ -632,6 +634,7 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           dir: "east",
           bob: charBob(building ? "pull" : "idle", time),
         });
+        surface.setCameraFocusX(workCameraFocusX({ buildT, gapLeft, n, segW }, width));
       },
     },
     {

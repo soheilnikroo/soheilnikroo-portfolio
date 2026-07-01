@@ -78,7 +78,7 @@ export default async function HomePage() {
       <div
         id="world-splash"
         aria-hidden="true"
-        className="fixed inset-0 z-[150] overflow-hidden bg-[#05040b]"
+        className="pointer-events-none fixed inset-0 z-[150] overflow-hidden bg-[#05040b]"
       >
         <Image
           src={SPLASH_IMAGE}

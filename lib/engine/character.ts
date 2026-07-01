@@ -1,6 +1,7 @@
 import { loadImage } from "./assets";
 import type { Sprite } from "./assets";
 import type { Direction, RenderSurface } from "./types";
+import { DESIGN_WIDTH } from "./viewport";
 
 export type ClipName = "idle" | "walk" | "run" | "jump" | "climb" | "pull";
 export interface CharacterManifest {
@@ -41,6 +42,7 @@ const FOOT_FRAC = 0.79;
 export class Character {
   readonly frameSize: number;
   private clips: LoadedClips;
+  private lastFocusX = DESIGN_WIDTH / 2;
   private constructor(frameSize: number, clips: LoadedClips) {
     this.frameSize = frameSize;
     this.clips = clips;
@@ -75,7 +77,11 @@ export class Character {
   frameCount(clip: ClipName, dir: Direction): number {
     return this.clips[clip]?.[dir].length ?? 0;
   }
+  getCameraFocusX(): number {
+    return this.lastFocusX;
+  }
   draw(surface: RenderSurface, opts: CharacterDraw): void {
+    this.lastFocusX = opts.x;
     let dirFrames = this.clips[opts.clip]?.[opts.dir];
     if (!dirFrames || dirFrames.length === 0) {
       dirFrames = this.clips.walk?.[opts.dir];

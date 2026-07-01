@@ -1,11 +1,12 @@
 "use client";
-import { Volume2, VolumeX } from "lucide-react";
+import { BookOpen, Volume2, VolumeX } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import * as React from "react";
 
 import { useAmbient } from "@/features/ambient";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
+import { useTapGesture } from "@/hooks/use-tap-gesture";
 import type { Canvas2DSurface, GameViewportRect, ScrollTimeline, Stage } from "@/lib/engine";
 import type { StoryBeat } from "@/lib/schemas/world-narrative";
 import { setSfxVolume, sfx, unlockAudio } from "@/lib/world/audio";
@@ -550,6 +551,113 @@ export function WorldExperience(props: WorldExperienceProps) {
   React.useEffect(() => {
     if (activeIndex !== contactChapterIndex) setMetaRoomReady(false);
   }, [activeIndex, contactChapterIndex]);
+  const handleStageTap = React.useCallback(
+    (e: PointerEvent) => {
+      const layer = pingLayerRef.current;
+      if (layer) {
+        const rect = layer.getBoundingClientRect();
+        const ping = document.createElement("div");
+        ping.className =
+          "pointer-events-none absolute -mt-3 -ml-3 h-6 w-6 rounded-full border-2 border-white/80";
+        ping.style.left = `${e.clientX - rect.left}px`;
+        ping.style.top = `${e.clientY - rect.top}px`;
+        layer.appendChild(ping);
+        const anim = ping.animate(
+          [
+            { transform: "scale(0.3)", opacity: 1 },
+            { transform: "scale(2.2)", opacity: 0 },
+          ],
+          { duration: 420, easing: "ease-out" },
+        );
+        anim.onfinish = () => ping.remove();
+      }
+      unlockAudio();
+      sfx.click();
+      const track = trackRef.current;
+      const stageEl = stageRef.current;
+      const viewport = viewportRef.current;
+      if (!track || !stageEl || !viewport) return;
+      void import("@/lib/engine").then(
+        ({ classifyTapZone, clientToVirtual, nudgeScrollProgress, SCROLL_NUDGE }) => {
+          const virtual = clientToVirtual(
+            e.clientX,
+            e.clientY,
+            viewport,
+            stageEl.getBoundingClientRect(),
+          );
+          if (!virtual) return;
+          const workList = projects.slice(0, 5);
+          const bridge =
+            activeIndex === 1 && workList.length > 0
+              ? workBridgeLayout(chapterLocal, workList.length)
+              : null;
+          if (activeIndex === 1 && bridge) {
+            for (const span of bridge.spans) {
+              if (!span.visible) continue;
+              const bounds = mysteryBoxBounds(span, performance.now());
+              const hit =
+                virtual.x >= bounds.cx - bounds.w / 2 &&
+                virtual.x <= bounds.cx + bounds.w / 2 &&
+                virtual.y >= bounds.cy - bounds.h / 2 &&
+                virtual.y <= bounds.cy + bounds.h / 2;
+              if (hit) {
+                if (!bridge.spans[span.idx]?.visible) return;
+                workOpenTargetRef.current.set(span.idx, 1);
+                openedWorkBoxRef.current = span.idx;
+                setOpenedWorkBox(span.idx);
+                unlockAudio();
+                sfx.boxOpen();
+                forceRedrawRef.current?.();
+                return;
+              }
+            }
+          }
+          if (activeIndex === 3 && resumeUrl) {
+            const postN = Math.min(4, Math.max(0, posts.length));
+            if (hitResumeChest(virtual.x, virtual.y, chapterLocal, postN, performance.now())) {
+              unlockAudio();
+              sfx.chime();
+              const url = resumeUrl;
+              const openInTab = (): void => {
+                const a = document.createElement("a");
+                a.href = url;
+                a.target = "_blank";
+                a.rel = "noopener";
+                a.click();
+              };
+              fetch(url)
+                .then((r) => (r.ok ? r.blob() : Promise.reject(new Error(`HTTP ${r.status}`))))
+                .then((blob) => {
+                  const obj = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = obj;
+                  a.download = "soheilnikroo-resume.pdf";
+                  a.click();
+                  window.setTimeout(() => URL.revokeObjectURL(obj), 4000);
+                })
+                .catch(openInTab);
+              setNote("Résumé downloaded");
+              window.setTimeout(() => setNote((n) => (n === "Résumé downloaded" ? null : n)), 1600);
+              return;
+            }
+          }
+          const nudge = activeIndex === 2 ? SKILLS_SCROLL_NUDGE : SCROLL_NUDGE;
+          const zone = classifyTapZone(virtual.x, virtual.y);
+          if (zone === "forward") {
+            nudgeScrollProgress(track, nudge.forward);
+            sfx.chime();
+          } else if (zone === "back") {
+            nudgeScrollProgress(track, nudge.back);
+          } else {
+            nudgeScrollProgress(track, nudge.jump);
+            sfx.chime();
+          }
+        },
+      );
+    },
+    [activeIndex, chapterLocal, projects, posts, resumeUrl],
+  );
+  const stageTap = useTapGesture(handleStageTap, { enabled });
   if (!enabled) return null;
   const activeTitle = chapterMeta[activeIndex]?.title ?? "";
   const activeId = chapterMeta[activeIndex]?.id ?? "intro";
@@ -656,69 +764,13 @@ export function WorldExperience(props: WorldExperienceProps) {
     sfx.boxOpen();
     forceRedrawRef.current?.();
   };
-  const onStagePointerDown = (e: React.PointerEvent<HTMLDivElement>): void => {
-    const target = e.target;
-    if (!(target instanceof HTMLElement)) return;
-    if (target.closest("a, button, [role='button'], input, textarea")) return;
-    unlockAudio();
-    sfx.click();
-    spawnPing(e.clientX, e.clientY);
-    const track = trackRef.current;
-    const stageEl = stageRef.current;
-    const viewport = viewportRef.current;
-    if (!track || !stageEl || !viewport) return;
-    void import("@/lib/engine").then(
-      ({ classifyTapZone, clientToVirtual, nudgeScrollProgress, SCROLL_NUDGE }) => {
-        const virtual = clientToVirtual(
-          e.clientX,
-          e.clientY,
-          viewport,
-          stageEl.getBoundingClientRect(),
-        );
-        if (!virtual) return;
-        if (activeIndex === 1 && workBridge) {
-          for (const span of workBridge.spans) {
-            if (!span.visible) continue;
-            const bounds = mysteryBoxBounds(span, performance.now());
-            const hit =
-              virtual.x >= bounds.cx - bounds.w / 2 &&
-              virtual.x <= bounds.cx + bounds.w / 2 &&
-              virtual.y >= bounds.cy - bounds.h / 2 &&
-              virtual.y <= bounds.cy + bounds.h / 2;
-            if (hit) {
-              openWorkBox(span.idx);
-              return;
-            }
-          }
-        }
-        if (activeIndex === 3 && resumeUrl) {
-          const postN = Math.min(4, Math.max(0, posts.length));
-          if (hitResumeChest(virtual.x, virtual.y, chapterLocal, postN, performance.now())) {
-            downloadResume();
-            return;
-          }
-        }
-        const nudge = activeIndex === 2 ? SKILLS_SCROLL_NUDGE : SCROLL_NUDGE;
-        const zone = classifyTapZone(virtual.x, virtual.y);
-        if (zone === "forward") {
-          nudgeScrollProgress(track, nudge.forward);
-          sfx.chime();
-        } else if (zone === "back") {
-          nudgeScrollProgress(track, nudge.back);
-        } else {
-          nudgeScrollProgress(track, nudge.jump);
-          sfx.chime();
-        }
-      },
-    );
-  };
   return (
     <div ref={trackRef} style={{ height: `${scrollTrackHeightVh}vh` }} className="relative">
       <section
         ref={stageRef}
         aria-label="Interactive pixel-art journey — scroll or tap to play"
-        onPointerDown={onStagePointerDown}
-        className={`${pixelFont.variable} sticky top-0 h-svh w-full overflow-hidden bg-[#05040b] [font-family:var(--font-pixel),ui-monospace,monospace] text-white select-none`}
+        {...stageTap}
+        className={`${pixelFont.variable} sticky top-0 h-svh w-full touch-pan-y overflow-hidden bg-[#05040b] [font-family:var(--font-pixel),ui-monospace,monospace] text-white select-none`}
       >
         <h1 className="sr-only">
           {profileName} — interactive pixel-art portfolio of a front-end engineer. Scroll to play
@@ -785,29 +837,36 @@ export function WorldExperience(props: WorldExperienceProps) {
             style={{ width: "0%" }}
           />
         </div>
-        <p className="absolute top-4 left-4 z-20 [font-family:var(--font-pixel),monospace] text-sm font-bold tracking-[0.2em] text-white/85 uppercase sm:text-base">
-          {String(activeIndex + 1).padStart(2, "0")} · {activeTitle}
-        </p>
-        <p className="absolute top-10 left-4 z-20 max-w-56 [font-family:var(--font-pixel),monospace] text-sm text-amber-200/90">
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2 sm:px-4 sm:pt-[max(1rem,env(safe-area-inset-top))]"
+        >
+          <p className="max-w-[calc(100%-5.5rem)] min-w-0 truncate [font-family:var(--font-pixel),monospace] text-xs font-bold tracking-[0.14em] text-white/85 uppercase sm:max-w-none sm:text-sm sm:tracking-[0.2em]">
+            {String(activeIndex + 1).padStart(2, "0")} · {activeTitle}
+          </p>
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <button
+              type="button"
+              aria-label={muted ? "Unmute sound" : "Mute sound"}
+              aria-pressed={muted}
+              onClick={toggleMute}
+              className="inline-flex min-h-10 min-w-10 touch-manipulation items-center justify-center rounded-[3px] border-2 border-white/70 bg-[#0d0b16] text-white/85 shadow-[3px_3px_0_rgba(0,0,0,0.6)] transition-colors hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#05040b] focus-visible:outline-none sm:min-h-11 sm:min-w-11"
+            >
+              {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
+            </button>
+            <Link
+              href="/read"
+              aria-label="Read as a page"
+              className="inline-flex min-h-10 min-w-10 touch-manipulation items-center justify-center rounded-[3px] border-2 border-white/70 bg-[#0d0b16] text-white/85 shadow-[3px_3px_0_rgba(0,0,0,0.6)] transition-colors hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#05040b] focus-visible:outline-none sm:min-h-11 sm:min-w-auto sm:gap-2 sm:px-3 sm:py-1.5"
+            >
+              <BookOpen className="size-3.5 shrink-0" aria-hidden="true" />
+              <span className="hidden text-xs sm:inline">Skip · read as a page</span>
+            </Link>
+          </div>
+        </div>
+        <p className="absolute top-[calc(max(0.75rem,env(safe-area-inset-top))+2.25rem)] right-3 left-3 z-20 hidden max-w-none truncate [font-family:var(--font-pixel),monospace] text-xs text-amber-200/90 sm:left-4 sm:block sm:max-w-56 sm:text-sm">
           {chapterGoal ? <span className="text-white/55">{chapterGoal}</span> : null}
         </p>
-        <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
-          <button
-            type="button"
-            aria-label={muted ? "Unmute sound" : "Mute sound"}
-            aria-pressed={muted}
-            onClick={toggleMute}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[3px] border-2 border-white/70 bg-[#0d0b16] text-white/85 shadow-[3px_3px_0_rgba(0,0,0,0.6)] transition-colors hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#05040b] focus-visible:outline-none"
-          >
-            {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
-          </button>
-          <Link
-            href="/read"
-            className="min-h-11 rounded-[3px] border-2 border-white/70 bg-[#0d0b16] px-3 py-1.5 text-xs text-white/85 shadow-[3px_3px_0_rgba(0,0,0,0.6)] transition-colors hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#05040b] focus-visible:outline-none"
-          >
-            Skip · read as a page
-          </Link>
-        </div>
 
         <p ref={captionRef} aria-live="polite" style={{ opacity: 0 }} className="sr-only" />
 
@@ -819,7 +878,7 @@ export function WorldExperience(props: WorldExperienceProps) {
           <p
             aria-hidden="true"
             style={{ opacity: questLineOpacity }}
-            className="pointer-events-none absolute inset-x-0 top-[1%] z-20 mx-auto max-w-[96%] text-center [font-family:var(--font-pixel),monospace] text-xs font-bold text-amber-100 [text-shadow:2px_2px_0_#000] sm:text-sm"
+            className="pointer-events-none absolute inset-x-0 top-[12%] z-20 mx-auto hidden max-w-[92%] px-3 text-center [font-family:var(--font-pixel),monospace] text-xs font-bold text-amber-100 [text-shadow:2px_2px_0_#000] sm:top-[1%] sm:block sm:max-w-[96%] sm:px-0 sm:text-sm"
           >
             {questLine.text}
           </p>
@@ -872,7 +931,7 @@ export function WorldExperience(props: WorldExperienceProps) {
                   action={
                     <Link
                       href={`/work/${openedProject.slug}`}
-                      className="inline-block min-h-11 border-4 border-amber-300 bg-amber-900 px-4 py-2 [font-family:var(--font-pixel),monospace] text-sm font-bold text-amber-50 shadow-[4px_4px_0_#000] hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                      className="inline-block min-h-10 border-4 border-amber-300 bg-amber-900 px-3 py-1.5 [font-family:var(--font-pixel),monospace] text-xs font-bold text-amber-50 shadow-[4px_4px_0_#000] hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:min-h-11 sm:px-4 sm:py-2 sm:text-sm"
                     >
                       Enter project →
                     </Link>
@@ -900,7 +959,7 @@ export function WorldExperience(props: WorldExperienceProps) {
                         unlockAudio();
                         sfx.click();
                       }}
-                      className="min-h-11 border-4 border-cyan-300 bg-cyan-950 px-4 py-2 [font-family:var(--font-pixel),monospace] text-sm font-bold text-cyan-50 shadow-[4px_4px_0_#000] focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                      className="min-h-10 border-4 border-cyan-300 bg-cyan-950 px-3 py-1.5 [font-family:var(--font-pixel),monospace] text-xs font-bold text-cyan-50 shadow-[4px_4px_0_#000] focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:min-h-11 sm:px-4 sm:py-2 sm:text-sm"
                     >
                       Inspect stats →
                     </button>
@@ -921,7 +980,7 @@ export function WorldExperience(props: WorldExperienceProps) {
                   action={
                     <Link
                       href={`/blog/${chestLoot.slug}`}
-                      className="inline-block min-h-11 border-4 border-emerald-300 bg-emerald-900 px-4 py-2 [font-family:var(--font-pixel),monospace] text-sm font-bold text-emerald-50 shadow-[4px_4px_0_#000] focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                      className="inline-block min-h-10 border-4 border-emerald-300 bg-emerald-900 px-3 py-1.5 [font-family:var(--font-pixel),monospace] text-xs font-bold text-emerald-50 shadow-[4px_4px_0_#000] focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:min-h-11 sm:px-4 sm:py-2 sm:text-sm"
                     >
                       Read article →
                     </Link>
@@ -939,7 +998,7 @@ export function WorldExperience(props: WorldExperienceProps) {
                       type="button"
                       onPointerDown={(e) => e.stopPropagation()}
                       onClick={downloadResume}
-                      className="min-h-11 border-4 border-amber-300 bg-[#1a1208] px-4 py-2 [font-family:var(--font-pixel),monospace] text-sm font-bold text-amber-100 shadow-[4px_4px_0_#000] hover:bg-amber-900 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                      className="min-h-10 border-4 border-amber-300 bg-[#1a1208] px-3 py-1.5 [font-family:var(--font-pixel),monospace] text-xs font-bold text-amber-100 shadow-[4px_4px_0_#000] hover:bg-amber-900 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:min-h-11 sm:px-4 sm:py-2 sm:text-sm"
                     >
                       ⬇ Download résumé
                     </button>
@@ -967,6 +1026,12 @@ export function WorldExperience(props: WorldExperienceProps) {
               const bounds = mysteryBoxBounds(span, performance.now() + workAnimTick);
               const pct = virtualToPercent(bounds.cx, bounds.cy);
               const project = workList[span.idx];
+              const scaleX = viewportRef.current
+                ? viewportRef.current.displayWidth / viewportRef.current.srcW
+                : 1;
+              const scaleY = viewportRef.current
+                ? viewportRef.current.displayHeight / viewportRef.current.srcH
+                : 1;
               return (
                 <button
                   key={span.idx}
@@ -980,8 +1045,8 @@ export function WorldExperience(props: WorldExperienceProps) {
                   style={{
                     left: `${pct.xPct}%`,
                     top: `${pct.yPct}%`,
-                    width: bounds.w,
-                    height: bounds.h,
+                    width: bounds.w * scaleX,
+                    height: bounds.h * scaleY,
                   }}
                   className="pointer-events-auto absolute z-20 -translate-x-1/2 -translate-y-1/2 opacity-0 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                 />

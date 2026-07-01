@@ -18,7 +18,7 @@ export function WorldSkillOverlay({ skill, onClose }: { skill: WorldSkill; onClo
           type="button"
           aria-label="Close skill details"
           onClick={onClose}
-          className="inline-flex size-9 items-center justify-center rounded-[2px] text-white/70 hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+          className="inline-flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-[2px] text-white/70 hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
         >
           ✕
         </button>

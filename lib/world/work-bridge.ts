@@ -1,8 +1,14 @@
-import { clamp01, groundY } from "@/lib/engine";
+import { clamp01, groundY, lerp } from "@/lib/engine";
 import { DESIGN_HEIGHT, DESIGN_WIDTH } from "@/lib/engine/viewport";
+
+export const WORK_CHAPTER_PROGRESS = { start: 0.06, end: 0.94 } as const;
 
 export function chapterProgress(local: number, start = 0.06, end = 0.92): number {
   return clamp01((local - start) / (end - start));
+}
+
+export function workChapterBuildT(local: number): number {
+  return chapterProgress(local, WORK_CHAPTER_PROGRESS.start, WORK_CHAPTER_PROGRESS.end);
 }
 export interface BridgeSpan {
   readonly idx: number;
@@ -30,7 +36,7 @@ export function workBridgeLayout(
 ): WorkBridgeLayout {
   const n = Math.max(1, projectCount);
   const gy = groundY(height);
-  const buildT = chapterProgress(local);
+  const buildT = workChapterBuildT(local);
   const gapLeft = width * 0.3;
   const gapRight = width * 0.94;
   const deckY = Math.round(gy - height * 0.16);
@@ -50,6 +56,21 @@ export function workBridgeLayout(
     });
   }
   return { n, gapLeft, gapRight, deckY, segW, buildT, spans };
+}
+
+export function workCameraFocusX(
+  layout: Pick<WorkBridgeLayout, "buildT" | "gapLeft" | "n" | "segW">,
+  width = DESIGN_WIDTH,
+): number {
+  const { buildT, gapLeft, n, segW } = layout;
+  const charX = gapLeft - width * 0.05;
+  const cur = Math.min(n - 1, Math.floor(buildT * n));
+  const segT = clamp01(buildT * n - cur);
+  const activeX = gapLeft + cur * segW + segW / 2;
+  const lastSegmentBoost = cur === n - 1 ? clamp01(segT * 1.25) * 0.4 : 0;
+  const blend = clamp01(0.12 + ((cur + segT * 0.92) / n) * 1.08 + lastSegmentBoost);
+  const rightBias = cur === n - 1 ? segW * 0.22 : 0;
+  return lerp(charX, activeX + rightBias, blend);
 }
 export function mysteryBoxBounds(
   span: BridgeSpan,

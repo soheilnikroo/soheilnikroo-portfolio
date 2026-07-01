@@ -97,6 +97,25 @@ export default async function PostPage({
 
         <article className="mt-8 grid gap-12 lg:grid-cols-[1fr_200px]">
           <div className="min-w-0">
+            {toc.length > 0 ? (
+              <details className="mb-6 rounded-[4px] border-2 border-white/12 bg-[#0d0b16] p-4 lg:hidden">
+                <summary className="cursor-pointer text-[10px] tracking-[0.24em] text-emerald-300/80 uppercase">
+                  On this page
+                </summary>
+                <ul className="mt-3 space-y-2 text-sm">
+                  {toc.map((item) => (
+                    <li key={item.id} className={item.depth === 3 ? "pl-3" : ""}>
+                      <a
+                        href={`#${item.id}`}
+                        className="text-white/55 transition-colors hover:text-emerald-200"
+                      >
+                        {item.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ) : null}
             <header className="max-w-[var(--prose)]">
               <div className="flex flex-wrap items-center gap-3 text-[10px] text-white/50">
                 <span className="rounded-[2px] border border-emerald-500/40 px-1.5 py-0.5 text-emerald-200/90">

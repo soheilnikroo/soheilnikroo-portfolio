@@ -2,7 +2,7 @@ import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata, Viewport } from "next";
 
-import { SiteFooter, SiteHeader } from "@/components/layout";
+import { SiteFooter, SiteFooterGate, SiteHeader } from "@/components/layout";
 import { MotionConfigProvider, ScrollProgressProvider } from "@/components/motion";
 import { RouteTransition } from "@/components/motion/route-transition";
 import { ClickSpark } from "@/components/reactbits/click-spark";
@@ -92,7 +92,9 @@ export default async function RootLayout({
                   <main id="main" className="flex-1">
                     <RouteTransition>{children}</RouteTransition>
                   </main>
-                  <SiteFooter tagline={settings.footerTagline} />
+                  <SiteFooterGate>
+                    <SiteFooter tagline={settings.footerTagline} />
+                  </SiteFooterGate>
                 </ClickSpark>
               </AmbientProvider>
             </ScrollProgressProvider>

@@ -134,16 +134,28 @@ export function GameDialogueBox({
   const showHook = hook && displayed.length > title.length;
   const showBody =
     body && displayed.length > title.length + (hook?.length ?? 0) + (showHook ? 1 : 0);
-  const maxH = gate ? "max-h-[18vh]" : compact ? "max-h-[24vh]" : "max-h-[30vh]";
-  const portraitSize = gate
-    ? "size-14 sm:size-16"
+  const hasAction = Boolean(action);
+  const maxH = gate
+    ? hasAction
+      ? "max-h-[min(34dvh,34vh)] sm:max-h-[min(18dvh,18vh)]"
+      : "max-h-[min(28dvh,28vh)] sm:max-h-[min(18dvh,18vh)]"
     : compact
-      ? "size-16 sm:size-[4.25rem]"
-      : "size-[4.25rem] sm:size-20";
+      ? hasAction
+        ? "max-h-[min(38dvh,38vh)] sm:max-h-[min(24dvh,24vh)]"
+        : "max-h-[min(32dvh,32vh)] sm:max-h-[min(24dvh,24vh)]"
+      : hasAction
+        ? "max-h-[min(42dvh,42vh)] sm:max-h-[min(30dvh,30vh)]"
+        : "max-h-[min(34dvh,34vh)] sm:max-h-[min(30dvh,30vh)]";
+  const portraitSize = gate
+    ? "size-11 sm:size-16"
+    : compact
+      ? "size-12 sm:size-[4.25rem]"
+      : "size-12 sm:size-20";
+  const gradientH = gate ? "h-[22%] sm:h-[28%]" : "h-[30%] sm:h-[38%]";
   return (
     <section
       aria-label={speaker ? `Dialogue from ${speaker}` : "Story dialogue"}
-      className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center px-1 pb-0 sm:px-2"
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center px-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:px-2"
       style={{ opacity }}
     >
       <p ref={liveRef} aria-live="polite" className="sr-only">
@@ -151,91 +163,101 @@ export function GameDialogueBox({
       </p>
       <div
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#05040b]/85 to-transparent ${gate ? "h-[28%]" : "h-[38%]"}`}
+        className={`pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#05040b]/85 to-transparent ${gradientH}`}
       />
       <div
-        className={`pointer-events-auto relative flex w-full max-w-[min(56rem,99%)] overflow-hidden border-4 ${s.border} ${s.panel} ${s.glow} ${maxH}`}
+        className={`pointer-events-auto relative flex w-full max-w-[min(56rem,99%)] touch-pan-y flex-col overflow-hidden border-4 ${s.border} ${s.panel} ${s.glow} ${maxH}`}
         style={{ imageRendering: "pixelated" }}
       >
-        <div
-          aria-hidden="true"
-          className="relative shrink-0 border-r-4 border-black/40 bg-[#0a0818]/90 p-1.5 sm:p-2"
-        >
+        <div className="flex min-h-0 flex-1">
           <div
-            className={`relative overflow-hidden border-4 border-white/30 bg-[#1a1830] ${portraitSize}`}
+            aria-hidden="true"
+            className="relative shrink-0 border-r-4 border-black/40 bg-[#0a0818]/90 p-1 sm:p-2"
           >
-            <Image
-              src={PORTRAIT_SRC}
-              alt=""
-              width={68}
-              height={68}
-              loading="eager"
-              className="absolute -top-1 left-1/2 h-[130%] w-auto max-w-none -translate-x-1/2 object-cover object-[center_15%]"
-              style={{ imageRendering: "pixelated" }}
-              unoptimized
-            />
-          </div>
-        </div>
-        <div className="min-w-0 flex-1 overflow-hidden px-3 py-2 [font-family:var(--font-pixel),monospace] sm:px-4 sm:py-2.5">
-          {speaker ? (
-            <p
-              className={`text-[11px] font-bold tracking-[0.2em] uppercase sm:text-xs ${s.kicker}`}
+            <div
+              className={`relative overflow-hidden border-4 border-white/30 bg-[#1a1830] ${portraitSize}`}
             >
-              {speaker}
-            </p>
-          ) : null}
-          {kicker ? (
-            <p
-              className={`mt-0.5 text-[11px] font-semibold tracking-[0.18em] uppercase sm:text-xs ${s.kicker}`}
-            >
-              {kicker}
-            </p>
-          ) : null}
-          <h2 className="mt-1 text-base leading-snug font-bold text-white [text-shadow:2px_2px_0_#000] sm:text-lg md:text-xl">
-            {renderHighlightedBody(
-              displayed.slice(0, title.length) || title.slice(0, displayed.length),
-            )}
-          </h2>
-          {hook ? (
-            <p className="mt-1.5 text-sm leading-relaxed text-white/85 sm:text-base">
-              {showHook
-                ? renderHighlightedBody(
-                    displayed.slice(title.length).slice(0, hook.length) ||
-                      hook.slice(0, Math.max(0, displayed.length - title.length)),
-                  )
-                : null}
-            </p>
-          ) : null}
-          {body ? (
-            <p
-              className={`mt-1 text-sm leading-snug text-white/80 sm:text-base ${gate ? "line-clamp-2" : compact ? "line-clamp-2" : "line-clamp-3"}`}
-            >
-              {showBody
-                ? renderHighlightedBody(
-                    displayed.slice(title.length + (hook?.length ?? 0) + (hook ? 1 : 0)),
-                  )
-                : null}
-            </p>
-          ) : null}
-          {cta && displayed.length >= fullText.length - cta.length ? (
-            <p className="mt-2 text-sm font-bold tracking-wide text-amber-200 sm:text-base">
-              {cta}
-            </p>
-          ) : null}
-          {action ? <div className="mt-2.5">{action}</div> : null}
-          {dotCount !== undefined && dotCount > 1 ? (
-            <div className="mt-2 flex gap-2" aria-hidden="true">
-              {Array.from({ length: dotCount }, (_, i) => (
-                <span
-                  key={i}
-                  className="size-2.5 border-2 border-black/50"
-                  style={{
-                    backgroundColor: i === dotIndex ? s.accent : "rgba(255,255,255,0.12)",
-                  }}
-                />
-              ))}
+              <Image
+                src={PORTRAIT_SRC}
+                alt=""
+                width={68}
+                height={68}
+                loading="eager"
+                className="absolute -top-1 left-1/2 h-[130%] w-auto max-w-none -translate-x-1/2 object-cover object-[center_15%]"
+                style={{ imageRendering: "pixelated" }}
+                unoptimized
+              />
             </div>
-          ) : null}
+          </div>
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-2.5 py-1.5 [font-family:var(--font-pixel),monospace] sm:px-4 sm:py-2.5">
+              {speaker ? (
+                <p
+                  className={`text-[10px] font-bold tracking-[0.16em] uppercase sm:text-xs sm:tracking-[0.2em] ${s.kicker}`}
+                >
+                  {speaker}
+                </p>
+              ) : null}
+              {kicker ? (
+                <p
+                  className={`mt-0.5 text-[10px] font-semibold tracking-[0.14em] uppercase sm:text-xs sm:tracking-[0.18em] ${s.kicker}`}
+                >
+                  {kicker}
+                </p>
+              ) : null}
+              <h2 className="mt-0.5 text-sm leading-snug font-bold text-white [text-shadow:2px_2px_0_#000] sm:mt-1 sm:text-lg md:text-xl">
+                {renderHighlightedBody(
+                  displayed.slice(0, title.length) || title.slice(0, displayed.length),
+                )}
+              </h2>
+              {hook ? (
+                <p className="mt-1 text-xs leading-relaxed text-white/85 sm:mt-1.5 sm:text-base">
+                  {showHook
+                    ? renderHighlightedBody(
+                        displayed.slice(title.length).slice(0, hook.length) ||
+                          hook.slice(0, Math.max(0, displayed.length - title.length)),
+                      )
+                    : null}
+                </p>
+              ) : null}
+              {body ? (
+                <p
+                  className={`mt-1 text-xs leading-snug text-white/80 sm:text-base ${gate ? "line-clamp-2 sm:line-clamp-2" : compact ? "line-clamp-2 sm:line-clamp-2" : "line-clamp-3 sm:line-clamp-3"}`}
+                >
+                  {showBody
+                    ? renderHighlightedBody(
+                        displayed.slice(title.length + (hook?.length ?? 0) + (hook ? 1 : 0)),
+                      )
+                    : null}
+                </p>
+              ) : null}
+              {cta && displayed.length >= fullText.length - cta.length ? (
+                <p className="mt-1.5 text-xs font-bold tracking-wide text-amber-200 sm:mt-2 sm:text-base">
+                  {cta}
+                </p>
+              ) : null}
+              {dotCount !== undefined && dotCount > 1 ? (
+                <div className="mt-1.5 flex gap-2 sm:mt-2" aria-hidden="true">
+                  {Array.from({ length: dotCount }, (_, i) => (
+                    <span
+                      key={i}
+                      className="size-2 border-2 border-black/50 sm:size-2.5"
+                      style={{
+                        backgroundColor: i === dotIndex ? s.accent : "rgba(255,255,255,0.12)",
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : null}
+            </div>
+            {action ? (
+              <div className="shrink-0 border-t-4 border-black/30 bg-[#0a0818]/80 px-2.5 py-2 sm:px-4 sm:py-2.5">
+                <div className="max-sm:[&_a]:block max-sm:[&_a]:w-full max-sm:[&_a]:text-center max-sm:[&_button]:w-full max-sm:[&_button]:justify-center">
+                  {action}
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </section>

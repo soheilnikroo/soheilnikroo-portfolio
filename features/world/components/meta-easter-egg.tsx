@@ -50,12 +50,12 @@ export function MetaEasterEgg({
           type="button"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={handleAsk}
-          className="group mt-4 w-full border-4 border-dashed border-white/25 bg-white/3 px-4 py-3 text-left transition-colors hover:border-indigo-300/60 hover:bg-indigo-950/40 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+          className="group mt-2.5 w-full border-4 border-dashed border-white/25 bg-white/3 px-3 py-2 text-left transition-colors hover:border-indigo-300/60 hover:bg-indigo-950/40 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:mt-4 sm:px-4 sm:py-3"
         >
-          <span className="block [font-family:var(--font-pixel),monospace] text-xs font-bold tracking-wide text-indigo-200/90 uppercase">
+          <span className="block [font-family:var(--font-pixel),monospace] text-[10px] font-bold tracking-wide text-indigo-200/90 uppercase sm:text-xs">
             Pause menu thought…
           </span>
-          <span className="mt-1.5 block [font-family:var(--font-pixel),monospace] text-sm leading-snug text-white/85 group-hover:text-white">
+          <span className="mt-1 block [font-family:var(--font-pixel),monospace] text-[11px] leading-snug text-white/85 group-hover:text-white sm:mt-1.5 sm:text-sm">
             I wish real life had a retry button. Did you scroll back to the start anyway?
           </span>
         </button>

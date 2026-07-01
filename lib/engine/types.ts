@@ -12,7 +12,10 @@ export interface RenderSurface {
   readonly dpr: number;
   resize(width: number, height: number, dpr: number): void;
   clear(): void;
+  resetCameraFocusOverride(): void;
+  isCameraFocusOverridden(): boolean;
   setCameraFocusX(x: number): void;
+  focusCameraOn(x: number): void;
   getGameViewport(): GameViewportRect;
   present(): void;
 }

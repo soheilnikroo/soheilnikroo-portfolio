@@ -12,14 +12,14 @@ The `/admin` panel edits blog posts, projects, and site content stored in **Supa
 
 Set these **environment variables** on the `soheilnikroo` app in the Liara dashboard (or via `liara env:set`):
 
-| Variable                               | Purpose                                              |
-| -------------------------------------- | ---------------------------------------------------- |
-| `DATABASE_URL`                         | Supabase Postgres pooler URL                         |
-| `ADMIN_PASSWORD`                       | Password for `/admin/login`                          |
-| `SESSION_SECRET`                       | HMAC secret for the admin session cookie (32+ chars) |
-| `NEXT_PUBLIC_SITE_URL`                 | `https://soheilnikroo.liara.run`                     |
-| `NEXT_PUBLIC_SUPABASE_URL`             | Supabase project URL (if using Supabase Auth)        |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key                             |
+| Variable                               | Purpose                                                          |
+| -------------------------------------- | ---------------------------------------------------------------- |
+| `DATABASE_URL`                         | Supabase Postgres pooler URL                                     |
+| `ADMIN_PASSWORD`                       | Password for `/admin/login` (minimum 12 characters)              |
+| `SESSION_SECRET`                       | HMAC secret for the admin session cookie (minimum 32 characters) |
+| `NEXT_PUBLIC_SITE_URL`                 | `https://soheilnikroo.liara.run`                                 |
+| `NEXT_PUBLIC_SUPABASE_URL`             | Supabase project URL (if using Supabase Auth)                    |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key                                         |
 
 ### Database connection timeouts
 

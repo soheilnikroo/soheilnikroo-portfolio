@@ -1,11 +1,13 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { safeAdminRedirectPath } from "@/lib/auth/paths";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -19,14 +21,23 @@ export function LoginForm() {
       body: JSON.stringify({ password }),
     });
     if (res.ok) {
-      router.push("/admin");
+      router.push(safeAdminRedirectPath(searchParams.get("next")));
       router.refresh();
       return;
     }
     const data = (await res.json().catch(() => ({}))) as {
       error?: string;
     };
-    setError(data.error ?? "Login failed");
+    if (res.status === 429) {
+      const retryAfter = res.headers.get("Retry-After");
+      setError(
+        retryAfter
+          ? `${data.error ?? "Too many attempts."} Retry in ${retryAfter}s.`
+          : (data.error ?? "Too many login attempts. Try again later."),
+      );
+    } else {
+      setError(data.error ?? "Login failed");
+    }
     setLoading(false);
   }
   return (

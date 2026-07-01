@@ -30,10 +30,10 @@ export type DbConnectOptions = {
 const QUICK_CONNECT_TIMEOUT_MS = 30_000;
 const READ_CONNECT_TIMEOUT_MS = process.env.NODE_ENV === "production" ? 60_000 : 35_000;
 const BUILD_CONNECT_TIMEOUT_MS = 10_000;
-const ADMIN_CONNECT_TIMEOUT_MS = 90_000;
+const ADMIN_CONNECT_TIMEOUT_MS = 45_000;
 const READ_ATTEMPTS = process.env.NODE_ENV === "production" ? 2 : 1;
 const BUILD_ATTEMPTS = 1;
-const ADMIN_ATTEMPTS = 4;
+const ADMIN_ATTEMPTS = 2;
 
 export function connectTimeoutMs(options?: DbConnectOptions): number {
   if (options?.quick) return QUICK_CONNECT_TIMEOUT_MS;

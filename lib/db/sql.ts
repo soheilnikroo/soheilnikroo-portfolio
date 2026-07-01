@@ -58,15 +58,11 @@ async function migrate(options?: DbConnectOptions): Promise<void> {
 /** Ensures tables exist. Admin (`force`) always retries; public reads memoize success only. */
 export async function ensureSchema(options?: DbConnectOptions): Promise<void> {
   const resolved = await resolveDbConnectOptions(options);
-  const force = resolved.force === true;
+  if (globalThis.__portfolioSchemaReady) return globalThis.__portfolioSchemaReady;
 
-  if (force) return migrate(resolved);
-
-  if (!globalThis.__portfolioSchemaReady) {
-    globalThis.__portfolioSchemaReady = migrate(resolved).catch((error) => {
-      globalThis.__portfolioSchemaReady = undefined;
-      throw error;
-    });
-  }
+  globalThis.__portfolioSchemaReady = migrate(resolved).catch((error) => {
+    globalThis.__portfolioSchemaReady = undefined;
+    throw error;
+  });
   return globalThis.__portfolioSchemaReady;
 }

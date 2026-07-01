@@ -41,7 +41,11 @@ export async function proxy(request: NextRequest) {
   }
 
   let response: NextResponse;
-  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
+  const usesSupabaseAuth =
+    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const skipSupabaseSession = pathname.startsWith(ADMIN_API_PREFIX) || isAdminPagePath(pathname);
+
+  if (usesSupabaseAuth && !skipSupabaseSession) {
     response = await updateSession(requestWithPath);
   } else {
     response = NextResponse.next({ request: requestWithPath });

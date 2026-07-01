@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import type { Project } from "@/lib/schemas";
 
 import type { DbConnectOptions } from "./resilience";
+import { withConnectTimeout } from "./resilience";
 import { ensureSchema, getSql } from "./sql";
 
 export type ProjectRow = {
@@ -36,43 +37,63 @@ export async function getProjectRowBySlug(slug: string): Promise<ProjectRow | nu
   return rows[0] ?? null;
 }
 export async function createProjectRow(slug: string, data: Project): Promise<ProjectRow> {
-  await ensureSchema({ force: true });
-  const sql = getSql();
-  const id = randomUUID();
-  const rows = await sql<ProjectRow[]>`
+  return withConnectTimeout(
+    async () => {
+      await ensureSchema({ force: true });
+      const sql = getSql();
+      const id = randomUUID();
+      const rows = await sql<ProjectRow[]>`
     INSERT INTO projects (id, slug, data)
     VALUES (${id}, ${slug}, ${sql.json(data)})
     RETURNING *
   `;
-  if (!rows[0]) throw new Error("Failed to create project");
-  return rows[0];
+      if (!rows[0]) throw new Error("Failed to create project");
+      return rows[0];
+    },
+    { force: true },
+  );
 }
 export async function updateProjectRow(
   id: string,
   slug: string,
   data: Project,
 ): Promise<ProjectRow | null> {
-  await ensureSchema({ force: true });
-  const sql = getSql();
-  const rows = await sql<ProjectRow[]>`
+  return withConnectTimeout(
+    async () => {
+      await ensureSchema({ force: true });
+      const sql = getSql();
+      const rows = await sql<ProjectRow[]>`
     UPDATE projects SET slug = ${slug}, data = ${sql.json(data)}, updated_at = now()
     WHERE id = ${id}
     RETURNING *
   `;
-  return rows[0] ?? null;
+      return rows[0] ?? null;
+    },
+    { force: true },
+  );
 }
 export async function deleteProjectRow(id: string): Promise<boolean> {
-  await ensureSchema({ force: true });
-  const sql = getSql();
-  const rows = await sql<ProjectRow[]>`DELETE FROM projects WHERE id = ${id} RETURNING id`;
-  return rows.length > 0;
+  return withConnectTimeout(
+    async () => {
+      await ensureSchema({ force: true });
+      const sql = getSql();
+      const rows = await sql<ProjectRow[]>`DELETE FROM projects WHERE id = ${id} RETURNING id`;
+      return rows.length > 0;
+    },
+    { force: true },
+  );
 }
 export async function upsertProjectRow(slug: string, data: Project): Promise<void> {
-  await ensureSchema({ force: true });
-  const existing = await getProjectRowBySlug(slug);
-  if (existing) {
-    await updateProjectRow(existing.id, slug, data);
-    return;
-  }
-  await createProjectRow(slug, data);
+  await withConnectTimeout(
+    async () => {
+      await ensureSchema({ force: true });
+      const existing = await getProjectRowBySlug(slug);
+      if (existing) {
+        await updateProjectRow(existing.id, slug, data);
+        return;
+      }
+      await createProjectRow(slug, data);
+    },
+    { force: true },
+  );
 }

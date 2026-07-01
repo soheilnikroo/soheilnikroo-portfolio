@@ -58,6 +58,8 @@ pnpm db:seed
 
 This is idempotent: it upserts posts, projects, profile, skills, milestones, site settings, and world narrative.
 
+**Writing and Projects are empty?** Profile/SEO live in `site_content` (JSON blobs). Posts and projects live in separate tables (`posts`, `projects`). If you seeded only site content, or tables were created but never filled, run `pnpm db:seed` locally with the same `DATABASE_URL` as Liara. An empty list in admin is normal until seed or manual create succeeds.
+
 ## Content model
 
 - **posts** — blog articles (markdown bodies)

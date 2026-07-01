@@ -49,21 +49,27 @@ export function PostEditor({ mode, post }: { mode: "create" | "edit"; post?: Adm
       date,
     };
     const url = mode === "create" ? "/api/admin/posts" : `/api/admin/posts/${post?.id}`;
-    const res = await fetch(url, {
-      method: mode === "create" ? "POST" : "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (res.ok) {
-      router.push("/admin");
-      router.refresh();
-      return;
+    try {
+      const res = await fetch(url, {
+        method: mode === "create" ? "POST" : "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(50_000),
+      });
+      if (res.ok) {
+        router.push("/admin");
+        router.refresh();
+        return;
+      }
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+      };
+      setError(data.error ?? "Failed to save. Check the fields and try again.");
+    } catch {
+      setError("Save timed out or the server could not be reached. Try again in a moment.");
+    } finally {
+      setSaving(false);
     }
-    const data = (await res.json().catch(() => ({}))) as {
-      error?: string;
-    };
-    setError(data.error ?? "Failed to save. Check the fields and try again.");
-    setSaving(false);
   }
   return (
     <form onSubmit={onSubmit} className="grid gap-5">

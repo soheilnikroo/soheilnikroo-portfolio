@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { DbConnectOptions } from "./resilience";
+import { withConnectTimeout } from "./resilience";
 import { ensureSchema, getSql } from "./sql";
 import { normalizeTextArray, sqlTextArray } from "./text-array";
 
@@ -59,10 +60,12 @@ export async function getPostRowById(
   return rows[0] ? normalizePostRow(rows[0]) : null;
 }
 export async function createPostRow(input: PostInput): Promise<PostRow> {
-  await ensureSchema({ force: true });
-  const sql = getSql();
-  const id = randomUUID();
-  const rows = await sql<PostRow[]>`
+  return withConnectTimeout(
+    async () => {
+      await ensureSchema({ force: true });
+      const sql = getSql();
+      const id = randomUUID();
+      const rows = await sql<PostRow[]>`
     INSERT INTO posts (id, slug, title, description, category, tags, body, cover, published, date)
     VALUES (
       ${id}, ${input.slug}, ${input.title}, ${input.description}, ${input.category},
@@ -70,13 +73,18 @@ export async function createPostRow(input: PostInput): Promise<PostRow> {
     )
     RETURNING *
   `;
-  if (!rows[0]) throw new Error("Failed to create post");
-  return normalizePostRow(rows[0]);
+      if (!rows[0]) throw new Error("Failed to create post");
+      return normalizePostRow(rows[0]);
+    },
+    { force: true },
+  );
 }
 export async function updatePostRow(id: string, input: PostInput): Promise<PostRow | null> {
-  await ensureSchema({ force: true });
-  const sql = getSql();
-  const rows = await sql<PostRow[]>`
+  return withConnectTimeout(
+    async () => {
+      await ensureSchema({ force: true });
+      const sql = getSql();
+      const rows = await sql<PostRow[]>`
     UPDATE posts SET
       slug = ${input.slug},
       title = ${input.title},
@@ -91,11 +99,19 @@ export async function updatePostRow(id: string, input: PostInput): Promise<PostR
     WHERE id = ${id}
     RETURNING *
   `;
-  return rows[0] ? normalizePostRow(rows[0]) : null;
+      return rows[0] ? normalizePostRow(rows[0]) : null;
+    },
+    { force: true },
+  );
 }
 export async function deletePostRow(id: string): Promise<boolean> {
-  await ensureSchema({ force: true });
-  const sql = getSql();
-  const rows = await sql<PostRow[]>`DELETE FROM posts WHERE id = ${id} RETURNING id`;
-  return rows.length > 0;
+  return withConnectTimeout(
+    async () => {
+      await ensureSchema({ force: true });
+      const sql = getSql();
+      const rows = await sql<PostRow[]>`DELETE FROM posts WHERE id = ${id} RETURNING id`;
+      return rows.length > 0;
+    },
+    { force: true },
+  );
 }

@@ -14,7 +14,7 @@ import { getPostMetaBySlug, getPostSource } from "@/lib/data";
 import { formatDate } from "@/lib/services/date";
 import { extractToc } from "@/lib/services/toc";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
 }: {

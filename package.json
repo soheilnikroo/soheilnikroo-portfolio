@@ -20,6 +20,7 @@
     "e2e:ui": "playwright test --ui",
     "db:seed": "node --env-file=.env scripts/seed.mjs",
     "db:ping": "node --env-file=.env scripts/db-ping.mjs",
+    "db:list": "node --env-file=.env scripts/list-content.mjs",
     "assets:optimize": "node scripts/optimize-audio.mjs"
   },
   "dependencies": {

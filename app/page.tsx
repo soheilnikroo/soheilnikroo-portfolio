@@ -8,6 +8,8 @@ import { getSiteConfig } from "@/lib/data/site-settings";
 import { worldAssetUrl, worldImageSrc } from "@/lib/world/asset-url";
 import { getWorldPageProps } from "@/lib/world/get-world-props";
 
+export const dynamic = "force-dynamic";
+
 const SPLASH_IMAGE = worldImageSrc("/world/scenes/intro-hero-dawn.png");
 const WORLD_PRELOADS = [
   worldAssetUrl("/world/scenes/intro-hero-dawn.png"),

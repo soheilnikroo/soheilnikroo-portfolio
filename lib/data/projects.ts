@@ -117,7 +117,7 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   }
 }
 export async function listAllProjectRows(): Promise<ProjectRow[]> {
-  return listProjectRows({ force: true, quick: true });
+  return listProjectRows({ force: true });
 }
 export async function getProjectRow(id: string): Promise<ProjectRow | null> {
   return getProjectRowById(id, { force: true });

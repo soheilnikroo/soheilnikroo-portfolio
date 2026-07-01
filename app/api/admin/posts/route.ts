@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { isAdmin } from "@/lib/auth/session";
@@ -23,6 +24,10 @@ export async function POST(request: Request) {
   }
   try {
     const row = await createPost(parsed.data);
+    revalidatePath("/blog");
+    revalidatePath("/");
+    revalidatePath("/read");
+    revalidatePath("/admin");
     return NextResponse.json({ post: row }, { status: 201 });
   } catch (error) {
     const message =

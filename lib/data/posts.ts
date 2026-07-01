@@ -34,10 +34,21 @@ export function rowToMeta(row: PostRow): PostMeta {
     readingMinutes: Math.max(1, Math.round(stats.minutes)),
   });
 }
+function safeRowToMeta(row: PostRow): PostMeta | null {
+  try {
+    return rowToMeta(row);
+  } catch (error) {
+    logContentStoreError(`blog/${row.slug}`, error);
+    return null;
+  }
+}
 export async function getAllPostMeta(includeDrafts = false): Promise<PostMeta[]> {
   try {
     const rows = await listPostRows(includeDrafts);
-    return rows.map(rowToMeta);
+    return rows.flatMap((row) => {
+      const meta = safeRowToMeta(row);
+      return meta ? [meta] : [];
+    });
   } catch (error) {
     logContentStoreError("blog", error);
     return [];
@@ -103,7 +114,7 @@ function toDbInput(input: PostInputValues): PostInput {
   };
 }
 export async function listAllPostRows(includeDrafts = false): Promise<PostRow[]> {
-  return listPostRows(includeDrafts, { force: true, quick: true });
+  return listPostRows(includeDrafts, { force: true });
 }
 export async function getPostById(id: string): Promise<PostRow | null> {
   return getPostRowById(id, { force: true });

@@ -21,7 +21,7 @@ export function getPostgresClientOptions(url: string) {
     max: 10,
     idle_timeout: 20,
     connect_timeout: 60,
-    prepare: !isTransactionPooler(url),
+    prepare: isSupabaseUrl(url) ? false : !isTransactionPooler(url),
     ssl: isSupabaseUrl(url) ? ("require" as const) : undefined,
     onnotice: () => {},
     connection: {

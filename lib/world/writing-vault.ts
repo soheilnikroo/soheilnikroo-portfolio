@@ -43,17 +43,47 @@ export function vaultLayout(
     buildT,
   };
 }
+export function vaultSlotCx(
+  slot: number,
+  layout: Pick<VaultLayout, "rowX0" | "spacing" | "resumeCx">,
+): number {
+  const { rowX0, spacing, resumeCx } = layout;
+  return slot === 0 ? resumeCx - spacing * 0.1 : rowX0 + spacing * (slot + 0.5) - spacing * 0.2;
+}
+export interface VaultCharacterTravel {
+  readonly charX: number;
+  readonly cameraX: number;
+  readonly walking: boolean;
+  readonly walkT: number;
+  readonly fromSlot: number;
+  readonly toSlot: number;
+}
+export function vaultCharacterTravel(
+  buildT: number,
+  postN: number,
+  layout: Pick<VaultLayout, "rowX0" | "spacing" | "resumeCx">,
+): VaultCharacterTravel {
+  const slotCx = (slot: number): number => vaultSlotCx(slot, layout);
+  if (postN <= 0) {
+    const x = slotCx(0);
+    return { charX: x, cameraX: x, walking: false, walkT: 0, fromSlot: 0, toSlot: 0 };
+  }
+  const travel = buildT * postN;
+  const fromSlot = Math.min(postN, Math.floor(travel));
+  const toSlot = Math.min(postN, fromSlot + 1);
+  const walkT = travel - fromSlot;
+  const moveBlend = smoothstep(walkT);
+  const charX = lerp(slotCx(fromSlot), slotCx(toSlot), moveBlend);
+  const walking = fromSlot < toSlot && walkT > 0.04 && walkT < 0.96;
+  // Hold the camera on the departure chest while walking so the character crosses the frame.
+  const cameraX = walking
+    ? slotCx(fromSlot) + layout.spacing * 0.32
+    : charX + layout.spacing * 0.12;
+  return { charX, cameraX, walking, walkT, fromSlot, toSlot };
+}
 export function vaultCameraFocusX(local: number, postCount: number, width = DESIGN_WIDTH): number {
-  const { rowX0, spacing, resumeCx, buildT, postN } = vaultLayout(
-    local,
-    postCount,
-    width,
-    DESIGN_HEIGHT,
-  );
-  if (postN === 0) return resumeCx;
-  const postIdx = Math.min(postN - 1, Math.floor(buildT * postN));
-  const activeCx = rowX0 + spacing * (postIdx + 1.5);
-  return lerp(resumeCx, activeCx, smoothstep(buildT));
+  const layout = vaultLayout(local, postCount, width, DESIGN_HEIGHT);
+  return vaultCharacterTravel(layout.buildT, layout.postN, layout).cameraX;
 }
 export function resumeChestBounds(
   layout: VaultLayout,

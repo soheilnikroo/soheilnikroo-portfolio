@@ -17,7 +17,7 @@ export const characterManifest: CharacterManifest = {
     walk: dir("walk", WALK),
     run: dir("run", RUN),
     jump: dir("jump", JUMP),
-    climb: dir("walk", WALK),
+    climb: dir("climb", [0, 1, 2, 3, 4, 5] as const),
     pull: dir("pull", WALK),
   },
 };

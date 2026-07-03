@@ -1,24 +1,35 @@
 #!/usr/bin/env node
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "../..");
-const EXPORT_ROOT = join(ROOT, process.argv[2] ?? "art-bible/pixellab-exports");
+const exportArg = process.argv[2];
+const EXPORT_ROOT = exportArg
+  ? isAbsolute(exportArg)
+    ? exportArg
+    : resolve(ROOT, exportArg)
+  : join(ROOT, "art-bible/pixellab-exports");
 const DST = join(ROOT, "public/world/character");
 const CLIP_MAP = {
   walking: "walk",
   running: "run",
+  running_jump: "jump",
   front_flip: "jump",
+  crouched_walking: "climb",
   animating: "idle",
 };
 function resolveExportDir(root) {
+  if (existsSync(join(root, "rotations", "east.png"))) return root;
   const metaPath = join(root, "metadata.json");
   if (existsSync(metaPath)) {
     const meta = JSON.parse(readFileSync(metaPath, "utf8"));
     const folder = meta.states?.[0]?.folder;
-    if (folder) return join(root, folder);
+    if (folder) {
+      const nested = isAbsolute(folder) ? folder : join(root, folder);
+      if (existsSync(join(nested, "rotations", "east.png"))) return nested;
+    }
   }
   const entries = readdirSync(root, { withFileTypes: true }).filter((d) => d.isDirectory());
   const match = entries.find((d) => existsSync(join(root, d.name, "rotations", "east.png")));
@@ -77,5 +88,15 @@ if (pullKey) {
 } else {
   console.warn("  pull: missing — aliasing walk");
   copyClip(SRC, "walking", "pull", ["east", "west"], 6);
+}
+if (!animKeys.some((k) => CLIP_MAP[k] === "climb")) {
+  console.warn(
+    "  climb: missing — aliasing walk (subscribe at pixellab.ai/account for crouched-walking)",
+  );
+  const walkEast = join(animRoot, "walking", "east");
+  const count = existsSync(walkEast)
+    ? readdirSync(walkEast).filter((f) => f.endsWith(".png")).length
+    : 6;
+  copyClip(SRC, "walking", "climb", ["east", "west"], count);
 }
 console.log("Synced character clips to", DST);

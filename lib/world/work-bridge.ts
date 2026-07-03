@@ -1,7 +1,8 @@
 import { clamp01, groundY, lerp } from "@/lib/engine";
 import { DESIGN_HEIGHT, DESIGN_WIDTH } from "@/lib/engine/viewport";
 
-export const WORK_CHAPTER_PROGRESS = { start: 0.06, end: 0.94 } as const;
+/** Bridge build finishes earlier so the last ? box has scroll room before the next chapter. */
+export const WORK_CHAPTER_PROGRESS = { start: 0.06, end: 0.8 } as const;
 
 export function chapterProgress(local: number, start = 0.06, end = 0.92): number {
   return clamp01((local - start) / (end - start));

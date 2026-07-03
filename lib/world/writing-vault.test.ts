@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { DESIGN_WIDTH } from "@/lib/engine/viewport";
 
-import { hitResumeChest, resumeChestBounds, vaultCameraFocusX, vaultLayout } from "./writing-vault";
+import {
+  hitResumeChest,
+  resumeChestBounds,
+  vaultCameraFocusX,
+  vaultCharacterTravel,
+  vaultLayout,
+} from "./writing-vault";
 
 describe("vaultLayout", () => {
   it("places the résumé chest in slot 0 and blog posts after it", () => {
@@ -23,6 +29,16 @@ describe("vaultCameraFocusX", () => {
     const start = vaultCameraFocusX(0.05, 2);
     const later = vaultCameraFocusX(0.6, 2);
     expect(later).toBeGreaterThan(start);
+  });
+});
+describe("vaultCharacterTravel", () => {
+  it("moves the character across the frame while the camera stays anchored during a walk", () => {
+    const layout = vaultLayout(0.3, 3);
+    const early = vaultCharacterTravel(0.22, layout.postN, layout);
+    const mid = vaultCharacterTravel(0.28, layout.postN, layout);
+    expect(mid.walking).toBe(true);
+    expect(mid.charX).toBeGreaterThan(early.charX);
+    expect(mid.cameraX).toBeCloseTo(early.cameraX, 0);
   });
 });
 describe("hitResumeChest", () => {

@@ -29,7 +29,7 @@ export interface ActiveChapter {
   readonly id: string;
   readonly local: number;
 }
-const EDGE = 0.07;
+const EDGE = 0.05;
 export class Stage {
   private readonly surface: RenderSurface;
   private readonly character: Character;

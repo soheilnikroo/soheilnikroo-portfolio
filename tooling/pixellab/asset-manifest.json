@@ -25,7 +25,16 @@
       { "template": "breathing-idle", "name": "idle" },
       { "template": "pull-heavy-object", "name": "pull" },
       { "template": "running-4-frames", "name": "run" },
-      { "template": "front-flip", "name": "jump" }
+      {
+        "template": "running-jump",
+        "name": "jump",
+        "action_description": "running jump over a gap, side view platformer"
+      },
+      {
+        "template": "crouched-walking",
+        "name": "climb",
+        "action_description": "climbing up stairs, stepping onto each higher step, side view"
+      }
     ]
   },
   "chapters": [

@@ -27,7 +27,7 @@ import { drawTapMeHint, interactionShake } from "./canvas-hints";
 import { drawSkillBadge } from "./skill-badges";
 import { workCameraFocusX, workChapterBuildT } from "./work-bridge";
 import { CHAPTER_SCENE_PROFILES, PALETTES, sceneManifest } from "./world-content";
-import { drawTapPointer, vaultLayout, vaultCameraFocusX } from "./writing-vault";
+import { drawTapPointer, vaultCharacterTravel, vaultLayout } from "./writing-vault";
 
 export interface SkillInfo {
   readonly id: string;
@@ -49,7 +49,7 @@ function characterScale(height: number): number {
 }
 function charBob(clip: ClipName, time: number): number {
   if (clip === "idle") return Math.sin(time / 320) * 2.2;
-  if (clip === "walk" || clip === "run") return Math.sin(time / 120) * -1.4;
+  if (clip === "walk" || clip === "run" || clip === "climb") return Math.sin(time / 120) * -1.4;
   return 0;
 }
 function drawTapHint(ctx: CanvasRenderingContext2D, cx: number, gy: number, time: number): void {
@@ -498,7 +498,7 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           } else {
             const jt = clamp01((t - 0.4) / 0.6);
             clip = "jump";
-            frame = oneShotFrame(jt, 9);
+            frame = oneShotFrame(jt, 6);
             cx = lerp(width * 0.49, ladderX, jt);
             baseline = gy - Math.sin(jt * Math.PI) * height * 0.24;
           }
@@ -508,12 +508,10 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           const f = t * stairSteps;
           const si = Math.min(stairSteps - 1, Math.floor(f));
           const sf = clamp01(f - si);
-          const stepH = (ledgeY - gy) / stairSteps;
-          clip = "jump";
-          frame = oneShotFrame(sf, 9);
-          cx = lerp(stairX0 + (si + 0.3) * stepW, stairX0 + (si + 1.3) * stepW, sf);
-          baseline =
-            lerp(stepTopY(si), stepTopY(si + 1), sf) - Math.sin(sf * Math.PI) * stepH * 0.38;
+          clip = "climb";
+          frame = loopFrame(sf, 6, 2);
+          cx = lerp(stairX0 + (si + 0.5) * stepW, stairX0 + (si + 1.5) * stepW, smoothstep(sf));
+          baseline = lerp(stepTopY(si), stepTopY(si + 1), sf);
         } else if (local < 0.84) {
           const t = clamp01((local - 0.62) / 0.22);
           paintStairs(1);
@@ -770,7 +768,7 @@ export function createChapters(data: ChapterData): ChapterScene[] {
         drawVaultSet(ctx, width, height, gy, local, time);
         applyTint(surface, PALETTES.vault.tint);
         const vault = vaultLayout(local, data.postCount, width, height);
-        const { postN, totalSlots, rowX0, spacing, resumeCx, resumeOpen, buildT } = vault;
+        const { postN, totalSlots, rowX0, spacing, resumeOpen, buildT } = vault;
         const postIdx = postN > 0 ? Math.min(postN - 1, Math.floor(buildT * postN)) : 0;
         const activeSlot = postN > 0 ? postIdx + 1 : 0;
         const t = postN > 0 ? clamp01(buildT * postN - postIdx) : 0;
@@ -809,34 +807,33 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           }
         }
         const scale = characterScale(height);
-        const activeCx = rowX0 + spacing * (activeSlot + 0.5);
-        const charX =
-          activeSlot === 0 ? resumeCx - spacing * 0.1 : activeCx - spacing * 0.35 * (1 - t);
-        const approaching = activeSlot > 0 && t < 0.35;
-        const pullClip =
-          activeSlot === 0
-            ? resumeOpen > 0.5
-              ? "idle"
-              : "pull"
-            : approaching
+        const travel = vaultCharacterTravel(buildT, postN, vault);
+        const { charX, cameraX, walking, walkT } = travel;
+        const atResume = travel.fromSlot === 0 && walkT < 0.2;
+        const pullClip: ClipName =
+          atResume && resumeOpen < 0.5
+            ? "pull"
+            : walking
               ? "walk"
-              : openT > 0.5
+              : activeSlot > 0 && openT > 0.35
                 ? "idle"
-                : "pull";
+                : atResume
+                  ? "idle"
+                  : "walk";
         character.draw(surface, {
-          x: activeSlot === 0 ? charX : lerp(charX - spacing * 0.2, charX, clamp01(t / 0.35)),
+          x: charX,
           baseline: gy,
           scale,
           clip: pullClip,
-          frame: approaching
-            ? loopFrame(t, 6, 4)
+          frame: walking
+            ? loopFrame(walkT, 6, 3)
             : activeSlot === 0
               ? loopFrame(resumeOpen, 6, 4)
-              : loopFrame(buildT, 6, postN),
+              : loopFrame(t, 6, 3),
           dir: "east",
           bob: charBob(pullClip, time),
         });
-        surface.setCameraFocusX(vaultCameraFocusX(local, data.postCount, width));
+        surface.setCameraFocusX(cameraX);
       },
     },
     {

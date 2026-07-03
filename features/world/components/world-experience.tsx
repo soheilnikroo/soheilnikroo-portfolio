@@ -17,7 +17,7 @@ import {
   unlockChapterAudio,
 } from "@/lib/world/chapter-audio";
 import { pixelFont } from "@/lib/world/pixel-font";
-import { segmentBeat } from "@/lib/world/segment-beat";
+import { segmentBeat, resolveStoryBeatIndex } from "@/lib/world/segment-beat";
 import { mysteryBoxBounds, virtualToPercent, workBridgeLayout } from "@/lib/world/work-bridge";
 import {
   characterManifest,
@@ -31,9 +31,11 @@ import { hitResumeChest, vaultLayout } from "@/lib/world/writing-vault";
 import {
   clamp01,
   chapterProgress,
+  INTRO_SCROLL_NUDGE,
   smoothstep,
   SKILLS_SCROLL_NUDGE,
   SKILL_SPOTLIGHT_COUNT,
+  WORK_SCROLL_NUDGE,
 } from "../world-helpers";
 import { ChapterBlock } from "./chapter-block";
 import { GameDialogueBox } from "./game-dialogue-box";
@@ -412,10 +414,7 @@ export function WorldExperience(props: WorldExperienceProps) {
       if (progressRef.current) progressRef.current.style.width = `${(p * 100).toFixed(2)}%`;
       revealOverlay(active.index, active.local);
       const lines = storyBeats[active.id] ?? [];
-      let bi = -1;
-      for (let i = 0; i < lines.length; i += 1) {
-        if (active.local >= (lines[i]?.at ?? 1)) bi = i;
-      }
+      const bi = resolveStoryBeatIndex(active.local, lines);
       const key = `${active.id}:${bi}`;
       if (key !== lastBeatKey) {
         lastBeatKey = key;
@@ -443,7 +442,7 @@ export function WorldExperience(props: WorldExperienceProps) {
       if (disposed) return;
       surface = new engine.Canvas2DSurface(canvas);
       const character = await engine.Character.load(characterManifest, {
-        priorityClips: ["idle", "walk", "run", "jump"],
+        priorityClips: ["idle", "walk", "run", "jump", "climb"],
       });
       const world = await engine.loadWorldAssetsStaged(
         sceneManifest,
@@ -475,7 +474,7 @@ export function WorldExperience(props: WorldExperienceProps) {
       timeline = new engine.ScrollTimeline({
         track,
         onProgress,
-        maxRate: 0.055,
+        maxRate: 0.038,
         smoothing: 5,
       });
       resizeObs = new ResizeObserver(() => {
@@ -513,6 +512,12 @@ export function WorldExperience(props: WorldExperienceProps) {
       if (narrative) narrative.hidden = false;
     };
   }, [enabled, projects.length, posts.length, skills, storyProfile, milestones, posts, storyBeats]);
+  const scrollNudge = React.useCallback((index: number) => {
+    if (index === 0) return INTRO_SCROLL_NUDGE;
+    if (index === 1) return WORK_SCROLL_NUDGE;
+    if (index === 2) return SKILLS_SCROLL_NUDGE;
+    return null;
+  }, []);
   React.useEffect(() => {
     if (!enabled) return;
     const onKey = (e: KeyboardEvent): void => {
@@ -521,7 +526,7 @@ export function WorldExperience(props: WorldExperienceProps) {
       if (e.key === "ArrowDown" || e.key === " " || e.key === "PageDown") {
         e.preventDefault();
         void import("@/lib/engine").then(({ nudgeScrollProgress, SCROLL_NUDGE }) => {
-          const nudge = activeIndex === 2 ? SKILLS_SCROLL_NUDGE : SCROLL_NUDGE;
+          const nudge = scrollNudge(activeIndex) ?? SCROLL_NUDGE;
           nudgeScrollProgress(track, nudge.forward);
         });
         unlockAudio();
@@ -529,14 +534,14 @@ export function WorldExperience(props: WorldExperienceProps) {
       } else if (e.key === "ArrowUp" || e.key === "PageUp") {
         e.preventDefault();
         void import("@/lib/engine").then(({ nudgeScrollProgress, SCROLL_NUDGE }) => {
-          const nudge = activeIndex === 2 ? SKILLS_SCROLL_NUDGE : SCROLL_NUDGE;
+          const nudge = scrollNudge(activeIndex) ?? SCROLL_NUDGE;
           nudgeScrollProgress(track, nudge.back);
         });
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [enabled, activeIndex]);
+  }, [enabled, activeIndex, scrollNudge]);
   React.useEffect(() => {
     if (!mounted || enabled) return;
     const narrative = document.getElementById("world-narrative");
@@ -642,7 +647,7 @@ export function WorldExperience(props: WorldExperienceProps) {
               return;
             }
           }
-          const nudge = activeIndex === 2 ? SKILLS_SCROLL_NUDGE : SCROLL_NUDGE;
+          const nudge = scrollNudge(activeIndex) ?? SCROLL_NUDGE;
           const zone = classifyTapZone(virtual.x, virtual.y);
           if (zone === "forward") {
             nudgeScrollProgress(track, nudge.forward);
@@ -656,7 +661,7 @@ export function WorldExperience(props: WorldExperienceProps) {
         },
       );
     },
-    [activeIndex, chapterLocal, projects, posts, resumeUrl],
+    [activeIndex, chapterLocal, projects, posts, resumeUrl, scrollNudge],
   );
   const stageTap = useTapGesture(handleStageTap, { enabled });
   if (!enabled) return null;
@@ -664,7 +669,12 @@ export function WorldExperience(props: WorldExperienceProps) {
   const activeId = chapterMeta[activeIndex]?.id ?? "intro";
   const chapterGoal = chapterGoals[activeId] ?? "";
   const introBeat =
-    activeIndex === 0 ? segmentBeat(chapterLocal, milestones.length, 0.18, 0.88) : null;
+    activeIndex === 0
+      ? segmentBeat(chapterLocal, milestones.length, 0.12, 0.91, {
+          fadeIn: 0.06,
+          fadeOut: 0.94,
+        })
+      : null;
   const introMilestone = introBeat ? milestones[introBeat.idx] : null;
   const workList = projects.slice(0, 5);
   const workBridge =

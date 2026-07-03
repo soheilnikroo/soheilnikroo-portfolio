@@ -73,6 +73,7 @@ async function queueAssets() {
           character_id: jobs.characterId,
           template_animation_id: anim.template,
           animation_name: anim.name,
+          ...(anim.action_description ? { action_description: anim.action_description } : {}),
         });
         console.log(`Animation ${anim.name}:`, text.split("\n")[0]);
       } catch (e) {

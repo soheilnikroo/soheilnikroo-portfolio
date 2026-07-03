@@ -5,15 +5,15 @@ import { applyCameraFocus, computeGameViewport } from "@/lib/engine/viewport";
 import { workBridgeLayout, workCameraFocusX, workChapterBuildT } from "./work-bridge";
 
 describe("workChapterBuildT", () => {
-  it("extends the chapter tail so the last mystery box has more scroll room", () => {
-    expect(workChapterBuildT(0.92)).toBeLessThan(1);
-    expect(workChapterBuildT(0.94)).toBe(1);
+  it("finishes the bridge early so the last mystery box has scroll room before the next chapter", () => {
+    expect(workChapterBuildT(0.78)).toBeLessThan(1);
+    expect(workChapterBuildT(0.8)).toBe(1);
   });
 });
 
 describe("workCameraFocusX", () => {
   it("pans far enough right to keep the last mystery box in frame on a 320px phone", () => {
-    const layout = workBridgeLayout(0.94, 5);
+    const layout = workBridgeLayout(0.8, 5);
     const focusX = workCameraFocusX(layout);
     const lastBoxX = layout.spans[layout.n - 1]?.cx ?? 0;
     const viewport = applyCameraFocus(computeGameViewport(320, 568, "cover"), focusX);

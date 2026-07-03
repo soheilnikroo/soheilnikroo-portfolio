@@ -114,7 +114,7 @@ export function classifyTapZone(
   return "forward";
 }
 export const SCROLL_NUDGE = {
-  forward: 0.028,
-  back: -0.022,
-  jump: 0.042,
+  forward: 0.019,
+  back: -0.016,
+  jump: 0.03,
 } as const;

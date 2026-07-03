@@ -13,10 +13,11 @@ export interface MetaRoomAnchors {
   readonly leftMonitor: MonitorAnchor;
   readonly rightMonitor: MonitorAnchor;
 }
+
 export const SCREEN_NODE_CANDIDATES = {
-  center: ["wide.002", "wide"],
-  left: ["medium.001", "medium"],
-  right: ["small.002", "small"],
+  center: ["wide002", "wide.002"],
+  left: ["medium001", "medium.001"],
+  right: ["small002", "small.002"],
 } as const;
 export type MonitorScreenSlot = keyof typeof SCREEN_NODE_CANDIDATES;
 export function resolveScreenNode(

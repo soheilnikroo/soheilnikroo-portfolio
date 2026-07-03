@@ -8,8 +8,10 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 import { sfx, unlockAudio } from "@/lib/world/audio";
 import {
+  blitGameFrame,
   canvasToTexture,
-  createSideMonitorCanvas,
+  createCenterScreenCanvas,
+  createSideMonitorCanvasForAspect,
   updateSideMonitorCanvas,
 } from "@/lib/world/meta-monitor-textures";
 import type { MetaRoomAnchors, MonitorScreenSlot } from "@/lib/world/meta-room-anchors";
@@ -42,8 +44,11 @@ const EXTERIOR_HIDDEN = [
   "Fence",
   "WelcomeCarpet",
 ] as const;
-const SCREEN_MESH_HIDDEN = ["wide.001"] as const;
-const SCREEN_INSET = 0.96;
+// Sanitized name first (three strips the dot on load); dotted kept for older builds.
+const SCREEN_MESH_HIDDEN = ["wide001", "wide.001"] as const;
+// Cover the full screen surface. A hair of overscan hides any sub-pixel seam between
+// the emissive plate and the (hidden) screen mesh without spilling onto the bezel.
+const SCREEN_INSET = 1.02;
 const SCREEN_MAT = {
   emissive: new THREE.Color(0xffffff),
   emissiveIntensity: 1.4,
@@ -57,17 +62,47 @@ function prepareScreenTexture(texture: THREE.Texture): THREE.Texture {
   texture.needsUpdate = true;
   return texture;
 }
+// Minimum bow (world units) before we treat a screen as curved. Flat side monitors
+// have a near-zero bounding depth and stay planar; the center screen's real curvature
+// shows up as a meaningful depth, which we reuse as the arc's sagitta.
+const CURVE_MIN_SAGITTA = 0.08;
+const CURVE_SEGMENTS = 64;
+/**
+ * A screen plane bent along a horizontal cylindrical arc so the texture follows the
+ * curvature of a curved monitor. Built by displacing a subdivided plane's Z from its
+ * X (UVs and facing match PlaneGeometry, so texture orientation is unchanged). The
+ * arc is centered in depth: the middle sits back, the edges bow toward the viewer —
+ * exactly how a physical curved panel wraps. `sagitta` is how far the edges bow.
+ */
+function buildScreenGeometry(width: number, height: number, sagitta: number): THREE.BufferGeometry {
+  if (sagitta < CURVE_MIN_SAGITTA) return new THREE.PlaneGeometry(width, height);
+  const geo = new THREE.PlaneGeometry(width, height, CURVE_SEGMENTS, 1);
+  const pos = geo.attributes.position;
+  const halfW = width / 2;
+  const radius = sagitta / 2 + (halfW * halfW) / (2 * sagitta);
+  for (let i = 0; i < pos.count; i += 1) {
+    const x = pos.getX(i);
+    const z = radius - Math.sqrt(Math.max(0, radius * radius - x * x));
+    pos.setZ(i, z - sagitta / 2);
+  }
+  pos.needsUpdate = true;
+  geo.computeVertexNormals();
+  return geo;
+}
 function attachScreenPlate(
   room: THREE.Object3D,
   screen: THREE.Object3D,
   texture: THREE.Texture,
+  curved: boolean,
 ): THREE.Mesh | null {
   const surface = screenSurfaceFromNode(screen);
   if (!surface) return null;
   screen.visible = false;
-  const geometry = new THREE.PlaneGeometry(
+  const sagitta = curved ? surface.depth : 0;
+  const geometry = buildScreenGeometry(
     surface.width * SCREEN_INSET,
     surface.height * SCREEN_INSET,
+    sagitta,
   );
   const material = new THREE.MeshStandardMaterial({
     map: texture,
@@ -86,7 +121,9 @@ function attachScreenPlate(
   room.add(plate);
   plate.position.copy(surface.center);
   plate.quaternion.copy(surface.quaternion);
-  plate.translateZ(Math.max(surface.depth * 0.35, 0.008));
+  // Curved plate is centered in the panel's depth, so it only needs a hair of clearance.
+  // Flat plate keeps its original push toward the panel's front face.
+  plate.translateZ(sagitta >= CURVE_MIN_SAGITTA ? 0.012 : Math.max(surface.depth * 0.35, 0.008));
   return plate;
 }
 function setPlateTexture(plate: THREE.Mesh, texture: THREE.Texture): void {
@@ -96,6 +133,12 @@ function setPlateTexture(plate: THREE.Mesh, texture: THREE.Texture): void {
   mat.map = texture;
   mat.emissiveMap = texture;
   mat.needsUpdate = true;
+}
+function screenAspect(room: THREE.Object3D, slot: MonitorScreenSlot, fallback: number): number {
+  const node = resolveScreenNode(room, slot);
+  const surface = node ? screenSurfaceFromNode(node) : null;
+  if (!surface || surface.height <= 0) return fallback;
+  return surface.width / surface.height;
 }
 const INTERACTIVE: Readonly<Record<string, string>> = {
   Chair: "The chair — still warm",
@@ -236,6 +279,7 @@ function RoomModel({
   const rightTexRef = React.useRef<THREE.CanvasTexture | null>(null);
   const leftCanvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const rightCanvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const centerCanvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const clickPulses = React.useRef<Map<THREE.Object3D, ClickPulse>>(new Map());
   const clockRef = React.useRef(0);
   const frameRef = React.useRef(0);
@@ -285,7 +329,8 @@ function RoomModel({
         setPlateTexture(plateRef.current, texture);
         return;
       }
-      const plate = attachScreenPlate(room, screen, texture);
+      // Only the center panel is a curved monitor; the side panels are flat.
+      const plate = attachScreenPlate(room, screen, texture, slot === "center");
       if (plate) plateRef.current = plate;
     },
     [room],
@@ -309,8 +354,16 @@ function RoomModel({
     };
   }, [room, disposePlate]);
   React.useLayoutEffect(() => {
-    leftCanvasRef.current = createSideMonitorCanvas("code", 320, 200);
-    rightCanvasRef.current = createSideMonitorCanvas("music", 300, 200);
+    // Match each canvas to its physical screen aspect so procedural content is not
+    // stretched when sampled across the plate.
+    leftCanvasRef.current = createSideMonitorCanvasForAspect(
+      "code",
+      screenAspect(room, "left", 16 / 10),
+    );
+    rightCanvasRef.current = createSideMonitorCanvasForAspect(
+      "music",
+      screenAspect(room, "right", 16 / 10),
+    );
     const lt = canvasToTexture(leftCanvasRef.current);
     const rt = canvasToTexture(rightCanvasRef.current);
     leftTexRef.current = lt;
@@ -322,20 +375,31 @@ function RoomModel({
     centerTexRef.current?.dispose();
     let tex: THREE.CanvasTexture | null = null;
     if (gameFrame) {
-      tex = canvasToTexture(gameFrame, true);
+      // Composite the live game frame onto an aspect-matched canvas (cover fit) so the
+      // hero screen fills the ultrawide monitor with no letterbox gaps and no stretch.
+      const composite = createCenterScreenCanvas(screenAspect(room, "center", 16 / 9));
+      blitGameFrame(composite, gameFrame);
+      centerCanvasRef.current = composite;
+      tex = canvasToTexture(composite, true);
       ensurePlate("center", tex);
+    } else {
+      centerCanvasRef.current = null;
     }
     centerTexRef.current = tex;
     return () => {
       centerTexRef.current?.dispose();
       centerTexRef.current = null;
+      centerCanvasRef.current = null;
     };
   }, [gameFrame, room, ensurePlate]);
   useFrame((state) => {
     const t = state.clock.elapsedTime;
     clockRef.current = t;
     const frame = (frameRef.current = (frameRef.current + 1) % 600);
-    if (centerTexRef.current && frame % 3 === 0) centerTexRef.current.needsUpdate = true;
+    if (centerTexRef.current && frame % 3 === 0) {
+      if (centerCanvasRef.current && gameFrame) blitGameFrame(centerCanvasRef.current, gameFrame);
+      centerTexRef.current.needsUpdate = true;
+    }
     if (!reducedMotion && frame % 3 === 0) {
       if (leftCanvasRef.current && leftTexRef.current) {
         updateSideMonitorCanvas(leftCanvasRef.current, "code", t * 1000);

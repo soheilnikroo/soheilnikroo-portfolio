@@ -31,6 +31,7 @@ import { hitResumeChest, vaultLayout } from "@/lib/world/writing-vault";
 import {
   clamp01,
   chapterProgress,
+  smoothstep,
   SKILLS_SCROLL_NUDGE,
   SKILL_SPOTLIGHT_COUNT,
 } from "../world-helpers";
@@ -687,10 +688,12 @@ export function WorldExperience(props: WorldExperienceProps) {
     activeIndex === contactChapterIndex ? clamp01((chapterLocal - 0.38) / 0.58) : 0;
   const metaSceneMounted = activeIndex === contactChapterIndex && chapterLocal > 0.06;
   const metaRoomProgress = metaRoomReady ? clamp01((metaReveal - 0.3) / 0.7) : 0;
-  const metaRoomOpacity = metaRoomReady ? clamp01((metaReveal - 0.26) / 0.1) : 0;
-  const metaCanvasOpacity = 1 - clamp01((metaReveal - 0.28) / 0.12);
+  // Ease the 2D→3D crossfade so the hand-off reads as a cinematic dissolve rather
+  // than a linear ramp. Thresholds are unchanged; only the interpolation curve is.
+  const metaRoomOpacity = metaRoomReady ? smoothstep((metaReveal - 0.26) / 0.1) : 0;
+  const metaCanvasOpacity = 1 - smoothstep((metaReveal - 0.28) / 0.12);
   const metaVignette =
-    clamp01((metaReveal - 0.3) / 0.25) * (1 - clamp01((metaReveal - 0.9) / 0.1) * 0.6);
+    smoothstep((metaReveal - 0.3) / 0.25) * (1 - clamp01((metaReveal - 0.9) / 0.1) * 0.6);
   const metaInteractive = metaReveal > 0.94;
   const metaHandoff = clamp01((metaReveal - 0.28) / 0.12);
   const metaEasterEggVisible = metaReveal > 0.82;

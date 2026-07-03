@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 
+import { CrawlerNav } from "@/components/seo/crawler-nav";
+import { JsonLd } from "@/components/seo/json-ld";
 import { WorldNarrative } from "@/features/world";
 import { WorldExperienceIsland } from "@/features/world/components/world-experience-island";
+import { WorldSplash } from "@/features/world/components/world-splash";
 import { getProfile } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
 import { ogImageEntries, pageTwitter } from "@/lib/seo/metadata-helpers";
-import { worldAssetUrl, worldImageSrc } from "@/lib/world/asset-url";
+import { worldAssetUrl } from "@/lib/world/asset-url";
 import { getWorldPageProps } from "@/lib/world/get-world-props";
 
 export const revalidate = 300;
 
-const SPLASH_IMAGE = worldImageSrc("/world/scenes/intro-hero-dawn.png");
 const WORLD_PRELOADS = [
   worldAssetUrl("/world/scenes/intro-hero-dawn.png"),
   worldAssetUrl("/world/character/idle/east/0.png"),
@@ -65,9 +66,10 @@ export default async function HomePage() {
         "@id": `${site.url}/#webpage`,
         url: site.url,
         name: site.title,
-        description: site.description,
+        description: site.pages.home.ogDescription,
         isPartOf: { "@id": `${site.url}/#website` },
         about: { "@id": `${site.url}/#person` },
+        relatedLink: `${site.url}/read`,
       },
     ],
   };
@@ -77,26 +79,12 @@ export default async function HomePage() {
         <link key={href} rel="preload" href={href} as="image" fetchPriority="high" />
       ))}
       <link rel="preload" href="/3d-model/ROOM.glb" as="fetch" crossOrigin="anonymous" />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(graphLd) }}
-      />
-      <div
-        id="world-splash"
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-[150] overflow-hidden bg-[#05040b]"
-      >
-        <Image
-          src={SPLASH_IMAGE}
-          alt=""
-          fill
-          priority
-          className="object-cover object-bottom opacity-50"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#1e1038]/75 via-[#05040b]/45 to-[#05040b]" />
-      </div>
+      <link rel="alternate" type="text/html" href={`${site.url}/read`} title="Readable portfolio" />
+      <JsonLd data={graphLd} />
+      <CrawlerNav description={site.description} name={site.name} />
+      <WorldSplash />
       <noscript>
-        <style>{`#world-splash{display:none!important}#world-narrative{display:block!important}`}</style>
+        <style>{`#world-splash{display:none!important}#world-narrative{position:static!important;width:auto!important;height:auto!important;margin:0!important;overflow:visible!important;clip:auto!important;white-space:normal!important}`}</style>
       </noscript>
       <WorldNarrative {...props} variant="embedded" />
       <WorldExperienceIsland {...props} />

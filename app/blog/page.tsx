@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 
 import { Container } from "@/components/layout/container";
 import { PixelPage } from "@/components/layout/pixel-page";
+import { JsonLd } from "@/components/seo/json-ld";
 import { BlogIndex } from "@/features/blog/components/blog-index";
 import { getAllCategories, getAllPostMeta } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
 import { ogImageEntries, pageTwitter } from "@/lib/seo/metadata-helpers";
+import { breadcrumbListLd, graphLd } from "@/lib/seo/structured-data";
 import { PIXEL_HEADING_SHADOW } from "@/lib/world/world-theme";
 
 export const revalidate = 300;
@@ -34,28 +36,30 @@ export default async function BlogPage() {
     getSiteConfig(),
   ]);
   const copy = site.pages.blog;
-  const blogLd = {
-    "@context": "https://schema.org",
-    "@type": "Blog",
-    name: copy.title,
-    description: copy.description,
-    url: `${site.url}/blog`,
-    inLanguage: "en",
-    author: { "@type": "Person", name: site.name, url: site.url },
-    blogPost: posts.map((post) => ({
-      "@type": "BlogPosting",
-      headline: post.title,
-      url: `${site.url}/blog/${post.slug}`,
-      datePublished: post.date,
-      dateModified: post.updated ?? post.date,
-    })),
-  };
+  const blogLd = graphLd(
+    breadcrumbListLd(site.url, [
+      { name: "Home", path: "/" },
+      { name: copy.title, path: "/blog" },
+    ]),
+    {
+      "@type": "Blog",
+      name: copy.title,
+      description: copy.description,
+      url: `${site.url}/blog`,
+      inLanguage: "en",
+      author: { "@type": "Person", name: site.name, url: site.url },
+      blogPost: posts.map((post) => ({
+        "@type": "BlogPosting",
+        headline: post.title,
+        url: `${site.url}/blog/${post.slug}`,
+        datePublished: post.date,
+        dateModified: post.updated ?? post.date,
+      })),
+    },
+  );
   return (
     <PixelPage>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogLd) }}
-      />
+      <JsonLd data={blogLd} />
       <Container className="py-section">
         <header className="max-w-2xl">
           {copy.eyebrow ? (

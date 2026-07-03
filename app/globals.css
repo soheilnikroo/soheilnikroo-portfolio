@@ -709,3 +709,87 @@ code[data-theme="dark"] {
     animation: none;
   }
 }
+
+@keyframes world-splash-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(360%);
+  }
+}
+.world-splash-shimmer {
+  animation: world-splash-shimmer 1.35s ease-in-out infinite;
+}
+@keyframes world-splash-block {
+  0%,
+  100% {
+    opacity: 0.22;
+    transform: scaleY(0.55);
+  }
+  35% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+.world-splash-block {
+  transform-origin: bottom;
+  animation: world-splash-block 0.9s ease-in-out infinite;
+}
+@keyframes world-splash-cursor {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.world-splash-cursor {
+  animation: world-splash-cursor 1s step-end infinite;
+}
+@keyframes world-splash-horizon {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.world-splash-horizon {
+  animation: world-splash-horizon 3.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .world-splash-shimmer,
+  .world-splash-horizon,
+  .world-splash-block,
+  .world-splash-cursor {
+    animation: none;
+  }
+  .world-splash-shimmer {
+    transform: translateX(85%);
+  }
+  .world-splash-block {
+    opacity: 0.75;
+    transform: none;
+  }
+}
+
+#world-splash.world-splash-out {
+  opacity: 0;
+}
+
+/* Keeps embedded narrative in the HTML for crawlers while the game is active. */
+#world-narrative.world-narrative--game-mode {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

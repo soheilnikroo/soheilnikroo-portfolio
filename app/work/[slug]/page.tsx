@@ -5,9 +5,11 @@ import { notFound } from "next/navigation";
 
 import { Container } from "@/components/layout/container";
 import { PixelPage } from "@/components/layout/pixel-page";
+import { JsonLd } from "@/components/seo/json-ld";
 import { getProjectBySlug, getProjects } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
 import { pageTwitter, resolveOgImage } from "@/lib/seo/metadata-helpers";
+import { breadcrumbListLd, graphLd } from "@/lib/seo/structured-data";
 import {
   PIXEL_CARD,
   PIXEL_GHOST_BTN,
@@ -80,36 +82,25 @@ export default async function ProjectPage({
   const imageUrls = [...(project.cover ? [project.cover] : []), ...project.screenshots].map((src) =>
     src.startsWith("http") ? src : `${siteConfig.url}${src.startsWith("/") ? src : `/${src}`}`,
   );
-  const ld = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "CreativeWork",
-        name: project.title,
-        abstract: project.summary,
-        url: projectUrl,
-        ...(imageUrls.length > 0 ? { image: imageUrls } : {}),
-        keywords: project.tech.join(", "),
-        creator: { "@type": "Person", name: siteConfig.name, url: siteConfig.url },
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: siteConfig.url },
-          { "@type": "ListItem", position: 2, name: "Projects", item: `${siteConfig.url}/work` },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: project.title,
-            item: projectUrl,
-          },
-        ],
-      },
-    ],
-  };
+  const ld = graphLd(
+    breadcrumbListLd(siteConfig.url, [
+      { name: "Home", path: "/" },
+      { name: siteConfig.pages.work.title, path: "/work" },
+      { name: project.title, path: `/work/${slug}` },
+    ]),
+    {
+      "@type": "CreativeWork",
+      name: project.title,
+      abstract: project.summary,
+      url: projectUrl,
+      ...(imageUrls.length > 0 ? { image: imageUrls } : {}),
+      keywords: project.tech.join(", "),
+      creator: { "@type": "Person", name: siteConfig.name, url: siteConfig.url },
+    },
+  );
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
+      <JsonLd data={ld} />
       <PixelPage>
         <Container className="py-section">
           <Link

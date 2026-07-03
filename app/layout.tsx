@@ -2,6 +2,7 @@ import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata, Viewport } from "next";
 
+import { MicrosoftClarity } from "@/components/analytics/microsoft-clarity";
 import { SiteFooter, SiteFooterGate, SiteHeader } from "@/components/layout";
 import { SkipToContent } from "@/components/layout/skip-to-content";
 import { MotionConfigProvider, ScrollProgressProvider } from "@/components/motion";
@@ -13,6 +14,7 @@ import { WorldThemeSync } from "@/components/theme/world-theme-sync";
 import { CustomCursor } from "@/components/visual/custom-cursor";
 import { AmbientBackground, AmbientProvider } from "@/features/ambient";
 import { getSiteSettings, getSiteUrl } from "@/lib/data/site-settings";
+import { baseSiteMetadata } from "@/lib/seo/site-metadata";
 import { pixelFont } from "@/lib/world/pixel-font";
 
 import "./globals.css";
@@ -23,6 +25,7 @@ export const revalidate = 300;
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   const url = getSiteUrl();
+  const base = baseSiteMetadata(url);
   return {
     metadataBase: new URL(url),
     title: { default: settings.title, template: `%s — ${settings.name}` },
@@ -37,17 +40,19 @@ export async function generateMetadata(): Promise<Metadata> {
       description: settings.description,
       url,
       locale: settings.locale,
+      images: base.openGraph?.images,
     },
     twitter: {
       card: "summary_large_image",
       title: settings.title,
       description: settings.description,
       creator: settings.twitterHandle,
+      images: base.twitter?.images,
     },
-    keywords: settings.keywords,
     category: "technology",
-    robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
-    formatDetection: { telephone: false, address: false, email: false },
+    robots: base.robots,
+    formatDetection: base.formatDetection,
+    verification: base.verification,
     appleWebApp: { capable: true, title: settings.name, statusBarStyle: "black-translucent" },
     icons: { icon: "/web-app-manifest-192x192.png", apple: "/web-app-manifest-192x192.png" },
     alternates: {
@@ -81,6 +86,7 @@ export default async function RootLayout({
       className={`${GeistSans.variable} ${GeistMono.variable} ${pixelFont.variable} h-full antialiased`}
     >
       <body className="min-h-full" suppressHydrationWarning>
+        <MicrosoftClarity />
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <WorldThemeSync />
           <ThemeMetaSync />

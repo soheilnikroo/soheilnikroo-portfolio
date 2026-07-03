@@ -58,8 +58,8 @@ export function WorldNarrative({
   return (
     <div
       id={standalone ? undefined : "world-narrative"}
-      hidden={standalone ? undefined : true}
-      className={`${pixelFont.variable} ${WORLD_SHELL} relative min-h-screen overflow-hidden`}
+      data-world-narrative={standalone ? undefined : "embedded"}
+      className={`${pixelFont.variable} ${WORLD_SHELL} relative min-h-screen overflow-hidden${standalone ? "" : " world-narrative--game-mode"}`}
     >
       <div
         aria-hidden="true"

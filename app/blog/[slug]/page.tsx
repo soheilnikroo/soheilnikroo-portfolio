@@ -9,10 +9,11 @@ import remarkGfm from "remark-gfm";
 
 import { Container } from "@/components/layout/container";
 import { PixelPage } from "@/components/layout/pixel-page";
-import { site } from "@/lib/config/site";
+import { JsonLd } from "@/components/seo/json-ld";
 import { getAllPostMeta, getPostMetaBySlug, getPostSource } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
 import { pageTwitter, resolveOgImage } from "@/lib/seo/metadata-helpers";
+import { breadcrumbListLd, graphLd } from "@/lib/seo/structured-data";
 import { formatDate } from "@/lib/services/date";
 import { extractToc } from "@/lib/services/toc";
 import { PIXEL_CARD, PIXEL_HEADING_SHADOW } from "@/lib/world/world-theme";
@@ -59,7 +60,7 @@ export default async function PostPage({
   }>;
 }) {
   const { slug } = await params;
-  const source = await getPostSource(slug);
+  const [source, siteConfig] = await Promise.all([getPostSource(slug), getSiteConfig()]);
   if (!source) notFound();
   const toc = extractToc(source.content);
   const { content } = await compileMDX({
@@ -79,32 +80,36 @@ export default async function PostPage({
     },
   });
   const meta = source.meta;
-  const postUrl = `${site.url}/blog/${slug}`;
+  const postUrl = `${siteConfig.url}/blog/${slug}`;
   const imageUrl = meta.cover
     ? meta.cover.startsWith("http")
       ? meta.cover
-      : `${site.url}${meta.cover.startsWith("/") ? meta.cover : `/${meta.cover}`}`
+      : `${siteConfig.url}${meta.cover.startsWith("/") ? meta.cover : `/${meta.cover}`}`
     : `${postUrl}/opengraph-image`;
-  const articleLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: meta.title,
-    description: meta.description,
-    datePublished: meta.date,
-    dateModified: meta.updated ?? meta.date,
-    url: postUrl,
-    image: imageUrl,
-    author: { "@type": "Person", name: site.name, url: site.url },
-    publisher: { "@type": "Person", name: site.name, url: site.url },
-    mainEntityOfPage: { "@type": "WebPage", "@id": postUrl },
-    keywords: meta.tags.join(", "),
-  };
+  const articleLd = graphLd(
+    breadcrumbListLd(siteConfig.url, [
+      { name: "Home", path: "/" },
+      { name: siteConfig.pages.blog.title, path: "/blog" },
+      { name: meta.title, path: `/blog/${slug}` },
+    ]),
+    {
+      "@type": "BlogPosting",
+      headline: meta.title,
+      description: meta.description,
+      datePublished: meta.date,
+      dateModified: meta.updated ?? meta.date,
+      url: postUrl,
+      image: imageUrl,
+      inLanguage: "en",
+      author: { "@type": "Person", name: siteConfig.name, url: siteConfig.url },
+      publisher: { "@type": "Person", name: siteConfig.name, url: siteConfig.url },
+      mainEntityOfPage: { "@type": "WebPage", "@id": postUrl },
+      keywords: meta.tags.join(", "),
+    },
+  );
   return (
     <PixelPage>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLd) }}
-      />
+      <JsonLd data={articleLd} />
       <Container className="py-section">
         <Link
           href="/blog"

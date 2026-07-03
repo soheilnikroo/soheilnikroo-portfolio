@@ -42,6 +42,18 @@ import { GameDialogueBox } from "./game-dialogue-box";
 import { MetaRoomOverlay } from "./meta-room-overlay";
 import { WorldSkillOverlay } from "./world-skill-overlay";
 
+const SPLASH_FADE_MS = 320;
+
+function dismissWorldSplash(): void {
+  const splash = document.getElementById("world-splash");
+  if (!splash || splash.style.display === "none") return;
+  splash.classList.add("world-splash-out");
+  window.setTimeout(() => {
+    splash.style.display = "none";
+    splash.classList.remove("world-splash-out");
+  }, SPLASH_FADE_MS);
+}
+
 const MetaRoomScene = dynamic(
   () =>
     import("@/lib/world/three-runtime").then(() =>
@@ -468,9 +480,8 @@ export function WorldExperience(props: WorldExperienceProps) {
       sizeNow();
       onProgress(lastProgress);
       const narrative = document.getElementById("world-narrative");
-      if (narrative) narrative.hidden = true;
-      const splash = document.getElementById("world-splash");
-      if (splash) splash.style.display = "none";
+      narrative?.classList.add("world-narrative--game-mode");
+      dismissWorldSplash();
       timeline = new engine.ScrollTimeline({
         track,
         onProgress,
@@ -509,7 +520,7 @@ export function WorldExperience(props: WorldExperienceProps) {
       window.removeEventListener("keydown", startAudioOnGesture);
       window.removeEventListener("wheel", startAudioOnGesture);
       const narrative = document.getElementById("world-narrative");
-      if (narrative) narrative.hidden = false;
+      narrative?.classList.remove("world-narrative--game-mode");
     };
   }, [enabled, projects.length, posts.length, skills, storyProfile, milestones, posts, storyBeats]);
   const scrollNudge = React.useCallback((index: number) => {
@@ -545,9 +556,8 @@ export function WorldExperience(props: WorldExperienceProps) {
   React.useEffect(() => {
     if (!mounted || enabled) return;
     const narrative = document.getElementById("world-narrative");
-    if (narrative) narrative.hidden = false;
-    const splash = document.getElementById("world-splash");
-    if (splash) splash.style.display = "none";
+    narrative?.classList.remove("world-narrative--game-mode");
+    dismissWorldSplash();
   }, [mounted, enabled]);
   React.useEffect(() => {
     if (activeIndex !== contactChapterIndex || chapterLocal < 0.38 + 0.58 * 0.45) {

@@ -100,7 +100,7 @@ export async function saveSiteSettings(data: SiteSettings): Promise<void> {
   await upsertSiteContentRow("site", parsed);
 }
 export function getSiteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "https://soheilnikroo.dev";
+  return process.env.NEXT_PUBLIC_SITE_URL ?? "https://soheilnikroo.com";
 }
 export async function getSiteConfig() {
   const settings = await getSiteSettings();

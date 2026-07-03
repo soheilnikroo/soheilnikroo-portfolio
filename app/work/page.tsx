@@ -4,9 +4,11 @@ import Link from "next/link";
 
 import { Container } from "@/components/layout/container";
 import { PixelPage } from "@/components/layout/pixel-page";
+import { JsonLd } from "@/components/seo/json-ld";
 import { getAllPostMeta, getProjects } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
 import { ogImageEntries, pageTwitter } from "@/lib/seo/metadata-helpers";
+import { breadcrumbListLd, graphLd } from "@/lib/seo/structured-data";
 import { PIXEL_CARD, PIXEL_HEADING_SHADOW } from "@/lib/world/world-theme";
 
 export const revalidate = 300;
@@ -41,20 +43,15 @@ export default async function WorkPage() {
     getSiteConfig(),
   ]);
   const copy = site.pages.work;
-  const breadcrumbLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: site.url },
-      { "@type": "ListItem", position: 2, name: copy.title, item: `${site.url}/work` },
-    ],
-  };
+  const breadcrumbLd = graphLd(
+    breadcrumbListLd(site.url, [
+      { name: "Home", path: "/" },
+      { name: copy.title, path: "/work" },
+    ]),
+  );
   return (
     <PixelPage>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
-      />
+      <JsonLd data={breadcrumbLd} />
       <Container className="py-section">
         <Link
           href="/"
@@ -86,7 +83,7 @@ export default async function WorkPage() {
                 <div className="relative mb-4 h-36 w-full overflow-hidden rounded-[3px] border border-pixel-border/25">
                   <Image
                     src={p.cover}
-                    alt=""
+                    alt={`${p.title} cover`}
                     fill
                     sizes="(max-width: 640px) 100vw, 50vw"
                     className="object-cover"

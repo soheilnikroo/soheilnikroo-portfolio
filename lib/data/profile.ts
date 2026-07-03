@@ -38,8 +38,8 @@ const fallbackProfile: Profile = ProfileSchema.parse({
     {
       platform: "instagram",
       label: "Instagram",
-      href: "https://www.instagram.com/soheilnikroo",
-      handle: "@soheilnikroo",
+      href: "https://www.instagram.com/soheil._.nikroo/",
+      handle: "@soheil._.nikroo",
     },
     {
       platform: "email",

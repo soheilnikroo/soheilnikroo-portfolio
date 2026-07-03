@@ -18,7 +18,13 @@ import {
 } from "@/lib/world/chapter-audio";
 import { pixelFont } from "@/lib/world/pixel-font";
 import { segmentBeat, resolveStoryBeatIndex } from "@/lib/world/segment-beat";
-import { mysteryBoxBounds, virtualToPercent, workBridgeLayout } from "@/lib/world/work-bridge";
+import {
+  mysteryBoxBounds,
+  mysteryBoxHitTest,
+  mysteryBoxOverlayStyle,
+  workBridgeLayout,
+  workMysteryBoxCount,
+} from "@/lib/world/work-bridge";
 import {
   characterManifest,
   chapterGroundTiles,
@@ -142,6 +148,7 @@ export function WorldExperience(props: WorldExperienceProps) {
   const [workAnimTick, setWorkAnimTick] = React.useState(0);
   const [metaSecretRevealed, setMetaSecretRevealed] = React.useState(false);
   const [metaGameFrame, setMetaGameFrame] = React.useState<HTMLCanvasElement | null>(null);
+  const [portfolioStarted, setPortfolioStarted] = React.useState(false);
   const workOpenRef = React.useRef<Map<number, number>>(new Map());
   const metaFrameRef = React.useRef<HTMLCanvasElement | null>(null);
   const workOpenTargetRef = React.useRef<Map<number, number>>(new Map());
@@ -151,6 +158,8 @@ export function WorldExperience(props: WorldExperienceProps) {
   const lastProgressRef = React.useRef(0);
   const forceRedrawRef = React.useRef<(() => void) | null>(null);
   const trackRef = React.useRef<HTMLDivElement>(null);
+  const portfolioStartedRef = React.useRef(false);
+  portfolioStartedRef.current = portfolioStarted;
   const stageRef = React.useRef<HTMLElement>(null);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const gameViewportRef = React.useRef<HTMLDivElement>(null);
@@ -191,11 +200,34 @@ export function WorldExperience(props: WorldExperienceProps) {
   const enabled = mounted && !reduced && supported;
   React.useEffect(() => {
     setChapterAudioMuted(!soundEnabled);
-    if (soundEnabled) {
-      unlockAudio();
-      unlockChapterAudio();
-    }
   }, [soundEnabled]);
+  const beginPortfolio = React.useCallback((): void => {
+    setPortfolioStarted(true);
+    unlockAudio();
+    unlockChapterAudio();
+    syncChapterMusic({ chapterIndex: 0, chapterLocal: 0 });
+    sfx.chime();
+    const track = trackRef.current;
+    if (track) {
+      void import("@/lib/engine").then(({ nudgeScrollProgress }) => {
+        nudgeScrollProgress(track, INTRO_SCROLL_NUDGE.forward);
+      });
+    }
+  }, []);
+  React.useEffect(() => {
+    if (!enabled || portfolioStarted) return;
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtml = html.style.overflow;
+    const prevBody = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    window.scrollTo(0, 0);
+    return () => {
+      html.style.overflow = prevHtml;
+      body.style.overflow = prevBody;
+    };
+  }, [enabled, portfolioStarted]);
   React.useEffect(() => {
     setSfxVolume(volume);
     setChapterMusicVolume(volume);
@@ -366,8 +398,8 @@ export function WorldExperience(props: WorldExperienceProps) {
         syncChapterMusic({ chapterIndex: active.index, chapterLocal: active.local });
       }
       if (workAnimDirty) setWorkAnimTick((t) => t + 1);
-      if (active.index === 1 && projects.length > 0) {
-        const bridge = workBridgeLayout(active.local, projects.length);
+      if (active.index === 1 && workMysteryBoxCount(projects.length) > 0) {
+        const bridge = workBridgeLayout(active.local, workMysteryBoxCount(projects.length));
         for (const span of bridge.spans) {
           if (span.builtT < 0.42) {
             workOpenTargetRef.current.delete(span.idx);
@@ -442,6 +474,7 @@ export function WorldExperience(props: WorldExperienceProps) {
       }
     };
     const startAudioOnGesture = (): void => {
+      if (!portfolioStartedRef.current) return;
       unlockAudio();
       unlockChapterAudio();
       syncChapterMusic({ chapterIndex: lastIndex >= 0 ? lastIndex : 0, chapterLocal: 0 });
@@ -463,7 +496,7 @@ export function WorldExperience(props: WorldExperienceProps) {
       );
       if (disposed) return;
       const chapters = chaptersMod.createChapters({
-        projectCount: projects.length,
+        projectCount: workMysteryBoxCount(projects.length),
         skills: skills.slice(0, SKILL_SPOTLIGHT_COUNT).map((s) => ({
           id: s.id,
           label: s.label,
@@ -506,6 +539,7 @@ export function WorldExperience(props: WorldExperienceProps) {
       timeline.start();
       forceRedrawRef.current = () => onProgress(lastProgress);
       window.addEventListener("pointerdown", startAudioOnGesture, { once: true });
+      window.addEventListener("touchstart", startAudioOnGesture, { once: true, passive: true });
       window.addEventListener("keydown", startAudioOnGesture, { once: true });
       window.addEventListener("wheel", startAudioOnGesture, { once: true, passive: true });
     };
@@ -517,6 +551,7 @@ export function WorldExperience(props: WorldExperienceProps) {
       viewObs?.disconnect();
       forceRedrawRef.current = null;
       window.removeEventListener("pointerdown", startAudioOnGesture);
+      window.removeEventListener("touchstart", startAudioOnGesture);
       window.removeEventListener("keydown", startAudioOnGesture);
       window.removeEventListener("wheel", startAudioOnGesture);
       const narrative = document.getElementById("world-narrative");
@@ -534,6 +569,13 @@ export function WorldExperience(props: WorldExperienceProps) {
     const onKey = (e: KeyboardEvent): void => {
       const track = trackRef.current;
       if (!track) return;
+      if (!portfolioStarted) {
+        if (e.key === "ArrowDown" || e.key === " " || e.key === "PageDown" || e.key === "Enter") {
+          e.preventDefault();
+          beginPortfolio();
+        }
+        return;
+      }
       if (e.key === "ArrowDown" || e.key === " " || e.key === "PageDown") {
         e.preventDefault();
         void import("@/lib/engine").then(({ nudgeScrollProgress, SCROLL_NUDGE }) => {
@@ -552,7 +594,7 @@ export function WorldExperience(props: WorldExperienceProps) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [enabled, activeIndex, scrollNudge]);
+  }, [enabled, activeIndex, scrollNudge, portfolioStarted, beginPortfolio]);
   React.useEffect(() => {
     if (!mounted || enabled) return;
     const narrative = document.getElementById("world-narrative");
@@ -569,6 +611,7 @@ export function WorldExperience(props: WorldExperienceProps) {
   }, [activeIndex, contactChapterIndex]);
   const handleStageTap = React.useCallback(
     (e: PointerEvent) => {
+      if (!portfolioStarted) return;
       const layer = pingLayerRef.current;
       if (layer) {
         const rect = layer.getBoundingClientRect();
@@ -602,22 +645,18 @@ export function WorldExperience(props: WorldExperienceProps) {
             stageEl.getBoundingClientRect(),
           );
           if (!virtual) return;
-          const workList = projects.slice(0, 5);
+          const workBoxCount = workMysteryBoxCount(projects.length);
           const bridge =
-            activeIndex === 1 && workList.length > 0
-              ? workBridgeLayout(chapterLocal, workList.length)
+            activeIndex === 1 && workBoxCount > 0
+              ? workBridgeLayout(chapterLocal, workBoxCount)
               : null;
           if (activeIndex === 1 && bridge) {
-            for (const span of bridge.spans) {
+            for (let i = bridge.spans.length - 1; i >= 0; i -= 1) {
+              const span = bridge.spans[i]!;
               if (!span.visible) continue;
               const bounds = mysteryBoxBounds(span, performance.now());
-              const hit =
-                virtual.x >= bounds.cx - bounds.w / 2 &&
-                virtual.x <= bounds.cx + bounds.w / 2 &&
-                virtual.y >= bounds.cy - bounds.h / 2 &&
-                virtual.y <= bounds.cy + bounds.h / 2;
+              const hit = mysteryBoxHitTest(bounds, virtual.x, virtual.y);
               if (hit) {
-                if (!bridge.spans[span.idx]?.visible) return;
                 workOpenTargetRef.current.set(span.idx, 1);
                 openedWorkBoxRef.current = span.idx;
                 setOpenedWorkBox(span.idx);
@@ -671,26 +710,25 @@ export function WorldExperience(props: WorldExperienceProps) {
         },
       );
     },
-    [activeIndex, chapterLocal, projects, posts, resumeUrl, scrollNudge],
+    [activeIndex, chapterLocal, projects, posts, resumeUrl, scrollNudge, portfolioStarted],
   );
-  const stageTap = useTapGesture(handleStageTap, { enabled });
+  const stageTap = useTapGesture(handleStageTap, { enabled: enabled && portfolioStarted });
   if (!enabled) return null;
   const activeTitle = chapterMeta[activeIndex]?.title ?? "";
   const activeId = chapterMeta[activeIndex]?.id ?? "intro";
   const chapterGoal = chapterGoals[activeId] ?? "";
   const introBeat =
-    activeIndex === 0
+    portfolioStarted && activeIndex === 0
       ? segmentBeat(chapterLocal, milestones.length, 0.12, 0.91, {
           fadeIn: 0.06,
           fadeOut: 0.94,
         })
       : null;
   const introMilestone = introBeat ? milestones[introBeat.idx] : null;
-  const workList = projects.slice(0, 5);
+  const workBoxCount = workMysteryBoxCount(projects.length);
+  const workList = projects.slice(0, workBoxCount);
   const workBridge =
-    activeIndex === 1 && workList.length > 0
-      ? workBridgeLayout(chapterLocal, workList.length)
-      : null;
+    activeIndex === 1 && workBoxCount > 0 ? workBridgeLayout(chapterLocal, workBoxCount) : null;
   const openedProject =
     openedWorkBox !== null && openedWorkBox < workList.length ? workList[openedWorkBox] : null;
   const openedOpenT =
@@ -808,7 +846,7 @@ export function WorldExperience(props: WorldExperienceProps) {
 
         {metaSceneMounted ? (
           <div
-            className="absolute inset-0 z-[15]"
+            className="absolute inset-0 z-15"
             style={{
               opacity: metaRoomOpacity,
               pointerEvents: metaInteractive ? "auto" : "none",
@@ -825,7 +863,7 @@ export function WorldExperience(props: WorldExperienceProps) {
             />
 
             <div
-              className="pointer-events-none absolute inset-0 z-[16]"
+              className="pointer-events-none absolute inset-0 z-16"
               style={{
                 opacity: metaVignette,
                 background:
@@ -850,13 +888,13 @@ export function WorldExperience(props: WorldExperienceProps) {
         <div
           ref={pingLayerRef}
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-[25] overflow-hidden"
+          className="pointer-events-none absolute inset-0 z-25 overflow-hidden"
         />
 
         <div aria-hidden="true" className="absolute inset-x-0 top-0 z-20 h-1 bg-white/10">
           <div
             ref={progressRef}
-            className="h-full bg-gradient-to-r from-amber-200 to-indigo-400"
+            className="h-full bg-linear-to-r from-amber-200 to-indigo-400"
             style={{ width: "0%" }}
           />
         </div>
@@ -908,15 +946,35 @@ export function WorldExperience(props: WorldExperienceProps) {
 
           <div className="pointer-events-none absolute inset-0">
             <ChapterBlock index={0} activeIndex={activeIndex} blockRefs={blockRefs}>
-              {chapterLocal < 0.14 ? (
+              {!portfolioStarted && activeIndex === 0 ? (
+                <GameDialogueBox
+                  speaker={profileName}
+                  accent="white"
+                  title={`Hey — I'm ${profileName}.`}
+                  body={`${role}. Tap below when you're ready — music, story, and the rest of the portfolio unlock together.`}
+                  opacity={1}
+                  beatKey="gate-prompt"
+                  gate
+                  action={
+                    <button
+                      type="button"
+                      onClick={beginPortfolio}
+                      className="min-h-11 w-full border-4 border-white bg-[#1a1830] px-4 py-2.5 [font-family:var(--font-pixel),monospace] text-sm font-bold text-white shadow-[4px_4px_0_#000] transition-transform hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                    >
+                      Tap to begin →
+                    </button>
+                  }
+                />
+              ) : null}
+              {portfolioStarted && chapterLocal < 0.14 ? (
                 <GameDialogueBox
                   speaker={profileName}
                   accent="white"
                   title={`Hey — I'm ${profileName}.`}
                   body={`${role}. ${tagline}`}
-                  cta="Are you ready? Scroll to begin."
+                  cta="Scroll to explore the chapters."
                   opacity={clamp01(1 - chapterLocal * 6)}
-                  beatKey="gate"
+                  beatKey="gate-started"
                   gate
                 />
               ) : null}
@@ -933,7 +991,7 @@ export function WorldExperience(props: WorldExperienceProps) {
                   compact
                 />
               ) : null}
-              {chapterLocal < 0.12 ? (
+              {portfolioStarted && chapterLocal < 0.12 ? (
                 <p className="pointer-events-none absolute bottom-[22%] left-1/2 z-40 -translate-x-1/2 animate-bounce [font-family:var(--font-pixel),monospace] text-sm font-bold tracking-[0.2em] text-amber-200 uppercase sm:bottom-[20%]">
                   ↓
                 </p>
@@ -1046,32 +1104,28 @@ export function WorldExperience(props: WorldExperienceProps) {
           {workBridge?.spans
             .filter((span) => span.visible)
             .map((span) => {
+              const viewport = viewportRef.current;
+              if (!viewport) return null;
               const bounds = mysteryBoxBounds(span, performance.now() + workAnimTick);
-              const pct = virtualToPercent(bounds.cx, bounds.cy);
+              const overlay = mysteryBoxOverlayStyle(bounds, viewport);
               const project = workList[span.idx];
-              const scaleX = viewportRef.current
-                ? viewportRef.current.displayWidth / viewportRef.current.srcW
-                : 1;
-              const scaleY = viewportRef.current
-                ? viewportRef.current.displayHeight / viewportRef.current.srcH
-                : 1;
               return (
                 <button
                   key={span.idx}
                   type="button"
                   aria-label={project ? `Open ${project.title} project` : "Open mystery box"}
-                  onPointerDown={(e) => {
+                  onClick={(e) => {
                     e.stopPropagation();
                     openWorkBox(span.idx);
                     spawnPing(e.clientX, e.clientY);
                   }}
                   style={{
-                    left: `${pct.xPct}%`,
-                    top: `${pct.yPct}%`,
-                    width: bounds.w * scaleX,
-                    height: bounds.h * scaleY,
+                    left: overlay.left,
+                    top: overlay.top,
+                    width: overlay.width,
+                    height: overlay.height,
                   }}
-                  className="pointer-events-auto absolute z-20 -translate-x-1/2 -translate-y-1/2 opacity-0 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                  className="pointer-events-auto absolute z-25 -translate-x-1/2 -translate-y-1/2 touch-manipulation opacity-0 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                 />
               );
             })}

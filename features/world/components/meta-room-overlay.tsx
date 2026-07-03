@@ -2,6 +2,7 @@
 import Link from "next/link";
 import * as React from "react";
 
+import { EmailLink } from "@/components/layout/email-link";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import type { StoryBeat } from "@/lib/schemas/world-narrative";
 import {
@@ -103,12 +104,12 @@ export function MetaRoomOverlay({
                 Thanks for playing — say hello?
               </p>
               <div className="flex items-stretch gap-1.5">
-                <a
+                <EmailLink
                   href={`mailto:${email}`}
                   className={`${PIXEL_BTN} flex-1 border-indigo-300 bg-indigo-950 text-indigo-50`}
                 >
                   Say hello →
-                </a>
+                </EmailLink>
                 <details className="relative shrink-0">
                   <summary
                     className={`${PIXEL_BTN} min-w-[4.5rem] cursor-pointer list-none border-white/55 bg-[#0d0b16] text-white/90 marker:content-none`}
@@ -160,12 +161,12 @@ export function MetaRoomOverlay({
               </p>
               <p className="mt-1.5 text-sm text-white/70">Thanks for playing through mine.</p>
               <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-                <a
+                <EmailLink
                   href={`mailto:${email}`}
                   className="inline-flex min-h-11 items-center border-4 border-indigo-300 bg-indigo-950 px-4 py-2 font-bold text-indigo-50 shadow-[3px_3px_0_#000] hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                 >
                   Say hello →
-                </a>
+                </EmailLink>
                 {socials.map((s) => (
                   <a
                     key={s.label}

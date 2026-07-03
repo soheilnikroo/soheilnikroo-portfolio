@@ -52,14 +52,25 @@ function sceneIntensity(chapterIndex: number, local: number): number {
       return 1;
   }
 }
+function startChapterBed(index: number): boolean {
+  const preset = CHAPTER_AUDIO[index];
+  if (!preset) return false;
+  if (musicBed.playFromGesture(preset.bedSrc)) {
+    activeChapterIndex = index;
+    musicBed.setIntensity(sceneIntensity(index, lastState.chapterLocal));
+    return true;
+  }
+  return false;
+}
 async function ensureChapterBed(index: number): Promise<void> {
   if (muted) return;
-  const preset = CHAPTER_AUDIO[index];
-  if (!preset) return;
   if (index === activeChapterIndex) {
     musicBed.setIntensity(sceneIntensity(index, lastState.chapterLocal));
     return;
   }
+  if (startChapterBed(index)) return;
+  const preset = CHAPTER_AUDIO[index];
+  if (!preset) return;
   const ok = await musicBed.play(preset.bedSrc);
   if (ok) {
     activeChapterIndex = index;
@@ -102,12 +113,12 @@ export function stopChapterMusic(): void {
 }
 export function unlockChapterAudio(): void {
   unlockAudioEngine();
-  if (!muted && activeChapterIndex < 0) {
-    void ensureChapterBed(Math.min(CHAPTER_AUDIO.length - 1, Math.max(0, lastState.chapterIndex)));
-  }
+  if (muted || activeChapterIndex >= 0) return;
+  const idx = Math.min(CHAPTER_AUDIO.length - 1, Math.max(0, lastState.chapterIndex));
+  if (!startChapterBed(idx)) void ensureChapterBed(idx);
 }
 onAudioUnlock(() => {
-  if (!muted && activeChapterIndex < 0) {
-    void ensureChapterBed(Math.min(CHAPTER_AUDIO.length - 1, Math.max(0, lastState.chapterIndex)));
-  }
+  if (muted || activeChapterIndex >= 0) return;
+  const idx = Math.min(CHAPTER_AUDIO.length - 1, Math.max(0, lastState.chapterIndex));
+  if (!startChapterBed(idx)) void ensureChapterBed(idx);
 });

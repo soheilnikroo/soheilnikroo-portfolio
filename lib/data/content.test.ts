@@ -11,7 +11,7 @@ describe("data layer", () => {
   });
   it("projects parse, sort, and include featured", async () => {
     const all = await getProjects();
-    expect(all.length).toBe(3);
+    expect(all.length).toBe(6);
     expect(all[0]!.order).toBeLessThanOrEqual(all[1]!.order);
     expect((await getFeaturedProjects()).every((p) => p.featured)).toBe(true);
   });

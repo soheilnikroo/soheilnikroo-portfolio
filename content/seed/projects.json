@@ -2,64 +2,165 @@
   {
     "slug": "snapp",
     "title": "Snapp",
-    "summary": "High-scale React/Next.js/TypeScript product — PWAs, UI kit, Redux Toolkit, SWR, and mobile-first delivery for millions of users in Tehran.",
+    "summary": "Frontend engineer on Snapp's ride products — from the cab team to intercity rides, shipping React/Next.js experiences for millions of users.",
     "year": 2025,
     "role": "Frontend Engineer",
     "status": "live",
-    "tags": ["Scale", "PWA", "React"],
+    "tags": ["Scale", "PWA", "React", "Intercity"],
     "tech": ["React", "Next.js", "TypeScript", "Redux Toolkit", "SWR", "PWA"],
     "links": { "live": "https://snapp.ir" },
+    "cover": "/work/snapp/homepage.png",
+    "screenshots": [
+      "/work/snapp/ride-map-web.png",
+      "/work/snapp/ride-map-mobile.png",
+      "/work/snapp/corporate-blog.png",
+      "/work/snapp/blog-article.png"
+    ],
     "accent": "#22c55e",
+    "galleryStyle": "browser",
     "featured": true,
     "order": 1,
     "narrative": {
       "problem": "A consumer super-app serving millions needed fast, reliable frontends across devices and network conditions.",
-      "challenge": "Ship features at scale without sacrificing performance, accessibility, or maintainability across teams.",
-      "process": "Built on a shared UI kit, Redux Toolkit for state, SWR for data — with CI/CD, ESLint, and mobile-first patterns.",
-      "solution": "Production PWAs and responsive web apps with strong TypeScript boundaries and cross-browser quality.",
-      "outcome": "Millions of users rely on the experience daily — performance and reliability are non-negotiable."
+      "challenge": "Ship ride-booking flows at scale without sacrificing performance, accessibility, or maintainability across teams.",
+      "process": "Started on the cab team, then moved into intercity rides — building on a shared UI kit, Redux Toolkit, SWR, and mobile-first patterns.",
+      "solution": "Production PWAs and responsive web apps for urban and intercity ride experiences, with strong TypeScript boundaries.",
+      "outcome": "Millions of users rely on the experience daily — from city cabs to intercity trips, performance and reliability stay non-negotiable."
     }
   },
   {
     "slug": "jaan",
     "title": "Jaan",
-    "summary": "First production frontend role — React, Agile delivery, and shipping real features to real users.",
+    "summary": "Built the admin panel for Jaan — a Persian mindfulness app with guided courses, breathing exercises, and self-care tracking for 100k+ Play Store users.",
     "year": 2022,
     "role": "Frontend Developer",
-    "status": "archived",
-    "tags": ["React", "Agile", "Production"],
+    "status": "live",
+    "tags": ["React", "Mobile", "Android", "Admin"],
     "tech": ["React", "JavaScript", "SCSS", "Jest"],
-    "links": {},
-    "accent": "#6366f1",
+    "links": {
+      "live": "https://play.google.com/store/apps/details?id=com.taghavi.jaan&hl=fa"
+    },
+    "cover": "/work/jaan/promo-courses.png",
+    "screenshots": [
+      "/work/jaan/promo-breathing.png",
+      "/work/jaan/promo-stats.png",
+      "/work/jaan/promo-course-detail.png",
+      "/work/jaan/promo-breathing-session.png"
+    ],
+    "accent": "#0ea5e9",
+    "galleryStyle": "promo",
     "featured": true,
     "order": 2,
     "narrative": {
-      "problem": "A growing product needed a dedicated frontend engineer to ship UI reliably.",
-      "challenge": "Learn production patterns fast while delivering under Agile sprints.",
-      "process": "React components, code review, JIRA workflows, and iterative releases.",
-      "solution": "Shipped production features with attention to UX and cross-browser basics.",
-      "outcome": "Built the foundation for everything that came after at Snapp."
+      "problem": "Jaan's content and operations team needed a reliable way to manage courses, users, and wellness content at scale.",
+      "challenge": "Build an admin panel that fits RTL workflows, stays maintainable, and ships alongside a live consumer app.",
+      "process": "React components, SCSS design system, Jest coverage, and iterative releases with product and content teams.",
+      "solution": "A production admin panel for managing Jaan's guided courses, breathing content, and self-care features.",
+      "outcome": "100k+ downloads on Google Play — the admin tooling I built helped the team ship and iterate on a live wellness product."
+    }
+  },
+  {
+    "slug": "metro-man",
+    "title": "Metro Man",
+    "summary": "Solo-built offline iOS metro navigator for Tehran — schematic maps, shortest-path routing, live journey mode, and gamification across 150 stations.",
+    "year": 2025,
+    "role": "Creator & iOS Developer",
+    "status": "live",
+    "tags": ["iOS", "Mobile", "SwiftUI", "Offline"],
+    "tech": ["Swift", "SwiftUI", "CoreLocation", "XCTest"],
+    "links": {
+      "live": "https://sibapp.com/applications/MetroMan",
+      "repo": "https://github.com/soheilnikroo/Metro-Man"
+    },
+    "cover": "/work/metro-man/trip-overview.png",
+    "screenshots": [
+      "/work/metro-man/navigation-step.png",
+      "/work/metro-man/route-planner.png",
+      "/work/metro-man/line-selector.png"
+    ],
+    "accent": "#e1251b",
+    "galleryStyle": "showcase",
+    "featured": true,
+    "order": 3,
+    "narrative": {
+      "problem": "Tehran metro riders need fast offline route planning and clear in-station guidance — often with no reliable network underground.",
+      "challenge": "Design and ship the entire app solo: bundled station data, routing, schematic maps, RTL UI, GPS journey tracking, and gamification.",
+      "process": "Layered architecture with protocol-based DI, Dijkstra routing over 150 stations, Canvas map rendering, and XCTest coverage across domain and UI layers.",
+      "solution": "A fully offline native iOS app with step-by-step journey mode, achievement tracking, and Persian-first design.",
+      "outcome": "Published on Sibapp — an end-to-end product from data modeling to App Store assets, built and maintained by me."
+    }
+  },
+  {
+    "slug": "rojino",
+    "title": "Rojino",
+    "summary": "Solo-built iOS lipstick try-on app — live camera preview, Vision lip tracking, shade comparison, and RTL product flows in Persian.",
+    "year": 2025,
+    "role": "Creator & iOS Developer",
+    "status": "live",
+    "tags": ["iOS", "Mobile", "AR", "Vision"],
+    "tech": ["Swift", "SwiftUI", "AVFoundation", "Vision"],
+    "links": {
+      "live": "https://sibapp.com/applications/Rojino",
+      "repo": "https://github.com/soheilnikroo/rojino-app"
+    },
+    "cover": "/work/rojino/comparison.png",
+    "screenshots": ["/work/rojino/product-detail.png"],
+    "accent": "#ec4899",
+    "galleryStyle": "showcase",
+    "featured": true,
+    "order": 4,
+    "narrative": {
+      "problem": "Beauty shoppers struggle to compare lipstick shades and see how a color looks on their own lips before buying.",
+      "challenge": "Build the full app solo — real-time lip contour tracking without a paid AR SDK, plus comparison flows and RTL product UI.",
+      "process": "Vision face landmarks for lip detection, blended CAShapeLayer rendering, shade picker with finish toggles, and Persian localisation throughout.",
+      "solution": "A camera-first iOS app where users try shades live, compare favorites side-by-side, and browse product details in fa-IR.",
+      "outcome": "Published on Sibapp — a complete AR beauty experience designed, implemented, and shipped by me."
+    }
+  },
+  {
+    "slug": "zerang",
+    "title": "Zerang",
+    "summary": "A programming language and Rust interpreter built from scratch — lexer, parser, evaluator, and a growing standard library.",
+    "year": 2025,
+    "role": "Creator",
+    "status": "in-progress",
+    "tags": ["Rust", "Compilers", "Open Source"],
+    "tech": ["Rust"],
+    "links": {
+      "repo": "https://github.com/soheilnikroo/Seyed-Zerang-Language"
+    },
+    "screenshots": [],
+    "accent": "#f97316",
+    "featured": false,
+    "order": 5,
+    "narrative": {
+      "problem": "I wanted to understand languages deeply — not just use them, but design one and make it run.",
+      "challenge": "Build a coherent grammar, a safe runtime, and useful builtins without leaning on an existing interpreter.",
+      "process": "Hand-written lexer and parser in Rust, AST evaluation, error reporting, and iterative language design.",
+      "solution": "Seyed Zerang — a small but real language with variables, control flow, functions, and a growing stdlib.",
+      "outcome": "A working interpreter on GitHub — 34 commits of hands-on compiler construction and language design."
     }
   },
   {
     "slug": "ilia",
     "title": "ILIA Corporation",
-    "summary": "First industry internship — learning how teams work, communicate, and deliver.",
+    "summary": "First industry internship at a management consulting firm — learning how teams plan, communicate, and deliver.",
     "year": 2020,
     "role": "Intern",
     "status": "archived",
-    "tags": ["Internship", "Teams"],
+    "tags": ["Internship", "Consulting"],
     "tech": ["JIRA", "Communication"],
-    "links": {},
+    "links": { "live": "https://ilia.co/" },
+    "screenshots": [],
     "accent": "#f59e0b",
     "featured": false,
-    "order": 3,
+    "order": 6,
     "narrative": {
       "problem": "I needed real workplace experience alongside university.",
-      "challenge": "Translate classroom knowledge into professional collaboration.",
-      "process": "Task management, written communication, and team workflows.",
-      "solution": "Showed up, learned, and contributed where I could.",
-      "outcome": "The first step from student to engineer."
+      "challenge": "Translate classroom knowledge into professional collaboration inside a consulting environment.",
+      "process": "Task management, written communication, and team workflows across client-facing projects.",
+      "solution": "Showed up, learned, and contributed where I could — observing how strategy work gets done at scale.",
+      "outcome": "The first step from student to engineer — and my introduction to how organizations actually ship."
     }
   }
 ]

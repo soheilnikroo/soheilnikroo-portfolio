@@ -12,7 +12,12 @@ const nextConfig: NextConfig = {
   pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
   images: {
     formats: ["image/avif", "image/webp"],
-    localPatterns: [{ pathname: "/world/**" }, { pathname: "/world/scenes/intro-hero-dawn.png" }],
+    localPatterns: [
+      { pathname: "/world/**" },
+      { pathname: "/world/scenes/intro-hero-dawn.png" },
+      { pathname: "/work/**" },
+    ],
+    remotePatterns: [{ hostname: "cdn.simpleicons.org", pathname: "/**" }],
   },
   experimental: {
     viewTransition: true,

@@ -15,6 +15,8 @@ export const ProjectLinksSchema = z.object({
   repo: z.url().optional(),
   caseStudy: z.url().optional(),
 });
+export const ProjectGalleryStyleSchema = z.enum(["promo", "showcase", "browser"]);
+export type ProjectGalleryStyle = z.infer<typeof ProjectGalleryStyleSchema>;
 export const ProjectSchema = z.object({
   slug: z
     .string()
@@ -30,6 +32,7 @@ export const ProjectSchema = z.object({
   links: ProjectLinksSchema.default({}),
   cover: z.string().optional(),
   screenshots: z.array(z.string()).default([]),
+  galleryStyle: ProjectGalleryStyleSchema.optional(),
   accent: z.string().optional(),
   narrative: ProjectNarrativeSchema,
   featured: z.boolean().default(false),

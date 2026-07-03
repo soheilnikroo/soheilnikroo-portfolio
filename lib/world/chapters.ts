@@ -632,7 +632,10 @@ export function createChapters(data: ChapterData): ChapterScene[] {
           dir: "east",
           bob: charBob(building ? "pull" : "idle", time),
         });
-        surface.setCameraFocusX(workCameraFocusX({ buildT, gapLeft, n, segW }, width));
+        const viewportSrcW = surface.getGameViewport().srcW;
+        surface.setCameraFocusX(
+          workCameraFocusX({ buildT, gapLeft, n, segW }, width, viewportSrcW),
+        );
       },
     },
     {

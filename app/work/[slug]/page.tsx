@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Container } from "@/components/layout/container";
 import { PixelPage } from "@/components/layout/pixel-page";
 import { JsonLd } from "@/components/seo/json-ld";
+import { ProjectScreens } from "@/components/work/project-screens";
+import { TechBadges } from "@/components/work/tech-badges";
 import { getProjectBySlug, getProjects } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
 import { pageTwitter, resolveOgImage } from "@/lib/seo/metadata-helpers";
@@ -77,7 +78,6 @@ export default async function ProjectPage({
   const prev = idx > 0 ? all[idx - 1] : null;
   const next = idx >= 0 && idx < all.length - 1 ? all[idx + 1] : null;
   const accent = project.accent ?? "#a5b4fc";
-  const shots = project.screenshots.length > 0 ? project.screenshots : [null, null, null];
   const projectUrl = `${siteConfig.url}/work/${slug}`;
   const imageUrls = [...(project.cover ? [project.cover] : []), ...project.screenshots].map((src) =>
     src.startsWith("http") ? src : `${siteConfig.url}${src.startsWith("/") ? src : `/${src}`}`,
@@ -126,15 +126,8 @@ export default async function ProjectPage({
               {project.title}
             </h1>
             <p className="mt-3 text-lg text-pixel-fg-muted">{project.summary}</p>
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {project.tech.map((t) => (
-                <span
-                  key={t}
-                  className="rounded-[2px] border border-pixel-border/30 px-2 py-0.5 text-xs text-pixel-fg-muted"
-                >
-                  {t}
-                </span>
-              ))}
+            <div className="mt-4">
+              <TechBadges items={project.tech} />
             </div>
             <div className="mt-5 flex flex-wrap gap-3">
               {project.links.live ? (
@@ -170,38 +163,14 @@ export default async function ProjectPage({
             </div>
           </header>
 
-          <section className="mt-10">
-            <h2 className="text-xs tracking-[0.3em] text-amber-700/80 uppercase dark:text-amber-300/80">
-              Screens
-            </h2>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              {shots.map((src, i) =>
-                src ? (
-                  <div
-                    key={src}
-                    className="relative aspect-video overflow-hidden rounded-[4px] border-2 border-pixel-border/30"
-                  >
-                    <Image
-                      src={src}
-                      alt={`${project.title} screenshot ${i + 1}`}
-                      fill
-                      sizes="(max-width: 640px) 100vw, 50vw"
-                      className="object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div
-                    key={i}
-                    className="flex aspect-video items-center justify-center rounded-[4px] border-2 border-dashed border-pixel-border/40 bg-pixel-panel px-4 text-center text-xs leading-relaxed text-pixel-fg-muted/70"
-                  >
-                    Drop a screenshot in
-                    <br />
-                    public/work/{project.slug}/
-                  </div>
-                ),
-              )}
-            </div>
-          </section>
+          <ProjectScreens
+            title={project.title}
+            slug={project.slug}
+            accent={accent}
+            galleryStyle={project.galleryStyle}
+            cover={project.cover}
+            screenshots={project.screenshots}
+          />
 
           <section className="mt-12 grid gap-6 sm:grid-cols-2">
             {BEATS.map((b) => (

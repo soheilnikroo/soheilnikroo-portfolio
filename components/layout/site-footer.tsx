@@ -1,9 +1,8 @@
-import Link from "next/link";
-
 import { getProfile } from "@/lib/data";
 import { PIXEL_FONT } from "@/lib/world/world-theme";
 
 import { Container } from "./container";
+import { SocialNav } from "./social-nav";
 
 export async function SiteFooter({ tagline }: { tagline: string }) {
   const profile = await getProfile();
@@ -18,17 +17,7 @@ export async function SiteFooter({ tagline }: { tagline: string }) {
           <p className="text-sm text-pixel-fg-muted">{profile.role}</p>
         </div>
 
-        <nav aria-label="Social" className="flex flex-wrap gap-3">
-          {profile.socials.map((social) => (
-            <Link
-              key={social.platform}
-              href={social.href}
-              className="rounded-[3px] border-2 border-pixel-border/35 px-2.5 py-1 text-sm text-pixel-fg-muted transition-colors hover:border-pixel-border/60 hover:text-pixel-fg"
-            >
-              {social.label}
-            </Link>
-          ))}
-        </nav>
+        <SocialNav socials={profile.socials} />
 
         <p className="text-xs text-pixel-fg-muted/70">
           © {year} {profile.name} · {tagline}

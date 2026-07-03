@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Container } from "@/components/layout/container";
 import { PixelPage } from "@/components/layout/pixel-page";
 import { JsonLd } from "@/components/seo/json-ld";
+import { TechBadges } from "@/components/work/tech-badges";
 import { getAllPostMeta, getProjects } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
 import { ogImageEntries, pageTwitter } from "@/lib/seo/metadata-helpers";
@@ -114,15 +115,8 @@ export default async function WorkPage() {
               </div>
               <h2 className="mt-1 text-xl font-bold">{p.title}</h2>
               <p className="mt-1 line-clamp-2 text-sm text-pixel-fg-muted">{p.summary}</p>
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {p.tech.slice(0, 4).map((t) => (
-                  <span
-                    key={t}
-                    className="rounded-[2px] border border-pixel-border/30 px-1.5 py-0.5 text-[10px] text-pixel-fg-muted"
-                  >
-                    {t}
-                  </span>
-                ))}
+              <div className="mt-3">
+                <TechBadges items={p.tech} size="sm" limit={4} />
               </div>
               <span className="mt-4 inline-block text-sm text-amber-700 transition-transform group-hover:translate-x-0.5 dark:text-amber-200">
                 {copy.enterLabel}

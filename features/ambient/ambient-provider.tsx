@@ -11,7 +11,7 @@ import { stopChapterMusic } from "@/lib/world/chapter-audio";
 
 const STORAGE_KEY = "portfolio:ambient-sound";
 const VOLUME_KEY = "portfolio:ambient-volume";
-const DEFAULT_VOLUME = 0.55;
+const DEFAULT_VOLUME = 0.75;
 function readSoundEnabled(): boolean {
   if (typeof window === "undefined") return true;
   try {
@@ -42,7 +42,7 @@ type AmbientContextValue = {
 const AmbientContext = React.createContext<AmbientContextValue>({
   soundEnabled: true,
   soundActive: false,
-  unsupported: true,
+  unsupported: false,
   reducedMotion: false,
   volume: DEFAULT_VOLUME,
   toggleSound: () => {},
@@ -62,10 +62,14 @@ export function AmbientProvider({
   const isGameRoute = pathname === "/";
   const contentMusicRoute = isContentMusicRoute(pathname);
   const activeBedSrc = contentMusicRoute ? CONTENT_MUSIC_BED : bedSrc;
-  const [soundEnabled, setSoundEnabled] = React.useState(readSoundEnabled);
-  const [volume, setVolumeState] = React.useState(readVolume);
+  const [soundEnabled, setSoundEnabled] = React.useState(true);
+  const [volume, setVolumeState] = React.useState(DEFAULT_VOLUME);
   const [bedSuppressed, setBedSuppressed] = React.useState(isGameRoute);
   const [controller, setController] = React.useState<AmbientAudioController | null>(null);
+  React.useEffect(() => {
+    setSoundEnabled(readSoundEnabled());
+    setVolumeState(readVolume());
+  }, []);
   React.useEffect(() => {
     setBedSuppressed(isGameRoute);
   }, [isGameRoute]);
@@ -77,7 +81,7 @@ export function AmbientProvider({
     setController(instance);
     return () => instance.dispose();
   }, [activeBedSrc]);
-  const supported = controller?.supported ?? false;
+  const supported = controller?.supported ?? true;
   const unsupported = !supported;
   const soundActive = soundEnabled && !reducedMotion && supported && !bedSuppressed && !isGameRoute;
   React.useEffect(() => {

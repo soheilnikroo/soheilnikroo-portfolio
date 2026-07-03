@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { EmailLink } from "@/components/layout/email-link";
 import { pixelFont } from "@/lib/world/pixel-font";
 import {
   CHAPTER_ACCENTS,
@@ -164,12 +165,12 @@ export function WorldNarrative({
               Life is a lot like a game — it all depends on how you play it.
             </p>
             <p className="mt-3">
-              <a
+              <EmailLink
                 href={`mailto:${email}`}
                 className={`underline-offset-4 hover:underline ${CHAPTER_ACCENTS.contact.link}`}
               >
                 {email}
-              </a>
+              </EmailLink>
             </p>
             <div className={`mt-3 flex flex-wrap gap-x-5 gap-y-1 ${CHAPTER_ACCENTS.contact.body}`}>
               {socials.map((s) => (

@@ -21,9 +21,7 @@ declare global {
 function logDatabaseTarget(url: string): void {
   if (globalThis.__portfolioDbTargetLogged) return;
   globalThis.__portfolioDbTargetLogged = true;
-  if (process.env.NODE_ENV !== "production") {
-    console.info(`[db] target ${describeDatabaseUrl(url)}`);
-  }
+  console.info(`[db] target ${describeDatabaseUrl(url)}`);
 }
 
 /** Drop a stale client so the next query opens a fresh TCP connection. */
@@ -36,7 +34,7 @@ export function resetSqlClient(): void {
 
 export function getSql(): Sql {
   if (globalThis.__portfolioSql) return globalThis.__portfolioSql;
-  const url = process.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL?.trim().replace(/^["']|["']$/g, "");
   if (!url) {
     throw new Error(
       process.env.NODE_ENV === "production"

@@ -15,10 +15,7 @@ export async function GET() {
     const rows = await listAllPostRows(true);
     return NextResponse.json({ posts: rows });
   } catch (error) {
-    // Surface a clean 503 so the admin dashboard renders the Retry panel instead of a bare 500.
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("[admin/posts] read failed:", error instanceof Error ? error.message : error);
-    }
+    console.warn("[admin/posts] read failed:", error instanceof Error ? error.message : error);
     return NextResponse.json({ error: "Content store unavailable" }, { status: 503 });
   }
 }

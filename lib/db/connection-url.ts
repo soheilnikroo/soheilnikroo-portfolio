@@ -35,7 +35,7 @@ export function getPostgresClientOptions(url: string) {
   return {
     max: serverless ? 1 : 10,
     idle_timeout: serverless ? 5 : 20,
-    connect_timeout: serverless ? 15 : 30,
+    connect_timeout: serverless ? 15 : 45,
     prepare: isSupabaseUrl(url) ? false : !isTransactionPooler(url),
     ssl: isSupabaseUrl(url) ? ("require" as const) : undefined,
     onnotice: () => {},

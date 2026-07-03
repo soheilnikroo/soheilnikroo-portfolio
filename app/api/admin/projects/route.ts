@@ -15,9 +15,7 @@ export async function GET() {
     const rows = await listAllProjectRows();
     return NextResponse.json({ projects: rows });
   } catch (error) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("[admin/projects] read failed:", error instanceof Error ? error.message : error);
-    }
+    console.warn("[admin/projects] read failed:", error instanceof Error ? error.message : error);
     return NextResponse.json({ error: "Content store unavailable" }, { status: 503 });
   }
 }

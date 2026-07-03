@@ -41,16 +41,13 @@ function shouldUseCircuitBreaker(options?: DbConnectOptions): boolean {
 
 const PUBLIC_CONNECT_TIMEOUT_MS = 12_000;
 const QUICK_CONNECT_TIMEOUT_MS = 30_000;
-const IS_HOSTED_RUNTIME = Boolean(
-  process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LIARA_APP_ID,
-);
-const IS_PRODUCTION = process.env.NODE_ENV === "production";
-
-const ADMIN_CONNECT_TIMEOUT_MS = IS_HOSTED_RUNTIME || IS_PRODUCTION ? 8_000 : 60_000;
+// Only true serverless workers need sub-10s fail-fast. Liara runs a persistent Node server.
+const IS_SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const ADMIN_CONNECT_TIMEOUT_MS = IS_SERVERLESS ? 9_000 : 60_000;
 const BUILD_CONNECT_TIMEOUT_MS = 10_000;
 const PUBLIC_ATTEMPTS = 1;
 const BUILD_ATTEMPTS = 1;
-const ADMIN_ATTEMPTS = IS_HOSTED_RUNTIME || IS_PRODUCTION ? 1 : 2;
+const ADMIN_ATTEMPTS = IS_SERVERLESS ? 1 : 2;
 
 export function connectTimeoutMs(options?: DbConnectOptions): number {
   if (options?.fastFail) return PUBLIC_CONNECT_TIMEOUT_MS;

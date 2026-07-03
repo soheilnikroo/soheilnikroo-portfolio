@@ -41,11 +41,16 @@ function shouldUseCircuitBreaker(options?: DbConnectOptions): boolean {
 
 const PUBLIC_CONNECT_TIMEOUT_MS = 12_000;
 const QUICK_CONNECT_TIMEOUT_MS = 30_000;
-const ADMIN_CONNECT_TIMEOUT_MS = process.env.VERCEL ? 9_000 : 60_000;
+const IS_HOSTED_RUNTIME = Boolean(
+  process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LIARA_APP_ID,
+);
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+
+const ADMIN_CONNECT_TIMEOUT_MS = IS_HOSTED_RUNTIME || IS_PRODUCTION ? 8_000 : 60_000;
 const BUILD_CONNECT_TIMEOUT_MS = 10_000;
 const PUBLIC_ATTEMPTS = 1;
 const BUILD_ATTEMPTS = 1;
-const ADMIN_ATTEMPTS = process.env.VERCEL ? 1 : 2;
+const ADMIN_ATTEMPTS = IS_HOSTED_RUNTIME || IS_PRODUCTION ? 1 : 2;
 
 export function connectTimeoutMs(options?: DbConnectOptions): number {
   if (options?.fastFail) return PUBLIC_CONNECT_TIMEOUT_MS;

@@ -11,8 +11,15 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 export async function GET() {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const rows = await listAllProjectRows();
-  return NextResponse.json({ projects: rows });
+  try {
+    const rows = await listAllProjectRows();
+    return NextResponse.json({ projects: rows });
+  } catch (error) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("[admin/projects] read failed:", error instanceof Error ? error.message : error);
+    }
+    return NextResponse.json({ error: "Content store unavailable" }, { status: 503 });
+  }
 }
 export async function POST(request: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

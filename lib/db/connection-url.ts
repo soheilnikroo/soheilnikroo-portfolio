@@ -10,6 +10,62 @@ export function describeDatabaseUrl(url: string): string {
     return "invalid DATABASE_URL";
   }
 }
+
+export function normalizeEnvDatabaseUrl(raw?: string): string | null {
+  const value = raw?.trim().replace(/^["']|["']$/g, "");
+  if (!value) return null;
+  try {
+    new URL(value.replace(/^postgres(ql)?:/i, "http:"));
+    return value;
+  } catch {
+    return null;
+  }
+}
+
+/** Session pooler uses postgres.PROJECT; direct uses postgres@db.PROJECT.supabase.co. */
+export function deriveSupabaseDirectUrl(poolerUrl: string): string | null {
+  try {
+    const parsed = new URL(poolerUrl.replace(/^postgresql:/i, "http:"));
+    const user = decodeURIComponent(parsed.username);
+    if (!user.startsWith("postgres.")) return null;
+    const projectRef = user.slice("postgres.".length);
+    if (!projectRef) return null;
+    const auth = parsed.password ? `postgres:${parsed.password}` : "postgres";
+    const path = parsed.pathname || "/postgres";
+    return `postgresql://${auth}@db.${projectRef}.supabase.co:5432${path}`;
+  } catch {
+    return null;
+  }
+}
+
+function deriveSupabaseTransactionPoolerUrl(url: string): string | null {
+  if (!url.includes("pooler.supabase.com") || !/:5432(?:\/|$)/.test(url)) return null;
+  return url.replace(":5432", ":6543");
+}
+
+/** Ordered fallbacks for flaky WAN / DNS (Liara → Supabase). */
+export function listDatabaseUrlCandidates(): string[] {
+  const primary = normalizeEnvDatabaseUrl(process.env.DATABASE_URL);
+  if (!primary) return [];
+
+  const seen = new Set<string>();
+  const candidates: string[] = [];
+  const add = (url: string | null | undefined) => {
+    if (!url || seen.has(url)) return;
+    seen.add(url);
+    candidates.push(resolveRuntimeDatabaseUrl(url));
+  };
+
+  add(primary);
+  add(normalizeEnvDatabaseUrl(process.env.DATABASE_URL_DIRECT));
+  if (isSupabaseUrl(primary)) {
+    add(deriveSupabaseDirectUrl(primary));
+    add(deriveSupabaseTransactionPoolerUrl(primary));
+  }
+
+  return candidates;
+}
+
 export function isSupabaseUrl(url: string): boolean {
   return url.includes("supabase.com") || url.includes("supabase.co");
 }

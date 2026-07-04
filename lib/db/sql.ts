@@ -3,7 +3,9 @@ import postgres from "postgres";
 import {
   describeDatabaseUrl,
   getPostgresClientOptions,
+  listDatabaseUrlCandidates,
   needsEphemeralDbConnections,
+  normalizeEnvDatabaseUrl,
   resolveRuntimeDatabaseUrl,
 } from "./connection-url";
 import { resolveDbConnectOptions } from "./request-context";
@@ -26,7 +28,7 @@ function logDatabaseTarget(url: string): void {
 }
 
 function normalizeDatabaseUrl(): string {
-  const url = process.env.DATABASE_URL?.trim().replace(/^["']|["']$/g, "");
+  const url = normalizeEnvDatabaseUrl(process.env.DATABASE_URL);
   if (!url) {
     throw new Error(
       process.env.NODE_ENV === "production"
@@ -37,8 +39,8 @@ function normalizeDatabaseUrl(): string {
   return url;
 }
 
-function createSqlClient(): Sql {
-  const url = normalizeDatabaseUrl();
+function createSqlClient(databaseUrl?: string): Sql {
+  const url = databaseUrl ?? listDatabaseUrlCandidates()[0] ?? normalizeDatabaseUrl();
   logDatabaseTarget(url);
   const runtimeUrl = resolveRuntimeDatabaseUrl(url);
   return postgres(runtimeUrl, getPostgresClientOptions(runtimeUrl));
@@ -52,10 +54,10 @@ export function resetSqlClient(): void {
   if (client) void client.end({ timeout: 5 }).catch(() => {});
 }
 
-/** Liara: open a one-shot client for the current withConnectTimeout attempt. */
-export function mountEphemeralSql(): Sql {
+/** Hosted production: open a one-shot client for the current connect attempt. */
+export function mountEphemeralSql(databaseUrl?: string): Sql {
   resetSqlClient();
-  const client = createSqlClient();
+  const client = createSqlClient(databaseUrl);
   globalThis.__portfolioSql = client;
   return client;
 }

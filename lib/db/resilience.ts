@@ -1,4 +1,8 @@
-import { needsEphemeralDbConnections } from "./connection-url";
+import {
+  describeDatabaseUrl,
+  listDatabaseUrlCandidates,
+  needsEphemeralDbConnections,
+} from "./connection-url";
 import { isNextProductionBuild } from "./request-context";
 
 const CIRCUIT_COOLDOWN_MS = 30_000;
@@ -42,20 +46,49 @@ function shouldUseCircuitBreaker(options?: DbConnectOptions): boolean {
 
 const PUBLIC_CONNECT_TIMEOUT_MS = 12_000;
 const QUICK_CONNECT_TIMEOUT_MS = 30_000;
-// Only true serverless workers need sub-10s fail-fast. Liara runs a persistent Node server.
 const IS_SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 const ADMIN_CONNECT_TIMEOUT_MS = IS_SERVERLESS ? 9_000 : 60_000;
 const BUILD_CONNECT_TIMEOUT_MS = 10_000;
 const PUBLIC_ATTEMPTS = 1;
 const BUILD_ATTEMPTS = 1;
 const ADMIN_ATTEMPTS = IS_SERVERLESS ? 1 : 2;
-const HOSTED_ATTEMPTS = 5;
+const HOSTED_ATTEMPTS = 3;
+
+let hostedConnectChain: Promise<void> = Promise.resolve();
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function withHostedConnectMutex<T>(fn: () => Promise<T>): Promise<T> {
+  const previous = hostedConnectChain;
+  let release!: () => void;
+  hostedConnectChain = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await previous;
+  try {
+    return await fn();
+  } finally {
+    release();
+  }
+}
+
+function retryDelayMs(attempt: number, ephemeral: boolean, dnsError: boolean): number {
+  if (dnsError) return 5_000 * attempt;
+  return (ephemeral ? 3_000 : 2_000) * attempt;
+}
+
+function isDnsError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /ENOTFOUND|EAI_AGAIN|getaddrinfo/i.test(message);
+}
 
 export function connectTimeoutMs(options?: DbConnectOptions): number {
   if (options?.fastFail) return PUBLIC_CONNECT_TIMEOUT_MS;
   if (options?.quick) return QUICK_CONNECT_TIMEOUT_MS;
   if (options?.force || options?.preferLive) {
-    return needsEphemeralDbConnections() ? 20_000 : ADMIN_CONNECT_TIMEOUT_MS;
+    return needsEphemeralDbConnections() ? 25_000 : ADMIN_CONNECT_TIMEOUT_MS;
   }
   if (isNextProductionBuild()) return BUILD_CONNECT_TIMEOUT_MS;
   return PUBLIC_CONNECT_TIMEOUT_MS;
@@ -72,18 +105,65 @@ function connectAttempts(options?: DbConnectOptions): number {
   return PUBLIC_ATTEMPTS;
 }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 function shouldResetSqlClient(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
-  return /TIMEOUT|CONNECT|DESTROY|ECONN|CIRCUIT|terminated|closed/i.test(message);
+  return /TIMEOUT|CONNECT|DESTROY|ENOTFOUND|EAI_AGAIN|getaddrinfo|ECONN|CIRCUIT|terminated|closed/i.test(
+    message,
+  );
 }
 
 function resetSqlClientAfterFailure(error: unknown): void {
   if (!shouldResetSqlClient(error)) return;
   void import("./sql").then(({ resetSqlClient }) => resetSqlClient());
+}
+
+async function runConnectAttempts<T>(
+  operation: () => Promise<T>,
+  options: DbConnectOptions | undefined,
+  timeoutMs: number,
+  attempts: number,
+): Promise<T> {
+  const ephemeral = needsEphemeralDbConnections();
+  const urlCandidates = ephemeral ? listDatabaseUrlCandidates() : [null];
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    if (attempt > 0) {
+      const delay = retryDelayMs(attempt, ephemeral, isDnsError(lastError));
+      await sleep(delay);
+    }
+
+    for (const databaseUrl of urlCandidates) {
+      const sqlModule = ephemeral ? await import("./sql") : null;
+      if (sqlModule) sqlModule.mountEphemeralSql(databaseUrl ?? undefined);
+
+      try {
+        const result = await Promise.race([
+          operation(),
+          new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error("DATABASE_CONNECT_TIMEOUT")), timeoutMs);
+          }),
+        ]);
+        if (databaseUrl && ephemeral) {
+          console.info(`[db] connected via ${describeDatabaseUrl(databaseUrl)}`);
+        }
+        resetDbCircuit();
+        return result;
+      } catch (error) {
+        lastError = error;
+        resetSqlClientAfterFailure(error);
+        const message = error instanceof Error ? error.message : String(error);
+        const target = databaseUrl ? describeDatabaseUrl(databaseUrl) : "default";
+        console.warn(
+          `[db] connect attempt ${attempt + 1}/${attempts} via ${target} failed: ${message}`,
+        );
+      } finally {
+        if (sqlModule) sqlModule.resetSqlClient();
+      }
+    }
+  }
+
+  throw lastError;
 }
 
 export async function withConnectTimeout<T>(
@@ -97,36 +177,17 @@ export async function withConnectTimeout<T>(
 
   const timeoutMs = connectTimeoutMs(options);
   const attempts = connectAttempts(options);
-  let lastError: unknown;
 
-  const ephemeral = needsEphemeralDbConnections();
-  const retryDelayMs = (attempt: number) => (ephemeral ? 3_000 : 2_000) * attempt;
-
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
-    if (attempt > 0) await sleep(retryDelayMs(attempt));
-    const sqlModule = ephemeral ? await import("./sql") : null;
-    if (sqlModule) sqlModule.mountEphemeralSql();
-
-    try {
-      const result = await Promise.race([
-        operation(),
-        new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error("DATABASE_CONNECT_TIMEOUT")), timeoutMs);
-        }),
-      ]);
-      resetDbCircuit();
-      return result;
-    } catch (error) {
-      lastError = error;
-      resetSqlClientAfterFailure(error);
-      const message = error instanceof Error ? error.message : String(error);
-      console.warn(`[db] connect attempt ${attempt + 1}/${attempts} failed: ${message}`);
-    } finally {
-      if (sqlModule) sqlModule.resetSqlClient();
+  try {
+    if (needsEphemeralDbConnections()) {
+      return await withHostedConnectMutex(() =>
+        runConnectAttempts(operation, options, timeoutMs, attempts),
+      );
     }
+    return await runConnectAttempts(operation, options, timeoutMs, attempts);
+  } catch (error) {
+    if (shouldUseCircuitBreaker(options)) openDbCircuit();
+    resetSqlClientAfterFailure(error);
+    throw error;
   }
-
-  if (shouldUseCircuitBreaker(options)) openDbCircuit();
-  resetSqlClientAfterFailure(lastError);
-  throw lastError;
 }

@@ -15,7 +15,7 @@ import {
 import { MetaEasterEgg } from "./meta-easter-egg";
 
 const PIXEL_BTN =
-  "inline-flex min-h-9 items-center justify-center border-4 px-2.5 py-1 font-bold shadow-[2px_2px_0_#000] transition-colors focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none [font-family:var(--font-pixel),monospace] text-[10px]";
+  "inline-flex min-h-9 items-center justify-center border-4 px-2.5 py-1 font-bold shadow-[2px_2px_0_#000] transition-colors focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none text-[10px]";
 
 export interface MetaRoomOverlayProps {
   readonly metaReveal: number;
@@ -69,15 +69,15 @@ export function MetaRoomOverlay({
           >
             <div className="border-4 border-indigo-300/90 bg-[#0d0b16]/94 px-3 py-2 shadow-[4px_4px_0_#000,0_0_28px_rgba(129,140,248,0.2)] sm:px-5 sm:py-4">
               {activeBeat.kicker ? (
-                <p className="[font-family:var(--font-pixel),monospace] text-[9px] font-bold tracking-[0.18em] text-indigo-300 uppercase sm:text-xs sm:tracking-[0.22em]">
+                <p className="text-[9px] font-bold tracking-[0.18em] text-indigo-300 uppercase sm:text-xs sm:tracking-[0.22em]">
                   {activeBeat.kicker}
                 </p>
               ) : null}
-              <p className="mt-0.5 [font-family:var(--font-pixel),monospace] text-sm leading-snug font-bold text-white [text-shadow:2px_2px_0_#000] sm:mt-1 sm:text-lg">
+              <p className="mt-0.5 text-sm leading-snug font-bold text-white [text-shadow:2px_2px_0_#000] sm:mt-1 sm:text-lg">
                 {activeBeat.title}
               </p>
               {activeBeat.body ? (
-                <p className="mt-1 [font-family:var(--font-pixel),monospace] text-[11px] leading-relaxed text-white/72 sm:mt-1.5 sm:text-sm">
+                <p className="mt-1 text-[11px] leading-relaxed text-white/72 sm:mt-1.5 sm:text-sm">
                   {activeBeat.body}
                 </p>
               ) : null}
@@ -100,7 +100,7 @@ export function MetaRoomOverlay({
           >
             {/* Mobile: slim bar so the 3D room stays visible */}
             <div className="border-4 border-white/90 bg-[#0d0b16]/82 px-2.5 py-2 shadow-[3px_3px_0_#000] backdrop-blur-[2px] sm:hidden">
-              <p className="mb-1.5 text-center [font-family:var(--font-pixel),monospace] text-[10px] text-white/65">
+              <p className="mb-1.5 text-center text-[10px] text-white/65">
                 Thanks for playing — say hello?
               </p>
               <div className="flex items-stretch gap-1.5">
@@ -117,7 +117,7 @@ export function MetaRoomOverlay({
                     More
                   </summary>
                   <div className="absolute right-0 bottom-[calc(100%+0.35rem)] z-10 w-[min(16rem,calc(100vw-1.5rem))] border-4 border-white/70 bg-[#0d0b16]/96 p-2 shadow-[4px_4px_0_#000]">
-                    <p className="mb-2 [font-family:var(--font-pixel),monospace] text-[10px] leading-snug text-white/75">
+                    <p className="mb-2 text-[10px] leading-snug text-white/75">
                       Life is a lot like a game — it all depends on how you play it.
                     </p>
                     <div className="grid grid-cols-2 gap-1.5">
@@ -155,7 +155,7 @@ export function MetaRoomOverlay({
             </div>
 
             {/* Desktop: full contact panel */}
-            <div className="hidden border-4 border-white bg-[#0d0b16]/97 px-6 py-4 [font-family:var(--font-pixel),monospace] shadow-[4px_4px_0_#000] sm:block">
+            <div className="hidden border-4 border-white bg-[#0d0b16]/97 px-6 py-4 shadow-[4px_4px_0_#000] sm:block">
               <p className="text-lg leading-snug font-bold text-white [text-shadow:2px_2px_0_#000]">
                 Life is a lot like a game — it all depends on how you play it.
               </p>

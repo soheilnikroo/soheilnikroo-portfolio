@@ -4,36 +4,22 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
-import { toAdminProject } from "@/lib/data/projects-admin";
 
 import { AdminDbUnavailable } from "./admin-db-unavailable";
-import { AdminPanelSkeleton } from "./admin-panel-skeleton";
 import type { AdminProject } from "./types";
 
-export function ProjectsDashboard() {
+type ProjectsDashboardProps = {
+  initialProjects: AdminProject[];
+  dbUnavailable?: boolean;
+};
+
+export function ProjectsDashboard({
+  initialProjects,
+  dbUnavailable = false,
+}: ProjectsDashboardProps) {
   const router = useRouter();
-  const [projects, setProjects] = React.useState<AdminProject[] | null>(null);
-  const [dbError, setDbError] = React.useState(false);
+  const [projects, setProjects] = React.useState(initialProjects);
   const [busy, setBusy] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    let cancelled = false;
-
-    void (async () => {
-      try {
-        const res = await fetch("/api/admin/projects", { cache: "no-store" });
-        if (!res.ok) throw new Error(String(res.status));
-        const json = (await res.json()) as { projects: Parameters<typeof toAdminProject>[0][] };
-        if (!cancelled) setProjects(json.projects.map(toAdminProject));
-      } catch {
-        if (!cancelled) setDbError(true);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   async function onDelete(project: AdminProject) {
     if (!window.confirm(`Delete “${project.data.title}”? This cannot be undone.`)) return;
@@ -41,7 +27,7 @@ export function ProjectsDashboard() {
     const res = await fetch(`/api/admin/projects/${project.id}`, { method: "DELETE" });
     setBusy(null);
     if (res.ok) {
-      setProjects((prev) => (prev ? prev.filter((p) => p.id !== project.id) : prev));
+      setProjects((prev) => prev.filter((p) => p.id !== project.id));
       router.refresh();
     } else {
       window.alert("Failed to delete project.");
@@ -54,9 +40,9 @@ export function ProjectsDashboard() {
         <div>
           <h1 className="font-heading text-3xl font-semibold tracking-tight">Projects</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {projects
-              ? `${projects.length} project${projects.length === 1 ? "" : "s"} · work page updates live`
-              : "Loading projects…"}
+            {dbUnavailable
+              ? "Projects could not be loaded"
+              : `${projects.length} project${projects.length === 1 ? "" : "s"} · work page updates live`}
           </p>
         </div>
         <Button asChild>
@@ -64,10 +50,9 @@ export function ProjectsDashboard() {
         </Button>
       </div>
 
-      {projects === null && !dbError ? <AdminPanelSkeleton label="Loading projects…" /> : null}
-      {dbError ? <AdminDbUnavailable /> : null}
+      {dbUnavailable ? <AdminDbUnavailable /> : null}
 
-      {projects ? (
+      {!dbUnavailable ? (
         <ul className="mt-8 grid gap-3">
           {projects.map((project) => (
             <li

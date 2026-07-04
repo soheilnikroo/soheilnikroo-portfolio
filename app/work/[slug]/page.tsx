@@ -11,12 +11,7 @@ import { getProjectBySlug, getProjects } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
 import { pageTwitter, resolveOgImage } from "@/lib/seo/metadata-helpers";
 import { breadcrumbListLd, graphLd } from "@/lib/seo/structured-data";
-import {
-  PIXEL_CARD,
-  PIXEL_GHOST_BTN,
-  PIXEL_HEADING_SHADOW,
-  PIXEL_PRIMARY_BTN,
-} from "@/lib/world/world-theme";
+import { PIXEL_CARD, PIXEL_GHOST_BTN, PIXEL_PRIMARY_BTN } from "@/lib/world/world-theme";
 
 export const revalidate = 300;
 export async function generateStaticParams() {
@@ -122,10 +117,10 @@ export default async function ProjectPage({
                 {project.status}
               </span>
             </div>
-            <h1 className={`mt-3 text-4xl font-black sm:text-6xl ${PIXEL_HEADING_SHADOW}`}>
+            <h1 className="mt-3 font-heading text-4xl font-semibold tracking-tight sm:text-6xl">
               {project.title}
             </h1>
-            <p className="mt-3 text-lg text-pixel-fg-muted">{project.summary}</p>
+            <p className="mt-3 text-lg text-muted-foreground">{project.summary}</p>
             <div className="mt-4">
               <TechBadges items={project.tech} />
             </div>

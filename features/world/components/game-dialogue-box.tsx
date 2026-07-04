@@ -190,7 +190,7 @@ export function GameDialogueBox({
             </div>
           </div>
           <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-2.5 py-1.5 [font-family:var(--font-pixel),monospace] sm:px-4 sm:py-2.5">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-2.5 py-1.5 sm:px-4 sm:py-2.5">
               {speaker ? (
                 <p
                   className={`text-[10px] font-bold tracking-[0.16em] uppercase sm:text-xs sm:tracking-[0.2em] ${s.kicker}`}

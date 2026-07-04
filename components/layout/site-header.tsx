@@ -7,15 +7,15 @@ import * as React from "react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { SoundToggle } from "@/features/ambient";
 import type { NavLink } from "@/lib/schemas";
-import { PIXEL_FONT, PIXEL_ICON_BTN } from "@/lib/world/world-theme";
+import { PIXEL_ICON_BTN } from "@/lib/world/world-theme";
 
 import { Container } from "./container";
 
 function navLinkClass(active: boolean): string {
-  return `block rounded-[3px] border-2 px-3 py-2.5 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-pixel-border focus-visible:outline-none ${
+  return `block rounded-md px-3 py-2.5 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
     active
-      ? "border-amber-500/60 bg-amber-100/80 text-amber-900 dark:border-amber-400/60 dark:bg-amber-900/30 dark:text-amber-100"
-      : "border-transparent text-pixel-fg-muted hover:border-pixel-border/40 hover:text-pixel-fg"
+      ? "bg-primary/10 font-medium text-primary"
+      : "text-muted-foreground hover:bg-muted hover:text-foreground"
   }`;
 }
 
@@ -43,7 +43,7 @@ export function SiteHeader({ nav, brand }: { nav: readonly NavLink[]; brand: str
 
   if (pathname === "/") {
     return (
-      <header className={`fixed top-0 left-0 z-[var(--z-nav)] p-2 ${PIXEL_FONT}`}>
+      <header className="fixed top-0 left-0 z-[var(--z-nav)] p-2">
         <nav
           aria-label="Primary"
           className="sr-only flex max-w-max flex-wrap gap-1 rounded-[3px] border-2 border-white/25 bg-[#0d0b16]/95 p-1 focus-within:not-sr-only focus-within:opacity-100"
@@ -63,13 +63,11 @@ export function SiteHeader({ nav, brand }: { nav: readonly NavLink[]; brand: str
   }
 
   return (
-    <header
-      className={`sticky top-0 z-[var(--z-nav)] border-b-2 border-pixel-border/30 bg-pixel-panel/95 text-pixel-fg ${PIXEL_FONT}`}
-    >
+    <header className="sticky top-0 z-[var(--z-nav)] border-b border-border/60 bg-background/90 text-foreground backdrop-blur-sm">
       <Container className="flex h-14 items-center justify-between gap-4">
         <Link
           href="/"
-          className="text-sm font-bold tracking-wide text-pixel-fg focus-visible:ring-2 focus-visible:ring-pixel-border focus-visible:outline-none"
+          className="text-sm font-semibold tracking-tight text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           {brand}
         </Link>
@@ -115,7 +113,7 @@ export function SiteHeader({ nav, brand }: { nav: readonly NavLink[]; brand: str
         <nav
           id={menuId}
           aria-label="Mobile"
-          className="border-t-2 border-pixel-border/25 bg-pixel-panel px-gutter py-3 sm:hidden"
+          className="border-t border-border/60 bg-background px-gutter py-3 sm:hidden"
         >
           <ul className="space-y-1">
             {nav.map((link) => {

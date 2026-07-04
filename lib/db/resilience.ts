@@ -1,3 +1,4 @@
+import { needsEphemeralDbConnections } from "./connection-url";
 import { isNextProductionBuild } from "./request-context";
 
 const CIRCUIT_COOLDOWN_MS = 30_000;
@@ -48,16 +49,22 @@ const BUILD_CONNECT_TIMEOUT_MS = 10_000;
 const PUBLIC_ATTEMPTS = 1;
 const BUILD_ATTEMPTS = 1;
 const ADMIN_ATTEMPTS = IS_SERVERLESS ? 1 : 2;
+const HOSTED_ATTEMPTS = 5;
 
 export function connectTimeoutMs(options?: DbConnectOptions): number {
   if (options?.fastFail) return PUBLIC_CONNECT_TIMEOUT_MS;
   if (options?.quick) return QUICK_CONNECT_TIMEOUT_MS;
-  if (options?.force || options?.preferLive) return ADMIN_CONNECT_TIMEOUT_MS;
+  if (options?.force || options?.preferLive) {
+    return needsEphemeralDbConnections() ? 20_000 : ADMIN_CONNECT_TIMEOUT_MS;
+  }
   if (isNextProductionBuild()) return BUILD_CONNECT_TIMEOUT_MS;
   return PUBLIC_CONNECT_TIMEOUT_MS;
 }
 
 function connectAttempts(options?: DbConnectOptions): number {
+  if (needsEphemeralDbConnections() && (options?.force || options?.preferLive)) {
+    return HOSTED_ATTEMPTS;
+  }
   if (options?.fastFail) return PUBLIC_ATTEMPTS;
   if (options?.quick) return 1;
   if (options?.force || options?.preferLive) return ADMIN_ATTEMPTS;
@@ -71,13 +78,12 @@ function sleep(ms: number): Promise<void> {
 
 function shouldResetSqlClient(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
-  return /TIMEOUT|CONNECT|ECONN|CIRCUIT|terminated|closed/i.test(message);
+  return /TIMEOUT|CONNECT|DESTROY|ECONN|CIRCUIT|terminated|closed/i.test(message);
 }
 
-async function resetSqlClientAfterFailure(error: unknown): Promise<void> {
+function resetSqlClientAfterFailure(error: unknown): void {
   if (!shouldResetSqlClient(error)) return;
-  const { resetSqlClient } = await import("./sql");
-  resetSqlClient();
+  void import("./sql").then(({ resetSqlClient }) => resetSqlClient());
 }
 
 export async function withConnectTimeout<T>(
@@ -93,8 +99,13 @@ export async function withConnectTimeout<T>(
   const attempts = connectAttempts(options);
   let lastError: unknown;
 
+  const ephemeral = needsEphemeralDbConnections();
+  const retryDelayMs = (attempt: number) => (ephemeral ? 3_000 : 2_000) * attempt;
+
   for (let attempt = 0; attempt < attempts; attempt += 1) {
-    if (attempt > 0) await sleep(2_000 * attempt);
+    if (attempt > 0) await sleep(retryDelayMs(attempt));
+    const sqlModule = ephemeral ? await import("./sql") : null;
+    if (sqlModule) sqlModule.mountEphemeralSql();
 
     try {
       const result = await Promise.race([
@@ -107,15 +118,15 @@ export async function withConnectTimeout<T>(
       return result;
     } catch (error) {
       lastError = error;
-      await resetSqlClientAfterFailure(error);
+      resetSqlClientAfterFailure(error);
       const message = error instanceof Error ? error.message : String(error);
-      if (process.env.NODE_ENV !== "production") {
-        console.warn(`[db] connect attempt ${attempt + 1}/${attempts} failed: ${message}`);
-      }
+      console.warn(`[db] connect attempt ${attempt + 1}/${attempts} failed: ${message}`);
+    } finally {
+      if (sqlModule) sqlModule.resetSqlClient();
     }
   }
 
   if (shouldUseCircuitBreaker(options)) openDbCircuit();
-  await resetSqlClientAfterFailure(lastError);
+  resetSqlClientAfterFailure(lastError);
   throw lastError;
 }

@@ -2,12 +2,11 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { EmailLink } from "@/components/layout/email-link";
-import { pixelFont } from "@/lib/world/pixel-font";
 import {
   CHAPTER_ACCENTS,
   PIXEL_READABLE_BODY,
   PIXEL_READABLE_ON_DARK,
-  WORLD_SHELL,
+  WORLD_GAME_SHELL,
 } from "@/lib/world/world-theme";
 
 import type { WorldExperienceProps } from "./world-experience";
@@ -60,7 +59,7 @@ export function WorldNarrative({
     <div
       id={standalone ? undefined : "world-narrative"}
       data-world-narrative={standalone ? undefined : "embedded"}
-      className={`${pixelFont.variable} ${WORLD_SHELL} relative min-h-screen overflow-hidden${standalone ? "" : " world-narrative--game-mode"}`}
+      className={`${WORLD_GAME_SHELL} relative min-h-screen overflow-hidden${standalone ? "" : " world-narrative--game-mode"}`}
     >
       <div
         aria-hidden="true"

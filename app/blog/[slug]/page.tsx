@@ -16,7 +16,7 @@ import { pageTwitter, resolveOgImage } from "@/lib/seo/metadata-helpers";
 import { breadcrumbListLd, graphLd } from "@/lib/seo/structured-data";
 import { formatDate } from "@/lib/services/date";
 import { extractToc } from "@/lib/services/toc";
-import { PIXEL_CARD, PIXEL_HEADING_SHADOW } from "@/lib/world/world-theme";
+import { PIXEL_CARD } from "@/lib/world/world-theme";
 
 export const revalidate = 300;
 
@@ -140,17 +140,17 @@ export default async function PostPage({
               </details>
             ) : null}
             <header className="max-w-[var(--prose)]">
-              <div className="flex flex-wrap items-center gap-3 text-[10px] text-pixel-fg-muted">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                 <span className="rounded-[2px] border border-emerald-500/40 px-1.5 py-0.5 text-emerald-700 dark:text-emerald-200/90">
                   {meta.category}
                 </span>
                 <span>{formatDate(meta.date)}</span>
                 <span>· {meta.readingMinutes} min read</span>
               </div>
-              <h1 className={`mt-4 text-4xl font-black sm:text-5xl ${PIXEL_HEADING_SHADOW}`}>
+              <h1 className="mt-4 font-heading text-4xl font-semibold tracking-tight sm:text-5xl">
                 {meta.title}
               </h1>
-              <p className="mt-4 text-lg text-pretty text-pixel-fg-muted">{meta.description}</p>
+              <p className="mt-4 text-lg text-pretty text-muted-foreground">{meta.description}</p>
             </header>
             <div className="prose mt-10 max-w-none dark:prose-invert prose-headings:font-bold prose-a:text-emerald-700 dark:prose-a:text-emerald-300 prose-pre:border-2 prose-pre:border-pixel-border/25">
               {content}

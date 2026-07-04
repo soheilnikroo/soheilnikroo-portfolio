@@ -4,37 +4,20 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
-import { toAdminPost } from "@/lib/data/posts-admin";
 import { formatDate } from "@/lib/services/date";
 
 import { AdminDbUnavailable } from "./admin-db-unavailable";
-import { AdminPanelSkeleton } from "./admin-panel-skeleton";
 import type { AdminPost } from "./types";
 
-export function AdminDashboard() {
+type AdminDashboardProps = {
+  initialPosts: AdminPost[];
+  dbUnavailable?: boolean;
+};
+
+export function AdminDashboard({ initialPosts, dbUnavailable = false }: AdminDashboardProps) {
   const router = useRouter();
-  const [posts, setPosts] = React.useState<AdminPost[] | null>(null);
-  const [dbError, setDbError] = React.useState(false);
+  const [posts, setPosts] = React.useState(initialPosts);
   const [busy, setBusy] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    let cancelled = false;
-
-    void (async () => {
-      try {
-        const res = await fetch("/api/admin/posts", { cache: "no-store" });
-        if (!res.ok) throw new Error(String(res.status));
-        const json = (await res.json()) as { posts: Parameters<typeof toAdminPost>[0][] };
-        if (!cancelled) setPosts(json.posts.map(toAdminPost));
-      } catch {
-        if (!cancelled) setDbError(true);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   async function onDelete(post: AdminPost) {
     if (!window.confirm(`Delete “${post.title}”? This cannot be undone.`)) return;
@@ -42,7 +25,7 @@ export function AdminDashboard() {
     const res = await fetch(`/api/admin/posts/${post.id}`, { method: "DELETE" });
     setBusy(null);
     if (res.ok) {
-      setPosts((prev) => (prev ? prev.filter((p) => p.id !== post.id) : prev));
+      setPosts((prev) => prev.filter((p) => p.id !== post.id));
       router.refresh();
     } else {
       window.alert("Failed to delete post.");
@@ -55,9 +38,9 @@ export function AdminDashboard() {
         <div>
           <h1 className="font-heading text-3xl font-semibold tracking-tight">Writing</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {posts
-              ? `${posts.length} post${posts.length === 1 ? "" : "s"} · changes go live immediately`
-              : "Loading posts…"}
+            {dbUnavailable
+              ? "Posts could not be loaded"
+              : `${posts.length} post${posts.length === 1 ? "" : "s"} · changes go live immediately`}
           </p>
         </div>
         <Button asChild>
@@ -65,10 +48,9 @@ export function AdminDashboard() {
         </Button>
       </div>
 
-      {posts === null && !dbError ? <AdminPanelSkeleton label="Loading posts…" /> : null}
-      {dbError ? <AdminDbUnavailable /> : null}
+      {dbUnavailable ? <AdminDbUnavailable /> : null}
 
-      {posts ? (
+      {!dbUnavailable ? (
         <ul className="mt-8 grid gap-3">
           {posts.map((post) => (
             <li

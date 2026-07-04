@@ -52,10 +52,10 @@ export function MetaEasterEgg({
           onClick={handleAsk}
           className="group mt-2.5 w-full border-4 border-dashed border-white/25 bg-white/3 px-3 py-2 text-left transition-colors hover:border-indigo-300/60 hover:bg-indigo-950/40 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:mt-4 sm:px-4 sm:py-3"
         >
-          <span className="block [font-family:var(--font-pixel),monospace] text-[10px] font-bold tracking-wide text-indigo-200/90 uppercase sm:text-xs">
+          <span className="block text-[10px] font-bold tracking-wide text-indigo-200/90 uppercase sm:text-xs">
             Pause menu thought…
           </span>
-          <span className="mt-1 block [font-family:var(--font-pixel),monospace] text-[11px] leading-snug text-white/85 group-hover:text-white sm:mt-1.5 sm:text-sm">
+          <span className="mt-1 block text-[11px] leading-snug text-white/85 group-hover:text-white sm:mt-1.5 sm:text-sm">
             I wish real life had a retry button. Did you scroll back to the start anyway?
           </span>
         </button>
@@ -79,7 +79,7 @@ export function MetaEasterEgg({
             onClick={onDismiss}
           />
           <div
-            className={`relative z-10 w-full max-w-xl border-4 border-white bg-[#0d0b16] px-6 py-8 text-center [font-family:var(--font-pixel),monospace] shadow-[8px_8px_0_#000,0_0_48px_rgba(129,140,248,0.35)] sm:px-10 sm:py-10 ${showAnswer ? "animate-[metaSecretIn_0.55s_ease-out_both]" : "opacity-0"}`}
+            className={`relative z-10 w-full max-w-xl border-4 border-white bg-[#0d0b16] px-6 py-8 text-center shadow-[8px_8px_0_#000,0_0_48px_rgba(129,140,248,0.35)] sm:px-10 sm:py-10 ${showAnswer ? "animate-[metaSecretIn_0.55s_ease-out_both]" : "opacity-0"}`}
           >
             <div
               aria-hidden="true"

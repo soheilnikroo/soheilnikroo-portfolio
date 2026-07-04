@@ -3,6 +3,7 @@ import postgres from "postgres";
 import {
   describeDatabaseUrl,
   getPostgresClientOptions,
+  needsEphemeralDbConnections,
   resolveRuntimeDatabaseUrl,
 } from "./connection-url";
 import { resolveDbConnectOptions } from "./request-context";
@@ -24,16 +25,7 @@ function logDatabaseTarget(url: string): void {
   console.info(`[db] target ${describeDatabaseUrl(url)}`);
 }
 
-/** Drop a stale client so the next query opens a fresh TCP connection. */
-export function resetSqlClient(): void {
-  const client = globalThis.__portfolioSql;
-  globalThis.__portfolioSql = undefined;
-  globalThis.__portfolioSchemaReady = undefined;
-  if (client) void client.end({ timeout: 5 }).catch(() => {});
-}
-
-export function getSql(): Sql {
-  if (globalThis.__portfolioSql) return globalThis.__portfolioSql;
+function normalizeDatabaseUrl(): string {
   const url = process.env.DATABASE_URL?.trim().replace(/^["']|["']$/g, "");
   if (!url) {
     throw new Error(
@@ -42,12 +34,40 @@ export function getSql(): Sql {
         : "DATABASE_URL is not set. Copy .env.example to .env and fill it in.",
     );
   }
+  return url;
+}
+
+function createSqlClient(): Sql {
+  const url = normalizeDatabaseUrl();
   logDatabaseTarget(url);
   const runtimeUrl = resolveRuntimeDatabaseUrl(url);
-  const client = postgres(runtimeUrl, getPostgresClientOptions(runtimeUrl));
+  return postgres(runtimeUrl, getPostgresClientOptions(runtimeUrl));
+}
+
+/** Drop a stale client so the next query opens a fresh TCP connection. */
+export function resetSqlClient(): void {
+  const client = globalThis.__portfolioSql;
+  globalThis.__portfolioSql = undefined;
+  globalThis.__portfolioSchemaReady = undefined;
+  if (client) void client.end({ timeout: 5 }).catch(() => {});
+}
+
+/** Liara: open a one-shot client for the current withConnectTimeout attempt. */
+export function mountEphemeralSql(): Sql {
+  resetSqlClient();
+  const client = createSqlClient();
   globalThis.__portfolioSql = client;
   return client;
 }
+
+export function getSql(): Sql {
+  if (globalThis.__portfolioSql) return globalThis.__portfolioSql;
+  const client = createSqlClient();
+  globalThis.__portfolioSql = client;
+  return client;
+}
+
+export { needsEphemeralDbConnections };
 
 async function migrate(options?: DbConnectOptions): Promise<void> {
   try {

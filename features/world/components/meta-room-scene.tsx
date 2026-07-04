@@ -525,7 +525,7 @@ function RoomModel({
               border: "2px solid rgba(255,255,255,0.85)",
               background: "rgba(13,11,22,0.92)",
               color: "#fff",
-              font: "600 12px var(--font-pixel, ui-monospace, monospace)",
+              font: "600 12px var(--font-geist-sans, system-ui, sans-serif)",
               letterSpacing: "0.04em",
               boxShadow: "3px 3px 0 rgba(0,0,0,0.6)",
             }}

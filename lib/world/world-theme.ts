@@ -1,10 +1,9 @@
-/** Readable pixel body copy — medium weight reads clearer at small sizes. */
-export const PIXEL_READABLE_BODY =
-  "text-base font-medium leading-[1.75] [font-synthesis-weight:none]" as const;
+/** Long-form copy inside the game world. */
+export const PIXEL_READABLE_BODY = "text-base font-normal leading-[1.75]" as const;
 
 /** Dark-game overlays (dialogue, save-file header). */
 export const PIXEL_READABLE_ON_DARK =
-  "text-base font-medium leading-[1.75] text-white/95 [text-shadow:1px_1px_0_#000] [font-synthesis-weight:none]" as const;
+  "text-base font-normal leading-[1.75] text-white/95 [text-shadow:1px_1px_0_#000]" as const;
 
 export const CHAPTER_ACCENTS = {
   intro: {
@@ -70,9 +69,12 @@ export const CHAPTER_ACCENTS = {
 } as const;
 export type ChapterAccentId = keyof typeof CHAPTER_ACCENTS;
 
-export const PIXEL_FONT = "[font-family:var(--font-pixel),ui-monospace,monospace]" as const;
+export const PORTFOLIO_SHELL = "bg-background text-foreground" as const;
 
-export const WORLD_SHELL = `bg-pixel-shell text-pixel-fg ${PIXEL_FONT}` as const;
+export const WORLD_GAME_SHELL = "bg-pixel-shell text-pixel-fg" as const;
+
+/** @deprecated Use PORTFOLIO_SHELL or WORLD_GAME_SHELL explicitly. */
+export const WORLD_SHELL = WORLD_GAME_SHELL;
 
 export const PIXEL_PANEL = "bg-pixel-panel border-pixel-border" as const;
 

@@ -10,7 +10,7 @@ import { getAllPostMeta, getProjects } from "@/lib/data";
 import { getSiteConfig } from "@/lib/data/site-settings";
 import { ogImageEntries, pageTwitter } from "@/lib/seo/metadata-helpers";
 import { breadcrumbListLd, graphLd } from "@/lib/seo/structured-data";
-import { PIXEL_CARD, PIXEL_HEADING_SHADOW } from "@/lib/world/world-theme";
+import { PIXEL_CARD } from "@/lib/world/world-theme";
 
 export const revalidate = 300;
 export async function generateMetadata(): Promise<Metadata> {
@@ -56,7 +56,7 @@ export default async function WorkPage() {
       <Container className="py-section">
         <Link
           href="/"
-          className="text-sm text-pixel-fg-muted transition-colors hover:text-pixel-fg"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           {copy.backLink}
         </Link>
@@ -67,10 +67,10 @@ export default async function WorkPage() {
               {copy.eyebrow}
             </p>
           ) : null}
-          <h1 className={`mt-3 text-4xl font-black sm:text-5xl ${PIXEL_HEADING_SHADOW}`}>
+          <h1 className="mt-3 font-heading text-4xl font-semibold tracking-tight sm:text-5xl">
             {copy.title}
           </h1>
-          {copy.subtitle ? <p className="mt-3 text-pixel-fg-muted">{copy.subtitle}</p> : null}
+          {copy.subtitle ? <p className="mt-3 text-muted-foreground">{copy.subtitle}</p> : null}
         </header>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">

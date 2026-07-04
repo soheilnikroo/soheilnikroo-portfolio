@@ -21,6 +21,11 @@ function isServerlessRuntime(): boolean {
   return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 }
 
+/** Production Node hosts (e.g. Liara) — not Vercel/Lambda. Use fresh DB sockets per request. */
+export function needsEphemeralDbConnections(): boolean {
+  return process.env.NODE_ENV === "production" && !isServerlessRuntime();
+}
+
 /** Transaction pooler (:6543) is required for short-lived serverless workers. */
 export function resolveRuntimeDatabaseUrl(url: string): string {
   if (!isServerlessRuntime() || !isSupabaseUrl(url)) return url;
@@ -32,12 +37,16 @@ export function resolveRuntimeDatabaseUrl(url: string): string {
 
 export function getPostgresClientOptions(url: string) {
   const serverless = isServerlessRuntime();
+  const ephemeral = needsEphemeralDbConnections();
+  const supabase = isSupabaseUrl(url);
   return {
-    max: serverless ? 1 : 10,
-    idle_timeout: serverless ? 5 : 20,
-    connect_timeout: serverless ? 15 : 45,
-    prepare: isSupabaseUrl(url) ? false : !isTransactionPooler(url),
-    ssl: isSupabaseUrl(url) ? ("require" as const) : undefined,
+    max: serverless || ephemeral ? 1 : 10,
+    idle_timeout: serverless || ephemeral ? 5 : 20,
+    connect_timeout: ephemeral ? 60 : serverless ? 15 : 45,
+    prepare: supabase ? false : !isTransactionPooler(url),
+    // Poolers can drop connections during the type-catalog handshake on long WAN paths.
+    fetch_types: supabase ? false : undefined,
+    ssl: supabase ? ("require" as const) : undefined,
     onnotice: () => {},
     connection: {
       application_name: "soheilnikroo",

@@ -1,8 +1,7 @@
 import Image from "next/image";
 
 import { worldAssetUrl } from "@/lib/world/asset-url";
-import { pixelFont } from "@/lib/world/pixel-font";
-import { CHAPTER_ACCENTS, PIXEL_FONT } from "@/lib/world/world-theme";
+import { CHAPTER_ACCENTS } from "@/lib/world/world-theme";
 
 const SPLASH_BG = worldAssetUrl("/world/scenes/intro-hero-dawn.png");
 const PORTRAIT_SRC = worldAssetUrl("/world/character/idle/east/0.png");
@@ -28,7 +27,7 @@ export function WorldSplash() {
     <div
       id="world-splash"
       aria-hidden="true"
-      className={`${pixelFont.variable} pointer-events-none fixed inset-0 z-[150] h-svh w-full overflow-hidden bg-[#05040b] transition-opacity duration-300 ease-out`}
+      className="pointer-events-none fixed inset-0 z-[150] h-svh w-full overflow-hidden bg-[#05040b] transition-opacity duration-300 ease-out"
     >
       <div
         className="absolute inset-0 bg-cover bg-bottom opacity-55"
@@ -85,9 +84,7 @@ export function WorldSplash() {
               />
             </div>
           </div>
-          <div
-            className={`flex min-w-0 flex-1 flex-col justify-center px-3 py-2.5 sm:px-4 sm:py-3 ${PIXEL_FONT}`}
-          >
+          <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-2.5 sm:px-4 sm:py-3">
             <p
               className={`text-[10px] font-bold tracking-[0.18em] uppercase sm:text-xs sm:tracking-[0.22em] ${intro.kicker}`}
             >

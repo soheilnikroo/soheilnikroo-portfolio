@@ -15,7 +15,6 @@ import { CustomCursor } from "@/components/visual/custom-cursor";
 import { AmbientBackground, AmbientProvider } from "@/features/ambient";
 import { getSiteSettings, getSiteUrl } from "@/lib/data/site-settings";
 import { baseSiteMetadata } from "@/lib/seo/site-metadata";
-import { pixelFont } from "@/lib/world/pixel-font";
 
 import "./globals.css";
 
@@ -83,7 +82,7 @@ export default async function RootLayout({
     <html
       lang={settings.locale.split("_")[0] ?? "en"}
       suppressHydrationWarning
-      className={`${GeistSans.variable} ${GeistMono.variable} ${pixelFont.variable} h-full antialiased`}
+      className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full" suppressHydrationWarning>
         <MicrosoftClarity />

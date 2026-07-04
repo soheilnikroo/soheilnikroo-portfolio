@@ -16,7 +16,6 @@ import {
   syncChapterMusic,
   unlockChapterAudio,
 } from "@/lib/world/chapter-audio";
-import { pixelFont } from "@/lib/world/pixel-font";
 import { segmentBeat, resolveStoryBeatIndex } from "@/lib/world/segment-beat";
 import {
   mysteryBoxBounds,
@@ -831,7 +830,7 @@ export function WorldExperience(props: WorldExperienceProps) {
         ref={stageRef}
         aria-label="Interactive pixel-art journey — scroll or tap to play"
         {...stageTap}
-        className={`${pixelFont.variable} sticky top-0 h-svh w-full touch-pan-y overflow-hidden bg-[#05040b] [font-family:var(--font-pixel),ui-monospace,monospace] text-white select-none`}
+        className="sticky top-0 h-svh w-full touch-pan-y overflow-hidden bg-[#05040b] text-white select-none"
       >
         <h1 className="sr-only">
           {profileName} — interactive pixel-art portfolio of a front-end engineer. Scroll to play
@@ -902,7 +901,7 @@ export function WorldExperience(props: WorldExperienceProps) {
           aria-hidden="true"
           className="absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2 sm:px-4 sm:pt-[max(1rem,env(safe-area-inset-top))]"
         >
-          <p className="max-w-[calc(100%-5.5rem)] min-w-0 truncate [font-family:var(--font-pixel),monospace] text-xs font-bold tracking-[0.14em] text-white/85 uppercase sm:max-w-none sm:text-sm sm:tracking-[0.2em]">
+          <p className="max-w-[calc(100%-5.5rem)] min-w-0 truncate text-xs font-bold tracking-[0.14em] text-white/85 uppercase sm:max-w-none sm:text-sm sm:tracking-[0.2em]">
             {String(activeIndex + 1).padStart(2, "0")} · {activeTitle}
           </p>
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
@@ -925,7 +924,7 @@ export function WorldExperience(props: WorldExperienceProps) {
             </Link>
           </div>
         </div>
-        <p className="absolute top-[calc(max(0.75rem,env(safe-area-inset-top))+2.25rem)] right-3 left-3 z-20 hidden max-w-none truncate [font-family:var(--font-pixel),monospace] text-xs text-amber-200/90 sm:left-4 sm:block sm:max-w-56 sm:text-sm">
+        <p className="absolute top-[calc(max(0.75rem,env(safe-area-inset-top))+2.25rem)] right-3 left-3 z-20 hidden max-w-none truncate text-xs text-amber-200/90 sm:left-4 sm:block sm:max-w-56 sm:text-sm">
           {chapterGoal ? <span className="text-white/55">{chapterGoal}</span> : null}
         </p>
 
@@ -939,7 +938,7 @@ export function WorldExperience(props: WorldExperienceProps) {
           <p
             aria-hidden="true"
             style={{ opacity: questLineOpacity }}
-            className="pointer-events-none absolute inset-x-0 top-[12%] z-20 mx-auto hidden max-w-[92%] px-3 text-center [font-family:var(--font-pixel),monospace] text-xs font-bold text-amber-100 [text-shadow:2px_2px_0_#000] sm:top-[1%] sm:block sm:max-w-[96%] sm:px-0 sm:text-sm"
+            className="pointer-events-none absolute inset-x-0 top-[12%] z-20 mx-auto hidden max-w-[92%] px-3 text-center text-xs font-bold text-amber-100 [text-shadow:2px_2px_0_#000] sm:top-[1%] sm:block sm:max-w-[96%] sm:px-0 sm:text-sm"
           >
             {questLine.text}
           </p>
@@ -959,7 +958,7 @@ export function WorldExperience(props: WorldExperienceProps) {
                     <button
                       type="button"
                       onClick={beginPortfolio}
-                      className="min-h-11 w-full border-4 border-white bg-[#1a1830] px-4 py-2.5 [font-family:var(--font-pixel),monospace] text-sm font-bold text-white shadow-[4px_4px_0_#000] transition-transform hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                      className="min-h-11 w-full border-4 border-white bg-[#1a1830] px-4 py-2.5 text-sm font-bold text-white shadow-[4px_4px_0_#000] transition-transform hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                     >
                       Tap to begin →
                     </button>
@@ -992,7 +991,7 @@ export function WorldExperience(props: WorldExperienceProps) {
                 />
               ) : null}
               {portfolioStarted && chapterLocal < 0.12 ? (
-                <p className="pointer-events-none absolute bottom-[22%] left-1/2 z-40 -translate-x-1/2 animate-bounce [font-family:var(--font-pixel),monospace] text-sm font-bold tracking-[0.2em] text-amber-200 uppercase sm:bottom-[20%]">
+                <p className="pointer-events-none absolute bottom-[22%] left-1/2 z-40 -translate-x-1/2 animate-bounce text-sm font-bold tracking-[0.2em] text-amber-200 uppercase sm:bottom-[20%]">
                   ↓
                 </p>
               ) : null}
@@ -1012,7 +1011,7 @@ export function WorldExperience(props: WorldExperienceProps) {
                   action={
                     <Link
                       href={`/work/${openedProject.slug}`}
-                      className="inline-block min-h-10 border-4 border-amber-300 bg-amber-900 px-3 py-1.5 [font-family:var(--font-pixel),monospace] text-xs font-bold text-amber-50 shadow-[4px_4px_0_#000] hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:min-h-11 sm:px-4 sm:py-2 sm:text-sm"
+                      className="inline-block min-h-10 border-4 border-amber-300 bg-amber-900 px-3 py-1.5 text-xs font-bold text-amber-50 shadow-[4px_4px_0_#000] hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:min-h-11 sm:px-4 sm:py-2 sm:text-sm"
                     >
                       Enter project →
                     </Link>
@@ -1040,7 +1039,7 @@ export function WorldExperience(props: WorldExperienceProps) {
                         unlockAudio();
                         sfx.click();
                       }}
-                      className="min-h-10 border-4 border-cyan-300 bg-cyan-950 px-3 py-1.5 [font-family:var(--font-pixel),monospace] text-xs font-bold text-cyan-50 shadow-[4px_4px_0_#000] focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:min-h-11 sm:px-4 sm:py-2 sm:text-sm"
+                      className="min-h-10 border-4 border-cyan-300 bg-cyan-950 px-3 py-1.5 text-xs font-bold text-cyan-50 shadow-[4px_4px_0_#000] focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:min-h-11 sm:px-4 sm:py-2 sm:text-sm"
                     >
                       Inspect stats →
                     </button>
@@ -1061,7 +1060,7 @@ export function WorldExperience(props: WorldExperienceProps) {
                   action={
                     <Link
                       href={`/blog/${chestLoot.slug}`}
-                      className="inline-block min-h-10 border-4 border-emerald-300 bg-emerald-900 px-3 py-1.5 [font-family:var(--font-pixel),monospace] text-xs font-bold text-emerald-50 shadow-[4px_4px_0_#000] focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:min-h-11 sm:px-4 sm:py-2 sm:text-sm"
+                      className="inline-block min-h-10 border-4 border-emerald-300 bg-emerald-900 px-3 py-1.5 text-xs font-bold text-emerald-50 shadow-[4px_4px_0_#000] focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:min-h-11 sm:px-4 sm:py-2 sm:text-sm"
                     >
                       Read article →
                     </Link>
@@ -1079,7 +1078,7 @@ export function WorldExperience(props: WorldExperienceProps) {
                       type="button"
                       onPointerDown={(e) => e.stopPropagation()}
                       onClick={downloadResume}
-                      className="min-h-10 border-4 border-amber-300 bg-[#1a1208] px-3 py-1.5 [font-family:var(--font-pixel),monospace] text-xs font-bold text-amber-100 shadow-[4px_4px_0_#000] hover:bg-amber-900 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:min-h-11 sm:px-4 sm:py-2 sm:text-sm"
+                      className="min-h-10 border-4 border-amber-300 bg-[#1a1208] px-3 py-1.5 text-xs font-bold text-amber-100 shadow-[4px_4px_0_#000] hover:bg-amber-900 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:min-h-11 sm:px-4 sm:py-2 sm:text-sm"
                     >
                       ⬇ Download résumé
                     </button>

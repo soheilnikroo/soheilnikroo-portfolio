@@ -73,9 +73,6 @@ export const PORTFOLIO_SHELL = "bg-background text-foreground" as const;
 
 export const WORLD_GAME_SHELL = "bg-pixel-shell text-pixel-fg" as const;
 
-/** @deprecated Use PORTFOLIO_SHELL or WORLD_GAME_SHELL explicitly. */
-export const WORLD_SHELL = WORLD_GAME_SHELL;
-
 export const PIXEL_PANEL = "bg-pixel-panel border-pixel-border" as const;
 
 export const PIXEL_CARD =

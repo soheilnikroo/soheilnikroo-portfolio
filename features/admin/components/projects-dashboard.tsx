@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { adminFetch } from "@/features/admin/lib/admin-fetch";
 
 import { AdminDbUnavailable } from "./admin-db-unavailable";
 import type { AdminProject } from "./types";
@@ -24,13 +25,18 @@ export function ProjectsDashboard({
   async function onDelete(project: AdminProject) {
     if (!window.confirm(`Delete “${project.data.title}”? This cannot be undone.`)) return;
     setBusy(project.id);
-    const res = await fetch(`/api/admin/projects/${project.id}`, { method: "DELETE" });
-    setBusy(null);
-    if (res.ok) {
-      setProjects((prev) => prev.filter((p) => p.id !== project.id));
-      router.refresh();
-    } else {
-      window.alert("Failed to delete project.");
+    try {
+      const res = await adminFetch(`/api/admin/projects/${project.id}`, { method: "DELETE" });
+      if (res.ok) {
+        setProjects((prev) => prev.filter((p) => p.id !== project.id));
+        router.refresh();
+      } else {
+        window.alert("Failed to delete project.");
+      }
+    } catch {
+      window.alert("Delete timed out or the server could not be reached. Try again.");
+    } finally {
+      setBusy(null);
     }
   }
 

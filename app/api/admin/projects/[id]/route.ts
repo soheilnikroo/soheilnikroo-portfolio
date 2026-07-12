@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/auth/session";
 import { deleteProject, getProjectRow, updateProject } from "@/lib/data/projects";
 import { revalidateContent } from "@/lib/data/revalidate-content";
+import { logContentStoreError } from "@/lib/db/log-content-store";
 import { ProjectSchema } from "@/lib/schemas";
 
 export const runtime = "nodejs";
@@ -21,9 +22,14 @@ export async function GET(
 ) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
-  const row = await getProjectRow(id);
-  if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ project: row });
+  try {
+    const row = await getProjectRow(id);
+    if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ project: row });
+  } catch (error) {
+    logContentStoreError("projects", error);
+    return NextResponse.json({ error: "Content store unavailable" }, { status: 503 });
+  }
 }
 export async function PUT(
   request: Request,
@@ -75,12 +81,17 @@ export async function DELETE(
 ) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
-  const ok = await deleteProject(id);
-  if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  revalidateContent();
-  revalidatePath("/work");
-  revalidatePath("/");
-  revalidatePath("/read");
-  revalidatePath("/admin/projects");
-  return NextResponse.json({ ok: true });
+  try {
+    const ok = await deleteProject(id);
+    if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    revalidateContent();
+    revalidatePath("/work");
+    revalidatePath("/");
+    revalidatePath("/read");
+    revalidatePath("/admin/projects");
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    logContentStoreError("projects", error);
+    return NextResponse.json({ error: "Failed to delete project." }, { status: 503 });
+  }
 }

@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { adminFetch, adminFetchTimeoutMessage } from "@/features/admin/lib/admin-fetch";
 import { ProfileSchema } from "@/lib/schemas";
 import type { Profile } from "@/lib/schemas";
 
@@ -50,21 +51,25 @@ export function ProfileEditor({ initial }: { initial: Profile }) {
       setSaving(false);
       return;
     }
-    const res = await fetch("/api/admin/profile", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.data),
-    });
-    if (res.ok) {
-      router.refresh();
+    try {
+      const res = await adminFetch("/api/admin/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      });
+      if (res.ok) {
+        router.refresh();
+        return;
+      }
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+      };
+      setError(data.error ?? "Failed to save profile.");
+    } catch {
+      setError(adminFetchTimeoutMessage());
+    } finally {
       setSaving(false);
-      return;
     }
-    const data = (await res.json().catch(() => ({}))) as {
-      error?: string;
-    };
-    setError(data.error ?? "Failed to save profile.");
-    setSaving(false);
   }
   return (
     <form onSubmit={onSubmit} className="grid gap-5">

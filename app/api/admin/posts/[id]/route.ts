@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/auth/session";
 import { deletePost, getPostById, updatePost } from "@/lib/data/posts";
 import { revalidateContent } from "@/lib/data/revalidate-content";
+import { logContentStoreError } from "@/lib/db/log-content-store";
 import { PostInputSchema } from "@/lib/schemas";
 
 export const runtime = "nodejs";
@@ -21,9 +22,14 @@ export async function GET(
 ) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
-  const row = await getPostById(id);
-  if (!row) return NextResponse.json({ error: "Post not found" }, { status: 404 });
-  return NextResponse.json({ post: row });
+  try {
+    const row = await getPostById(id);
+    if (!row) return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    return NextResponse.json({ post: row });
+  } catch (error) {
+    logContentStoreError("blog", error);
+    return NextResponse.json({ error: "Content store unavailable" }, { status: 503 });
+  }
 }
 export async function PUT(
   request: Request,
@@ -75,12 +81,17 @@ export async function DELETE(
 ) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
-  const ok = await deletePost(id);
-  if (!ok) return NextResponse.json({ error: "Post not found" }, { status: 404 });
-  revalidateContent();
-  revalidatePath("/blog");
-  revalidatePath("/");
-  revalidatePath("/read");
-  revalidatePath("/admin");
-  return NextResponse.json({ ok: true });
+  try {
+    const ok = await deletePost(id);
+    if (!ok) return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    revalidateContent();
+    revalidatePath("/blog");
+    revalidatePath("/");
+    revalidatePath("/read");
+    revalidatePath("/admin");
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    logContentStoreError("blog", error);
+    return NextResponse.json({ error: "Failed to delete post." }, { status: 503 });
+  }
 }

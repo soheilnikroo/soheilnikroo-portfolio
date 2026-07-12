@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { adminFetch, adminFetchTimeoutMessage } from "@/features/admin/lib/admin-fetch";
 import { MilestonesSchema } from "@/lib/schemas";
 import type { Milestone } from "@/lib/schemas";
 
@@ -35,18 +36,22 @@ export function MilestonesEditor({ initial }: { initial: Milestone[] }) {
       setSaving(false);
       return;
     }
-    const res = await fetch("/api/admin/site/milestones", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.data),
-    });
-    if (res.ok) {
-      router.refresh();
+    try {
+      const res = await adminFetch("/api/admin/site/milestones", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      });
+      if (res.ok) {
+        router.refresh();
+        return;
+      }
+      setError("Failed to save milestones.");
+    } catch {
+      setError(adminFetchTimeoutMessage());
+    } finally {
       setSaving(false);
-      return;
     }
-    setError("Failed to save milestones.");
-    setSaving(false);
   }
   return (
     <form onSubmit={onSubmit} className="grid gap-6">

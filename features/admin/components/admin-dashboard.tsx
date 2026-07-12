@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { adminFetch } from "@/features/admin/lib/admin-fetch";
 import { formatDate } from "@/lib/services/date";
 
 import { AdminDbUnavailable } from "./admin-db-unavailable";
@@ -22,13 +23,18 @@ export function AdminDashboard({ initialPosts, dbUnavailable = false }: AdminDas
   async function onDelete(post: AdminPost) {
     if (!window.confirm(`Delete “${post.title}”? This cannot be undone.`)) return;
     setBusy(post.id);
-    const res = await fetch(`/api/admin/posts/${post.id}`, { method: "DELETE" });
-    setBusy(null);
-    if (res.ok) {
-      setPosts((prev) => prev.filter((p) => p.id !== post.id));
-      router.refresh();
-    } else {
-      window.alert("Failed to delete post.");
+    try {
+      const res = await adminFetch(`/api/admin/posts/${post.id}`, { method: "DELETE" });
+      if (res.ok) {
+        setPosts((prev) => prev.filter((p) => p.id !== post.id));
+        router.refresh();
+      } else {
+        window.alert("Failed to delete post.");
+      }
+    } catch {
+      window.alert("Delete timed out or the server could not be reached. Try again.");
+    } finally {
+      setBusy(null);
     }
   }
 

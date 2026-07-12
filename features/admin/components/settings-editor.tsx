@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { adminFetch, adminFetchTimeoutMessage } from "@/features/admin/lib/admin-fetch";
 import { SiteSettingsSchema } from "@/lib/schemas";
 import type { NavLink, SiteSettings } from "@/lib/schemas";
 
@@ -56,18 +57,22 @@ export function SettingsEditor({ initial }: { initial: SiteSettings }) {
       setSaving(false);
       return;
     }
-    const res = await fetch("/api/admin/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.data),
-    });
-    if (res.ok) {
-      router.refresh();
+    try {
+      const res = await adminFetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      });
+      if (res.ok) {
+        router.refresh();
+        return;
+      }
+      setError("Failed to save settings.");
+    } catch {
+      setError(adminFetchTimeoutMessage());
+    } finally {
       setSaving(false);
-      return;
     }
-    setError("Failed to save settings.");
-    setSaving(false);
   }
   return (
     <form onSubmit={onSubmit} className="grid gap-8">

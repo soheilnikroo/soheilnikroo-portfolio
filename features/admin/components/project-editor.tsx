@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { adminFetch, adminFetchTimeoutMessage } from "@/features/admin/lib/admin-fetch";
 import { ProjectSchema, ProjectStatusSchema } from "@/lib/schemas";
 import type { Project, ProjectNarrative } from "@/lib/schemas";
 
@@ -88,21 +89,26 @@ export function ProjectEditor({
       return;
     }
     const url = mode === "create" ? "/api/admin/projects" : `/api/admin/projects/${project?.id}`;
-    const res = await fetch(url, {
-      method: mode === "create" ? "POST" : "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload.data),
-    });
-    if (res.ok) {
-      router.push("/admin/projects");
-      router.refresh();
-      return;
+    try {
+      const res = await adminFetch(url, {
+        method: mode === "create" ? "POST" : "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload.data),
+      });
+      if (res.ok) {
+        router.push("/admin/projects");
+        router.refresh();
+        return;
+      }
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+      };
+      setError(data.error ?? "Failed to save.");
+    } catch {
+      setError(adminFetchTimeoutMessage());
+    } finally {
+      setSaving(false);
     }
-    const data = (await res.json().catch(() => ({}))) as {
-      error?: string;
-    };
-    setError(data.error ?? "Failed to save.");
-    setSaving(false);
   }
   function setNarrativeField(key: keyof ProjectNarrative, value: string) {
     setNarrative((prev) => ({ ...prev, [key]: value }));

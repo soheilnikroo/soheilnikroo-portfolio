@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { adminFetch, adminFetchTimeoutMessage } from "@/features/admin/lib/admin-fetch";
 import { WorldNarrativeSchema } from "@/lib/schemas";
 import type { StoryBeat, WorldNarrative } from "@/lib/schemas";
 
@@ -56,18 +57,22 @@ export function WorldEditor({ initial }: { initial: WorldNarrative }) {
       setSaving(false);
       return;
     }
-    const res = await fetch("/api/admin/world", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.data),
-    });
-    if (res.ok) {
-      router.refresh();
+    try {
+      const res = await adminFetch("/api/admin/world", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      });
+      if (res.ok) {
+        router.refresh();
+        return;
+      }
+      setError("Failed to save world content.");
+    } catch {
+      setError(adminFetchTimeoutMessage());
+    } finally {
       setSaving(false);
-      return;
     }
-    setError("Failed to save world content.");
-    setSaving(false);
   }
   const beats = form.storyBeats[activeChapter] ?? [];
   return (

@@ -29,11 +29,16 @@ export async function getSiteContentRow(
 }
 
 export async function upsertSiteContentRow(key: SiteContentKey, data: unknown): Promise<void> {
-  await ensureSchema({ force: true });
-  const sql = getSql();
-  await sql`
-    INSERT INTO site_content (key, data)
-    VALUES (${key}, ${sql.json(data as Parameters<typeof sql.json>[0])})
-    ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data, updated_at = now()
-  `;
+  await withConnectTimeout(
+    async () => {
+      await ensureSchema({ force: true });
+      const sql = getSql();
+      await sql`
+      INSERT INTO site_content (key, data)
+      VALUES (${key}, ${sql.json(data as Parameters<typeof sql.json>[0])})
+      ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data, updated_at = now()
+    `;
+    },
+    { force: true },
+  );
 }

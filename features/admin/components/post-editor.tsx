@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { adminFetch, adminFetchTimeoutMessage } from "@/features/admin/lib/admin-fetch";
 
 import type { AdminPost } from "./types";
 
@@ -50,11 +51,10 @@ export function PostEditor({ mode, post }: { mode: "create" | "edit"; post?: Adm
     };
     const url = mode === "create" ? "/api/admin/posts" : `/api/admin/posts/${post?.id}`;
     try {
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method: mode === "create" ? "POST" : "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(50_000),
       });
       if (res.ok) {
         router.push("/admin");
@@ -66,7 +66,7 @@ export function PostEditor({ mode, post }: { mode: "create" | "edit"; post?: Adm
       };
       setError(data.error ?? "Failed to save. Check the fields and try again.");
     } catch {
-      setError("Save timed out or the server could not be reached. Try again in a moment.");
+      setError(adminFetchTimeoutMessage());
     } finally {
       setSaving(false);
     }

@@ -2,6 +2,7 @@ import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata, Viewport } from "next";
 
+import { AhrefsAnalytics } from "@/components/analytics/ahrefs-analytics";
 import { MicrosoftClarity } from "@/components/analytics/microsoft-clarity";
 import { SiteFooter, SiteFooterGate, SiteHeader } from "@/components/layout";
 import { SkipToContent } from "@/components/layout/skip-to-content";
@@ -85,6 +86,7 @@ export default async function RootLayout({
       className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full" suppressHydrationWarning>
+        <AhrefsAnalytics />
         <MicrosoftClarity />
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <WorldThemeSync />

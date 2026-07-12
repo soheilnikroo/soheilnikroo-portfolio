@@ -68,6 +68,7 @@ Copy `.env.example` to `.env` and fill in:
 | `ADMIN_PASSWORD`                 | Password for `/admin` login                              |
 | `SESSION_SECRET`                 | HMAC cookie secret — **32+ random characters**           |
 | `NEXT_PUBLIC_CLARITY_PROJECT_ID` | Microsoft Clarity (optional, production)                 |
+| `NEXT_PUBLIC_AHREFS_DATA_KEY`    | Ahrefs Web Analytics (optional, production)              |
 | `GOOGLE_SITE_VERIFICATION`       | Search Console verification (optional)                   |
 
 `NEXT_PUBLIC_ASSET_VERSION` is set automatically on `pnpm build` to bust caches for world sprites after deploy.

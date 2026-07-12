@@ -8,9 +8,7 @@ import {
   normalizeEnvDatabaseUrl,
   resolveRuntimeDatabaseUrl,
 } from "./connection-url";
-import { resolveDbConnectOptions } from "./request-context";
 import type { DbConnectOptions } from "./resilience";
-import { withConnectTimeout } from "./resilience";
 import { runMigrations } from "./schema";
 
 type Sql = ReturnType<typeof postgres>;
@@ -71,24 +69,21 @@ export function getSql(): Sql {
 
 export { needsEphemeralDbConnections };
 
-async function migrate(options?: DbConnectOptions): Promise<void> {
+async function migrate(): Promise<void> {
   try {
-    await withConnectTimeout(() => runMigrations(getSql()), options);
+    await runMigrations(getSql());
   } catch (error) {
     resetSqlClient();
     throw error;
   }
 }
 
-/** Ensures tables exist. Skipped on production reads — run `pnpm db:seed` once to migrate. */
-export async function ensureSchema(options?: DbConnectOptions): Promise<void> {
-  const resolved = await resolveDbConnectOptions(options);
-  if (process.env.NODE_ENV === "production" && !resolved.force) {
-    return;
-  }
+/** Ensures tables exist. Production schema is provisioned via `pnpm db:seed` — not at request time. */
+export async function ensureSchema(_options?: DbConnectOptions): Promise<void> {
+  if (process.env.NODE_ENV === "production") return;
   if (globalThis.__portfolioSchemaReady) return globalThis.__portfolioSchemaReady;
 
-  globalThis.__portfolioSchemaReady = migrate(resolved).catch((error) => {
+  globalThis.__portfolioSchemaReady = migrate().catch((error) => {
     globalThis.__portfolioSchemaReady = undefined;
     throw error;
   });

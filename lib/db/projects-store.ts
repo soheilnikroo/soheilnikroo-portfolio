@@ -111,12 +111,20 @@ export async function upsertProjectRow(slug: string, data: Project): Promise<voi
   await withConnectTimeout(
     async () => {
       await ensureSchema({ force: true });
-      const existing = await getProjectRowBySlug(slug);
-      if (existing) {
-        await updateProjectRow(existing.id, slug, data);
+      const sql = getSql();
+      const existing = await sql<ProjectRow[]>`SELECT * FROM projects WHERE slug = ${slug} LIMIT 1`;
+      if (existing[0]) {
+        await sql`
+          UPDATE projects SET slug = ${slug}, data = ${sql.json(data)}, updated_at = now()
+          WHERE id = ${existing[0].id}
+        `;
         return;
       }
-      await createProjectRow(slug, data);
+      const id = randomUUID();
+      await sql`
+        INSERT INTO projects (id, slug, data)
+        VALUES (${id}, ${slug}, ${sql.json(data)})
+      `;
     },
     { force: true },
   );

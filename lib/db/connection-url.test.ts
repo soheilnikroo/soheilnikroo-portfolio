@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   deriveSupabaseDirectUrl,
   listDatabaseUrlCandidates,
+  needsEphemeralDbConnections,
   normalizeEnvDatabaseUrl,
 } from "./connection-url";
 
@@ -41,6 +42,27 @@ describe("listDatabaseUrlCandidates", () => {
     const candidates = listDatabaseUrlCandidates();
     expect(candidates[0]).toBe(pooler);
     expect(candidates[1]).toBe(direct);
+  });
+});
+
+describe("needsEphemeralDbConnections", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("uses a persistent pool for Liara private Postgres in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("DATABASE_URL", "postgresql://root:secret@soheilnikroo-db:5432/postgres");
+    expect(needsEphemeralDbConnections()).toBe(false);
+  });
+
+  it("uses ephemeral sockets for Supabase in production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv(
+      "DATABASE_URL",
+      "postgresql://postgres.myref:secret@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres",
+    );
+    expect(needsEphemeralDbConnections()).toBe(true);
   });
 });
 

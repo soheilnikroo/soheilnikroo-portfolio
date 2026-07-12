@@ -77,9 +77,15 @@ function isServerlessRuntime(): boolean {
   return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 }
 
-/** Production Node hosts (e.g. Liara) — not Vercel/Lambda. Use fresh DB sockets per request. */
+/**
+ * Supabase over WAN from a long-lived Node host (e.g. Liara) — open a fresh socket per request
+ * and try URL fallbacks. Liara Postgres and other private databases reuse a persistent pool.
+ */
 export function needsEphemeralDbConnections(): boolean {
-  return process.env.NODE_ENV === "production" && !isServerlessRuntime();
+  if (process.env.NODE_ENV !== "production" || isServerlessRuntime()) return false;
+  const url = normalizeEnvDatabaseUrl(process.env.DATABASE_URL);
+  if (!url) return false;
+  return isSupabaseUrl(url);
 }
 
 /** Transaction pooler (:6543) is required for short-lived serverless workers. */

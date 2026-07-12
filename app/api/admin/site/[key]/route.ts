@@ -5,12 +5,14 @@ import { isAdmin } from "@/lib/auth/session";
 import { saveMilestones } from "@/lib/data/milestones";
 import { revalidateContent } from "@/lib/data/revalidate-content";
 import { saveSkillGraph } from "@/lib/data/skills";
+import { logContentStoreError } from "@/lib/db/log-content-store";
 import { MilestonesSchema, SkillGraphSchema } from "@/lib/schemas";
 import type { Milestones } from "@/lib/schemas/milestone";
 import type { SkillGraph } from "@/lib/schemas/skill";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 120;
 type SiteKey = "skills" | "milestones";
 const schemas: Record<SiteKey, z.ZodType<SkillGraph | Milestones>> = {
   skills: SkillGraphSchema,
@@ -48,7 +50,8 @@ export async function PUT(
     await savers[contentKey](parsed.data);
     revalidateContent();
     return NextResponse.json({ ok: true });
-  } catch {
-    return NextResponse.json({ error: "Failed to save content." }, { status: 500 });
+  } catch (error) {
+    logContentStoreError(contentKey, error);
+    return NextResponse.json({ error: "Failed to save content." }, { status: 503 });
   }
 }
